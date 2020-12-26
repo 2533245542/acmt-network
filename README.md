@@ -40,7 +40,7 @@ To remove an ACMT-Network instance, open Docker Dashboard, select `Containers/Ap
 
 We also remove the volumes that are created when running an ACMT-Network instance. The volume is used for storing most of the data generated during the usage of the instance and it is not removed when the instance is removed. 
 
-Type `docker volume ls -f dangling=true` in the terminal to find any dangling volumes, use `docker volume inspect` and `docker system df -v` to find the volumes that we want to remove, and use `docker volumn prune` or `docker volumn rm` to remove them.
+Type `docker volume ls -f dangling=true` in the terminal to find any dangling volumes, use `docker volume inspect` and `docker system df -v` to find the volumes that we want to remove, and use `docker volume prune` or `docker volume rm` to remove them.
 
 ## Uninstalling ACMT-Network
 An ACMT-Network instance is created based on four Docker images that we created when installing ACMT-Network. To remove these images, in Docker Dashboard, select `Images` on the left panel; on the right panel, remove `acmt-network_app`, `acmt-network_files`, `acmt-network_api` and `acmt-network_db`.
@@ -50,7 +50,7 @@ An ACMT-Network instance is created based on four Docker images that we created 
 If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, etc.), you might want to reinstall and instantiate ACMT-Network to see the changes. This can be done by first removing the previous ACMT-Network instance and then typing `docker-compose up --build` in the terminal. It rebuilds the Docker images and creates a new ACMT-Network instance.
 
 ## References
-ACMT: https://github.com/smooney27/ACMT
-Docker-ACMT (not fully dockerized): https://github.com/smooney27/docker-acmt
-Postgis-Docker (where we borrowed the geocoder): https://github.com/uwrit/postgis-docker
-Docker tutorials: https://docs.docker.com/get-started/
+ACMT: https://github.com/smooney27/ACMT  
+Docker-ACMT (not fully dockerized): https://github.com/smooney27/docker-acmt  
+Postgis-Docker (where we borrowed the geocoder): https://github.com/uwrit/postgis-docker  
+Docker tutorials: https://docs.docker.com/get-started/  
