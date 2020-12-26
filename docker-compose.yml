@@ -1,0 +1,58 @@
+version: '3'
+services:
+    db:
+        build: 
+            context: ./src/db
+        environment: 
+            POSTGRES_DB: "${POSTGRES_DB}"
+            POSTGRES_USER: "${POSTGRES_USER}"
+            POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+            GEOCODER_STATES: "${GEOCODER_STATES}"
+            GEOCODER_YEAR: "${GEOCODER_YEAR}"
+        ports:
+            - "5433:5432"
+        networks:
+            default:
+                aliases:
+                    - db
+    api:
+        build:
+            context: ./src/server
+        environment: 
+            POSTGRES_DB: "${POSTGRES_DB}"
+            POSTGRES_USER: "${POSTGRES_USER}"
+            POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+        ports:
+            - "5000:5000"
+        depends_on:
+            - db
+        networks:
+            default:
+                aliases:
+                    - api
+
+    files:
+        ports:
+            - "7000:80"
+        build:
+            context: ./src/files
+
+    app:
+        build:
+            context: ./src/app
+        environment:
+            PASSWORD: "${RSTUDIO_PASSWORD}"
+        volumes:
+            - ./src/app/workspace:/home/rstudio/workspace
+        ports:
+            - "8787:8787"
+        depends_on:
+            - api
+        networks:
+            default:
+                aliases:
+                    - app
+
+networks:
+    default:
+        driver: bridge
