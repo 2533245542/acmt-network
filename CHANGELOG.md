@@ -1,0 +1,14 @@
+v0.0.1
+=====
+* User can choose to install either ACMT+geocoder or geocoder alone.
+
+v0.0.2
+=====
+* Use variable name instead of the position integer to get a census tract's context measurement from the interpolated result, so `ACMT` works with different versions of `sf`.
+* Add year argument to `area_water()` and `tract()` so they match each other, as well as controled by their caller's argument.
+* Added year constraints, from 2010 to 2020. 
+* User left join to assign ACS results to census tract's geometries. Joining on the GEOID key.
+
+v0.0.3
+=====
+* TODO Added unit testing and a complete test workflow.

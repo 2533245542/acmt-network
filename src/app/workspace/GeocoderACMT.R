@@ -185,8 +185,8 @@ get_statecounty_tracts <- function(state, county, year=2017) {
   tracts_without_water <- state_counties[[county]]
   if (is.null(tracts_without_water)) {
     print(sprintf("Looking up tracts for state %s , county %s", state, county))
-    tracts <- st_as_sf(tracts(state = state, county = county, year=2017))
-    water <- st_union(st_as_sf(area_water(state = state, county = county)))
+    tracts <- st_as_sf(tracts(state = state, county = county, year=year))
+    water <- st_union(st_as_sf(area_water(state = state, county = county, year=year)))
     tracts_without_water <- st_difference(tracts, water)
     state_counties[[county]] <- tracts_without_water
   }
@@ -238,7 +238,7 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
     acs_results$estimate[is.na(acs_results$estimate)] <- 0
     acs_results_wide <- dcast(acs_results, GEOID + NAME ~ variable, value.var="estimate" )
     print(nrow(acs_results_wide))
-    tracts_for_state_county[,acs_var_names] = acs_results_wide[,acs_var_names]
+    tracts_for_state_county <- left_join(x=tracts_for_state_county, y=acs_results_wide, by="GEOID")
     block_group_results[[i]]  <- tracts_for_state_county[,acs_var_names]
   }
   if (length(block_group_results) < 1) {
@@ -249,8 +249,8 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
   # todo use dplyr to loop over all variables in a prettier way
   #  result <- by(population, population$variable, function(x) { suppressWarnings(st_interpolate_aw(x["estimate"], point_buffer, extensive=T))})
   #    return(result)
-  result <- lapply(acs_var_names, function(x) { suppressWarnings(st_interpolate_aw(population[,x], point_buffer, extensive=T)[[2]])})
-  return(data.frame(name=acs_var_names, estimate=unlist(result)))  
+  result <- lapply(acs_var_names, function(x) { suppressWarnings(st_interpolate_aw(population[,x], point_buffer, extensive=T)[[x]])})
+  return(data.frame(name=acs_var_names, estimate=unlist(result)))
 }
 
 get_acs_standard_columns <- function(year=2017) {
@@ -284,6 +284,7 @@ get_acs_standard_columns <- function(year=2017) {
 
 # TODO: not handling margin of error correctly at all
 get_acmt_standard_array <- function(long, lat, radius_meters, year=2017) {
+  if (year < 2010 | year > 2020) {stop("Year must be in between 2010 and 2020 (inclusive)")}
   if (is.na(long) | is.na(lat)) { stop("Null lat or long passed to get_acmt_standard_array")}
   acs_info <- get_acs_standard_columns(year=year)
   acs_columns <- acs_info$acs_columns
@@ -292,7 +293,7 @@ get_acmt_standard_array <- function(long, lat, radius_meters, year=2017) {
   acs_unique_var_cols <- acs_info$acs_unique_var_cols
   count_results <- get_count_variable_for_lat_long(long, lat, radius_meters, acs_unique_var_cols, year=year)
   #  count_results <- get_count_variable_for_lat_long_accounting_for_water(long, lat, radius_meters, acs_unique_var_cols, year=year)
-
+  
   proportion_vals <- vector(length=length(acs_proportion_names))
   for (i in 1:length(proportion_vals)) {
     # print(sprintf("Estimate for %s, which is %s will be divided by estimate for %s, which is %s",

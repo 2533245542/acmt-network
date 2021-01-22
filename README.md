@@ -49,6 +49,29 @@ An ACMT-Network instance is created based on four Docker images that we created 
 ## Reinstall after editing ACMT-Network
 If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, etc.), you might want to reinstall and instantiate ACMT-Network to see the changes. This can be done by first removing the previous ACMT-Network instance and then typing `docker-compose up --build` in the terminal. It rebuilds the Docker images and creates a new ACMT-Network instance.
 
+## ACMT Usage
+###### Function:
+
+`get_acmt_standard_array(long, lat, year=2017)`
+
+###### Arguments:
+
+`long`, `lat`: Defines the centroid (longitude, latitude) of the sampling area
+
+`radius_meters`: Defines the radius of the sampling area (in meters)
+
+`year`: The (end) year of American Community Survey data to use. Values are limited from 2010 to 2020 (inclusive).
+
+###### Examples:
+
+```
+# Get context measurement for the sampling area that centers at 
+# longitude=-122.333 and latitude=47.663, and has a radius of 2000 meters. 
+# Use ACS data from 2010 (end year).
+
+get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters=2000, year=2010)
+```
+
 ## References
 ACMT: https://github.com/smooney27/ACMT  
 Docker-ACMT (not fully dockerized): https://github.com/smooney27/docker-acmt  
