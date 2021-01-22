@@ -1,7 +1,6 @@
 source("RefreshAPIKey.R")
 source("GeocoderACMT.R")
 
-
 # Test Geocoder
 location <- geocode("1959 NE Pacific Street, Seattle, WA 98195")
 

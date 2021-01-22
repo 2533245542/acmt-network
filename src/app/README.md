@@ -1,3 +1,5 @@
+# Run ACMT alone
+## Update: actually need to manually link the docker workspace to the local workspace, TBD
 `acmt-network` has two components, geocoder and ACMT. If a user have only limited disk storage, the user might want to install ACMT only.
 
 To install ACMT only (without the geocoder), copy the `acmt-network/ACMT` folder into `acmt-network/src/app/workspace` (then update files in newly generated `acmt-network/src/app/workspace/ACMT` based on your own research purpose, if necessary). 
