@@ -47,7 +47,7 @@ An ACMT-Network instance is created based on four Docker images that we created 
 
 
 ## Reinstall after editing ACMT-Network
-If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, etc.), you might want to reinstall and instantiate ACMT-Network to see the changes. This can be done by first removing the previous ACMT-Network instance and then typing `docker-compose up --build` in the terminal. It rebuilds the Docker images and creates a new ACMT-Network instance.
+If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, added files to `src/files` etc.), you might want to reinstall and instantiate ACMT-Network to see the changes. This can be done by first removing the previous ACMT-Network instance and then typing `docker-compose up --build` in the terminal. It rebuilds the Docker images and creates a new ACMT-Network instance.
 
 ## ACMT Usage
 ###### Function:
