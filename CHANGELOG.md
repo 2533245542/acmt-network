@@ -11,4 +11,18 @@ v0.0.2
 
 v0.0.3
 =====
-* TODO Added unit testing and a complete test workflow.
+* Add unit testing.
+* Now it works for year>=2011.
+
+v0.0.4
+=====
+* Merge ACSColumns.csv and 2010ACSColumns.csv.
+* Automatically remove variables when they are missing for a ACS year.
+* Create an interface for adding user-provided context measurements.
+* Add mRFEI data to context measurements.
+* Update README for instructions to add user-provided context measurements
+
+Future
+=====
+* Verify acmt-network on existing work
+* Write user instructions

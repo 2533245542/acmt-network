@@ -2,3 +2,6 @@ examples
 documentation_*
 src/app/workspace/testing/
 src/app/workspace/ACMT
+
+# added for v0.0.3
+src/app/workspace/tests/development_tests.md

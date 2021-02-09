@@ -13,7 +13,8 @@ library(reshape2)
 library(tigris)
 library(lwgeom)
 
-
+source("external_data-file_downloader_and_processor.R")
+source("external_data-file_loader.R")
 
 path <- "http://host.docker.internal:5000/latlong?"
 
@@ -69,8 +70,11 @@ unzip("ACMT/cb_2017_us_county_500k.zip", exdir="ACMT")
 counties <- sf::st_read(dsn="ACMT", layer="cb_2017_us_county_500k")
 counties <- st_transform(counties, 4326)
 
-acs_columns_2010_url = "http://host.docker.internal:7000/2010ACSColumns.csv"
+acs_columns_2010_url <- "http://host.docker.internal:7000/2010ACSColumns.csv"
 download.file(url = acs_columns_2010_url, destfile = "ACMT/2010ACSColumns.csv")
+
+acs_columns_url <- "http://host.docker.internal:7000/ACSColumns.csv"
+download.file(url = acs_columns_url, destfile = "ACMT/ACSColumns.csv")
 
 get_state_from_fips <- function(fips_code) {
   if (is.null(fips_code)) {
@@ -203,65 +207,127 @@ old_statecounty_tracts <- function(state, county) {
   else { message(sprintf("Error! County tract caching not implemented yet -- county code is %s", county)) }
 }
 
-# TODO -- vectorize
-get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names, year=year) {
+get_acs_results_for_available_variables <- function (acs_var_names, state, county, year) {
+  ### Remove the acs_var_names that are not available for the year and only return the available ones ###
+  ### Return NA if error is not due to missing acs_var_names ###
+  input_acs_var_names <- acs_var_names
+  acs_results <- NA
+  has_missing_variable_error <- TRUE
+  while(has_missing_variable_error) {
+    # Try to get acs results and if there is no error, we just proceed to the next step. If there is an error, we check if it is due to the missing variable; if it is, we remove the missing variable and repeat the loop; if it is not due to missing variable, we proceed to the next step. Thus, we proceed when there is no error or the error is not caused by missing variable; we continue the loop only when there is missing variable error.
+
+    if (length(acs_var_names) == 0) {  # break when all variables are missing
+      break
+    }
+
+    has_missing_variable_error <- tryCatch({  # note that codes in try is not inside a new function, just treat it as normal R code
+      acs_results <- get_acs("tract", variables=acs_var_names, state=state, county=county, cache_table = T, census_api_key=CENSUS_API_KEY, geometry = F, keep_geo_vars = T, year=year)
+      FALSE   # FALSE will be assigned to has_missing_variable_error; cannot use return here, otherwise the rest of the function will not execute
+    }, error = function(condition) {  # note that in error handler, the codes are inside a new function; this is why we need <<- for assigning acs_var_names
+      error_is_caused_by_missing_variable <- grepl(pattern = "Your API call has errors.  The API message returned is error: error: unknown variable '", x=condition$message, fixed = TRUE)
+      if (error_is_caused_by_missing_variable) {  # remove the missing variable. Note that only one missing variable will be found by per get_acs run.
+        front_trimmed_error_message <- sub("Your API call has errors.  The API message returned is error: error: unknown variable '", "", condition$message) # remove the former part
+        code_of_the_missing_variable <- sub("E'.", "", front_trimmed_error_message)  # remove the latter part
+        acs_var_names <<- acs_var_names[acs_var_names != code_of_the_missing_variable]
+        print(paste("Removing missing variable:", code_of_the_missing_variable))
+        return(TRUE)
+      } else {
+        return (FALSE)
+      }
+    })
+  }
+
+  # when there are missing variables, warn what they are, and even stop
+  if (length(input_acs_var_names) > length(acs_var_names)) {
+    warning(sprintf("Some ACS variables are missing for year %s", year))
+    print("The missing ACS variables are:")
+    print(setdiff(input_acs_var_names, acs_var_names))  # set minus latter
+    print("The non-missing ACS variables are:")
+    print(acs_var_names)
+    if (length(acs_var_names) == 0) {
+      stop(sprintf("All ACS variables are missing for year %s", year))
+    }
+  }
+
+  return(acs_results)
+}
+
+get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, fill_missing_GEOID_with_zero=FALSE) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
+  using_external_data <- FALSE
+  var_names <- acs_var_names
+
+  if (is.null(acs_var_names) && is.null(year) && !is.null(external_data)) {  # when no acs_var_names, year, but have external_data
+    using_external_data <- TRUE
+    var_names <- unique(external_data$variable)
+  }
+
   point_buffer <- get_point_buffer_for_lat_long(long, lat, radius_meters)
+
   intersects <- st_intersects(point_buffer, counties)
   if (length(intersects) < 1) {
     message("get_count_variable_for_lat_long error: buffer does not overlap US counties")
   }
+
   state_county_fips <- unique(as.character(counties$GEOID[intersects[[1]]]))
   print(state_county_fips)
-  
+
   block_group_states <- substr(state_county_fips, 1, 2)
   block_group_counties <- substr(state_county_fips, 3, 5)
+
   block_group_results <- list()
-  for (i in 1:length(state_county_fips)) {
+  for (i in seq_along(state_county_fips)) {
     tracts_for_state_county <- get_statecounty_tracts(state=block_group_states[i], county=block_group_counties[i])
-    # Census API throws intermittent errors with old years.  Add a retry mechanism to try to track it down
-    tries <- 0
-    acs_results <- NA
-    while (is.na(acs_results) & tries < 10) {
-      tries <- tries + 1
-      try(
-        acs_results <- get_acs("tract", 
-                               variables=acs_var_names, 
-                               state=block_group_states[i], 
-                               county=block_group_counties[i],
-                               cache_table = T,
-                               census_api_key=CENSUS_API_KEY,
-                               geometry = F, keep_geo_vars = T, year=year)
-      )
+
+    count_results <- NA
+
+    if (using_external_data) {
+      count_results <- external_data
+    } else {
+      # Census API throws intermittent errors with old years.  Add a retry mechanism to try to track it down
+      tries <- 0
+      while (length(count_results) == 1 && is.na(count_results) && tries < 10) {  # the first condition ensures the loop breaks without executing is.na (such that no warning is made)
+        tries <- tries + 1
+        try(
+          count_results <- get_acs_results_for_available_variables(
+            acs_var_names=var_names,
+            state=block_group_states[i],
+            county=block_group_counties[i],
+            year=year)
+        )
+      }
+      if (length(unique(count_results$variable)) < length(var_names)) {   # if missing variables were pruned, update var_names to let it only include the available variables
+        var_names <- var_names[var_names %in% count_results$variable]  # not assigning acs_results$variable directly to var_names because although they are the same, the order of variables is different due to calling get_acs
+      }
     }
-    # HACKHACK 4/18/19 -- skip water merge in order to get results for discussion tomorrow!
-    # 8/1/19 -- convert NA to zeros -- is this okay?
-    acs_results$estimate[is.na(acs_results$estimate)] <- 0
-    acs_results_wide <- dcast(acs_results, GEOID + NAME ~ variable, value.var="estimate" )
-    print(nrow(acs_results_wide))
-    tracts_for_state_county <- left_join(x=tracts_for_state_county, y=acs_results_wide, by="GEOID")
-    block_group_results[[i]]  <- tracts_for_state_county[,acs_var_names]
+
+    count_results$estimate[is.na(count_results$estimate)] <- 0
+    count_results_wide <- dcast(count_results, GEOID ~ variable, value.var="estimate" )
+    print(nrow(count_results_wide))
+    tracts_for_state_county <- left_join(x=tracts_for_state_county, y=count_results_wide, by="GEOID")
+    block_group_results[[i]]  <- tracts_for_state_county[,var_names]
   }
   if (length(block_group_results) < 1) {
     message("get_count_variable_for_lat_long: No block group data returned from census")
   }
   population <- do.call(rbind, block_group_results)
   population <- st_transform(population, 4326)
-  # todo use dplyr to loop over all variables in a prettier way
-  #  result <- by(population, population$variable, function(x) { suppressWarnings(st_interpolate_aw(x["estimate"], point_buffer, extensive=T))})
-  #    return(result)
-  result <- lapply(acs_var_names, function(x) { suppressWarnings(st_interpolate_aw(population[,x], point_buffer, extensive=T)[[x]])})
-  return(data.frame(name=acs_var_names, estimate=unlist(result)))
+  if (fill_missing_GEOID_with_zero) {
+    population[is.na(population)] <- 0
+  }
+  result <- lapply(var_names, function(x) { suppressWarnings(st_interpolate_aw(population[,x], point_buffer, extensive=T)[[x]])})
+  return(data.frame(name=var_names, estimate=unlist(result)))
 }
 
-get_acs_standard_columns <- function(year=2017) {
+
+get_acs_standard_columns <- function(year=2017, codes_of_variables_to_get=NA) {
   # To do: cache this
-  if (year < 2011) {
-    print("Using 2010 ACS columns")
-    acs_columns <- read.csv("ACMT/2010ACSColumns.csv")
-  } else {
-    print("Using Post-2010 ACS columns")
-    acs_columns <- read.csv("ACMT/ACSColumns.csv")
+  print("Read ACS columns")
+  acs_columns <- read.csv("ACMT/ACSColumns.csv")
+
+  if (!is.na(codes_of_variables_to_get[1])) {  # filter acs_columns by provided variables
+    acs_columns <- acs_columns[acs_columns$acs_col %in% codes_of_variables_to_get, ]
   }
+
   acs_varnames <- acs_columns$acs_col
   print(acs_varnames)
   names(acs_varnames) <- acs_columns$var_name
@@ -283,43 +349,62 @@ get_acs_standard_columns <- function(year=2017) {
 
 
 # TODO: not handling margin of error correctly at all
-get_acmt_standard_array <- function(long, lat, radius_meters, year=2017) {
-  if (year < 2010 | year > 2020) {stop("Year must be in between 2010 and 2020 (inclusive)")}
-  if (is.na(long) | is.na(lat)) { stop("Null lat or long passed to get_acmt_standard_array")}
+get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE) {
+  # section: inspect input
+  if (year < 2010 | year > 2019) {
+    stop("Year must be in between 2010 and 2019 (inclusive)")
+  }
+  if (is.na(long) | is.na(lat)) {
+    stop("Null lat or long passed to get_acmt_standard_array")
+  }
+
+  # section: get ACS context measurements
   acs_info <- get_acs_standard_columns(year=year)
   acs_columns <- acs_info$acs_columns
   acs_proportion_names <- acs_info$acs_proportion_names
   acs_count_names <- acs_info$acs_count_names
   acs_unique_var_cols <- acs_info$acs_unique_var_cols
-  count_results <- get_count_variable_for_lat_long(long, lat, radius_meters, acs_unique_var_cols, year=year)
-  #  count_results <- get_count_variable_for_lat_long_accounting_for_water(long, lat, radius_meters, acs_unique_var_cols, year=year)
-  
+  acs_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=acs_unique_var_cols, year=year, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero)
+
+  acs_unique_var_cols_contains_missing_variables <- (length(acs_count_results$name) < length(acs_unique_var_cols))
+  if (acs_unique_var_cols_contains_missing_variables) {  # get_acs_standard_columns on only the non-missing variables
+    acs_info <- get_acs_standard_columns(year=year, codes_of_variables_to_get=acs_count_results$name)
+    acs_columns <- acs_info$acs_columns
+    acs_proportion_names <- acs_info$acs_proportion_names
+    acs_count_names <- acs_info$acs_count_names
+    acs_unique_var_cols <- acs_info$acs_unique_var_cols
+  }
+
   proportion_vals <- vector(length=length(acs_proportion_names))
-  for (i in 1:length(proportion_vals)) {
-    # print(sprintf("Estimate for %s, which is %s will be divided by estimate for %s, which is %s",
-    #             acs_columns$acs_col[acs_columns$universe_col != ""][i],
-    #             count_results[[as.character(acs_columns$acs_col[acs_columns$universe_col != ""][i])]]$estimate,
-    #             acs_columns$universe_col[acs_columns$universe_col != ""][i],
-    #             count_results[[as.character(acs_columns$universe_col[acs_columns$universe_col != ""][i])]]$estimate
-    #                 ))
-    # proportion_vals[i] <- count_results[[as.character(acs_columns$acs_col[acs_columns$universe_col != ""][i])]]$estimate/
-    #                     count_results[[as.character(acs_columns$universe_col[acs_columns$universe_col != ""][i])]]$estimate
-    
-    # 5/17/2019 Using data frame returned from get_count_variable
+  for (i in seq_along(proportion_vals)) {
+
     print(sprintf("Estimate for %s, which is %s will be divided by estimate for %s, which is %s",
                   acs_columns$acs_col[acs_columns$universe_col != ""][i],
-                  count_results$estimate[count_results$name == (as.character(acs_columns$acs_col[acs_columns$universe_col != ""][i]))],
+                  acs_count_results$estimate[acs_count_results$name == (as.character(acs_columns$acs_col[acs_columns$universe_col != ""][i]))],
                   acs_columns$universe_col[acs_columns$universe_col != ""][i],
-                  count_results$estimate[count_results$name == (as.character(acs_columns$universe_col[acs_columns$universe_col != ""][i]))]
+                  acs_count_results$estimate[acs_count_results$name == (as.character(acs_columns$universe_col[acs_columns$universe_col != ""][i]))]
     ))
-    proportion_vals[i] <- 
-      count_results$estimate[count_results$name == (as.character(acs_columns$acs_col[acs_columns$universe_col != ""][i]))]/
-      count_results$estimate[count_results$name == (as.character(acs_columns$universe_col[acs_columns$universe_col != ""][i]))]
+    proportion_vals[i] <-
+      acs_count_results$estimate[acs_count_results$name == (as.character(acs_columns$acs_col[acs_columns$universe_col != ""][i]))]/
+        acs_count_results$estimate[acs_count_results$name == (as.character(acs_columns$universe_col[acs_columns$universe_col != ""][i]))]
   }
   count_vals <- vector(length=length(acs_count_names))
-  for (i in 1:length(count_vals)) {
-    #    count_vals[i] <- count_results[[as.character(acs_columns$acs_col[i])]]$estimate
-    count_vals[i] <- count_results$estimate[count_results$name == as.character(acs_columns$acs_col[i])]
+  for (i in seq_along(count_vals)) {
+    count_vals[i] <- acs_count_results$estimate[acs_count_results$name == as.character(acs_columns$acs_col[i])]
   }
-  return(data.frame(names=c(acs_proportion_names, acs_count_names), values=c(proportion_vals, count_vals)))
+
+  context_measurement_dataframe <- data.frame(names=c(acs_proportion_names, acs_count_names), values=c(proportion_vals, count_vals))
+
+  if(!is.null(external_data_name_to_info_list)) {
+    external_data <- load_external_data(external_data_name_to_info_list)
+
+    external_data_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=NULL, year=NULL, external_data=external_data, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero)
+
+    external_data_measurement_dataframe <- data.frame(names=external_data_count_results$name, values=external_data_count_results$estimate)
+
+    context_measurement_dataframe <- rbind(context_measurement_dataframe, external_data_measurement_dataframe)
+
+  }
+
+  return(context_measurement_dataframe)
 }

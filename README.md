@@ -60,7 +60,23 @@ If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, etc.), 
 
 `radius_meters`: Defines the radius of the sampling area (in meters)
 
-`year`: The (end) year of American Community Survey data to use. Values are limited from 2010 to 2020 (inclusive).
+`year`: The (end) year of American Community Survey data to use. Values are limited from 2010 to 2020 (inclusive). The version of other data (plane zone geometries, plane zone projection strings, etc ) are fixed to a pre-defined year.
+
+`external_data_name_to_info_list=external_data_name_to_info_list`: Other than ACS measures, users can also provide context measures of their choice. This requires passing an `external_data_name_to_info_list`. `external_data_name_to_info_list` let ACMT know how to download and process the user-provided context measures to the ACMT-like format. 
+
+Below is an example of a `external_data_name_to_info_list` that uses CDC's Food Environment Index (mRFEI) as ACMT's additional context measures. 
+
+See `external_data-file_downloader_and_processor.R` for the details of implementing your own `download_file` and `process_file` function
+```
+external_data_name_to_info_list <- list(
+  mrfei=list(download_file=download_file_mrefi,  # function to download the mRFEI data to workspace;
+             vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls")    # the files the downloader is expected to download; ACMT will check if these files are downloaded in workspace/external_data before processing the files
+             process_file=process_file_mrefi)   # function to process file to make them fit ACMT format
+)
+```
+
+`fill_missing_GEOID_with_zero`: Sometimes a context measurement might be missing for the specific area, set this to `TRUE` to use 0 for that context measure; otherwise, the context measure will be returned as NA.
+
 
 ###### Examples:
 
@@ -70,6 +86,17 @@ If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, etc.), 
 # Use ACS data from 2010 (end year).
 
 get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters=2000, year=2010)
+
+# Use external data source (the below uses mRFEI)
+external_data_name_to_info_list <- list(
+  mrfei=list(vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls"),  # the files should be downloaded for mrfei
+             download_file=download_file_mrefi,  # function to download file
+             process_file=process_file_mrefi)   # function to process file
+)
+
+measures_for_2013_with_external_data_with_fill_missing <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE)
+
+
 ```
 
 ## References
@@ -77,3 +104,4 @@ ACMT: https://github.com/smooney27/ACMT
 Docker-ACMT (not fully dockerized): https://github.com/smooney27/docker-acmt  
 Postgis-Docker (where we borrowed the geocoder): https://github.com/uwrit/postgis-docker  
 Docker tutorials: https://docs.docker.com/get-started/  
+mRFEI: https://www.cdc.gov/obesity/resources/reports.html
