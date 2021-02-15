@@ -20,7 +20,7 @@ v0.0.4
 * Automatically remove variables when they are missing for a ACS year.
 * Create an interface for adding user-provided context measurements.
 * Add mRFEI data to context measurements.
-* Update README for instructions to add user-provided context measurements
+* Update README for instructions of adding user-provided context measurements
 
 v0.0.5
 =====
