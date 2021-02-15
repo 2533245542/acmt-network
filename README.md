@@ -64,6 +64,7 @@ If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, added f
 
 `external_data_name_to_info_list=external_data_name_to_info_list`: Other than ACS measures, users can also provide context measures of their choice. This requires passing an `external_data_name_to_info_list`. `external_data_name_to_info_list` let ACMT know how to download and process the user-provided context measures to the ACMT-like format. 
 
+
 Below is an example of a `external_data_name_to_info_list` that uses CDC's Food Environment Index (mRFEI) as ACMT's additional context measures. 
 
 See `external_data-file_downloader_and_processor.R` for the details of implementing your own `download_file` and `process_file` function
@@ -71,9 +72,13 @@ See `external_data-file_downloader_and_processor.R` for the details of implement
 external_data_name_to_info_list <- list(
   mrfei=list(download_file=download_file_mrefi,  # function to download the mRFEI data to workspace;
              vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls")    # the files the downloader is expected to download; ACMT will check if these files are downloaded in workspace/external_data before processing the files
-             process_file=process_file_mrefi)   # function to process file to make them fit ACMT format
+             process_file=process_file_mrefi,   # function to process file to make them fit ACMT format
+             geoid_type="Census Tract"
+  )
 )
 ```
+
+Currently type of supported GEOID: `Census Tract`, `Block Group`. See `https://www.census.gov/programs-surveys/geography/guidance/geo-identifiers.html` for their definitions.
 
 `fill_missing_GEOID_with_zero`: Sometimes a context measurement might be missing for the specific area, set this to `TRUE` to use 0 for that context measure; otherwise, the context measure will be returned as NA.
 

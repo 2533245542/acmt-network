@@ -22,6 +22,12 @@ v0.0.4
 * Add mRFEI data to context measurements.
 * Update README for instructions to add user-provided context measurements
 
+v0.0.5
+=====
+* TODO Add national walkability index data.
+* TODO Let external data handler able to handle different types of GEOID.
+
+
 Future
 =====
 * Verify acmt-network on existing work
