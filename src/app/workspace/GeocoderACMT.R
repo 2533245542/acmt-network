@@ -37,44 +37,16 @@ if (!dir.exists("ACMT")) {
   dir.create("ACMT")
 }
 
-# TEMP -- not able to load this shapefile after downloading from local docker host
-#zones_shp_url = "http://localhost:7000/USA_State_Plane_Zones_NAD83.shp"
-#zones_shx_url = "http://localhost:7000/USA_State_Plane_Zones_NAD83.shx"
-#zones_dbf_url = "http://localhost:7000/USA_State_Plane_Zones_NAD83.dbf"
-#zones_prj_url = "http://localhost:7000/USA_State_Plane_Zones_NAD83.prj"
-#download.file(url = zones_shp_url, destfile = "ACMT/zones.shp")
-#download.file(url = zones_shx_url, destfile = "ACMT/zones.shx")
-#download.file(url = zones_dbf_url, destfile = "ACMT/zones.dbf")
-#download.file(url = zones_prj_url, destfile = "ACMT/zones.prj")
-#state_plane_zones <- sf::st_read(dsn="ACMT", layer="zones")
-
-
 download.file(url = "http://sandbox.idre.ucla.edu/mapshare/data/usa/other/spcszn83.zip", destfile = "ACMT/spcszn83.zip")
 unzip("ACMT/spcszn83.zip", exdir="ACMT")
-state_plane_zones <- sf::st_read(dsn="ACMT", layer="spcszn83")
-
-
-# counties_shp_url = "http://localhost:7000/cb_2017_us_county_500k.shp"
-# counties_shx_url = "http://localhost:7000/cb_2017_us_county_500k.shx"
-# counties_dbf_url = "http://localhost:7000/cb_2017_us_county_500k.dbf"
-# counties_prj_url = "http://localhost:7000/cb_2017_us_county_500k.prj"
-# download.file(url = counties_shp_url, destfile = "ACMT/cb_2017_us_county_500k.shp")
-# download.file(url = counties_shx_url, destfile = "ACMT/cb_2017_us_county_500k.shx")
-# download.file(url = counties_dbf_url, destfile = "ACMT/cb_2017_us_county_500k.dbf")
-# download.file(url = counties_prj_url, destfile = "ACMT/cb_2017_us_county_500k.prj")
-# counties <- sf::st_read(dsn = "ACMT", layer = "cb_2017_us_county_500k")
-# counties <- st_transform(counties, 4326)
-
 download.file(url = "https://www2.census.gov/geo/tiger/GENZ2017/shp/cb_2017_us_county_500k.zip", destfile = "ACMT/cb_2017_us_county_500k.zip")
 unzip("ACMT/cb_2017_us_county_500k.zip", exdir="ACMT")
-counties <- sf::st_read(dsn="ACMT", layer="cb_2017_us_county_500k")
-counties <- st_transform(counties, 4326)
-
-acs_columns_2010_url <- "http://host.docker.internal:7000/2010ACSColumns.csv"
-download.file(url = acs_columns_2010_url, destfile = "ACMT/2010ACSColumns.csv")
-
 acs_columns_url <- "http://host.docker.internal:7000/ACSColumns.csv"
 download.file(url = acs_columns_url, destfile = "ACMT/ACSColumns.csv")
+
+state_plane_zones <- sf::st_read(dsn="ACMT", layer="spcszn83")
+counties <- sf::st_read(dsn="ACMT", layer="cb_2017_us_county_500k")
+counties <- st_transform(counties, 4326)
 
 get_state_from_fips <- function(fips_code) {
   if (is.null(fips_code)) {
@@ -126,19 +98,19 @@ state_proj$ZONE
 
 get_projection_for_lat_long <- function(long, lat) {
   point <- st_sfc(st_point(c(long, lat)), crs=4326)
-  state_plane_zones %>% 
+  state_plane_zones %>%
     filter(st_contains(state_plane_zones, point, sparse = F) == 1) %>%
     left_join(state_proj, by="ZONE") %>%
-    {.} -> selected_zone
+  {.} -> selected_zone
   if (nrow(selected_zone) == 0) {
     search_factor <- 1
     while (nrow(selected_zone) == 0) {
-      point <- st_sfc(st_point(c(long+runif(1, -0.1*search_factor, 0.1*search_factor), 
+      point <- st_sfc(st_point(c(long+runif(1, -0.1*search_factor, 0.1*search_factor),
                                  lat+runif(1, -0.1*search_factor, 0.1*search_factor))), crs=4326)
-      state_plane_zones %>% 
+      state_plane_zones %>%
         filter(st_contains(state_plane_zones, point, sparse = F) == 1) %>%
         left_join(state_proj, by="ZONE") %>%
-        {.} -> selected_zone
+      {.} -> selected_zone
       search_factor <- search_factor + 1
     }
   }
@@ -149,7 +121,7 @@ get_point_buffer_for_lat_long <- function(long, lat, radius_meters) {
   point <- st_sfc(st_point(c(long, lat)), crs=4326)
   point_projected <- st_transform(point, proj4_string)
   radius <- set_units(radius_meters, "meters")
-  point_buffer <- st_buffer(point_projected, 
+  point_buffer <- st_buffer(point_projected,
                             dist=radius)
   point_buffer <- st_transform(point_buffer, crs=4326)
   return(point_buffer)
@@ -169,16 +141,19 @@ show_map_for_lat_long <- function(long, lat, radius_meters, projection=NULL) {
     overlapping_blocks <- st_transform(overlapping_blocks, projection)
     point_buffer <- st_transform(point_buffer, projection)
   }
-  tm <- tm_shape(overlapping_blocks) + 
-    tm_fill(alpha=0.4, col="red") + 
-    tm_borders(col="black") + 
-    tm_shape(point_buffer) + 
-    tm_polygons(col="blue", alpha=0.7) 
+  tm <- tm_shape(overlapping_blocks) +
+    tm_fill(alpha=0.4, col="red") +
+    tm_borders(col="black") +
+    tm_shape(point_buffer) +
+    tm_polygons(col="blue", alpha=0.7)
   return(tm)
 }
 
 state_list <- list()
-get_statecounty_tracts <- function(state, county, year=2017) {
+get_statecounty_tracts <- function(state, county, year=2017, geoid_type="Census Tract") {
+  if (!geoid_type %in% c("Census Tract", "Block Group")) {
+    stop("Unsupported GEOID type")
+  }
   print("called get_statecounty_tracts")
   if (as.numeric(state) < 0 || as.numeric(state) > 55) { message(sprintf("error!  Unknown state %s", state)) }
   if (as.numeric(county) < 0 || as.numeric(county) > 1000) { message(sprintf("error!  Unknown county %s", county)) }
@@ -189,13 +164,35 @@ get_statecounty_tracts <- function(state, county, year=2017) {
   tracts_without_water <- state_counties[[county]]
   if (is.null(tracts_without_water)) {
     print(sprintf("Looking up tracts for state %s , county %s", state, county))
-    tracts <- st_as_sf(tracts(state = state, county = county, year=year))
-    water <- st_union(st_as_sf(area_water(state = state, county = county, year=year)))
-    tracts_without_water <- st_difference(tracts, water)
-    state_counties[[county]] <- tracts_without_water
+
+    tracts <- NULL
+    if (geoid_type == "Census Tract") {
+      tracts <- st_as_sf(tracts(state = state, county = county, year=year))
+    } else if (geoid_type == "Block Group") {
+      tracts <- st_as_sf(block_groups(state = state, county = county, year=year))
+    } else {
+      stop("Unsupported GEOID type")
+    }
+
+    # try to get water area for this year
+    water <- NULL
+    tryCatch({
+      water <- st_union(st_as_sf(area_water(state = state, county = county, year=year)))
+    }, error = function (condition) {
+      if (condition$message == "area_water is not currently available for years prior to 2011.  To request this feature,\n                   file an issue at https://github.com/walkerke/tigris."){
+        warning(paste0("Water area not available for years prior to 2011. The requested year is ", as.character(year)))
+      } else {
+        stop("Unknown error in getting water area")
+      }
+    })
+    if (!is.null(water)) {
+      tracts <- st_difference(tracts, water)  # if has water,  substract the water from tracts
+    }
+
+    state_counties[[county]] <- tracts
   }
   state_list[[state]] <- state_counties
-  return(tracts_without_water)
+  return(tracts)
 }
 
 old_statecounty_tracts <- function(state, county) {
@@ -210,6 +207,9 @@ old_statecounty_tracts <- function(state, county) {
 get_acs_results_for_available_variables <- function (acs_var_names, state, county, year) {
   ### Remove the acs_var_names that are not available for the year and only return the available ones ###
   ### Return NA if error is not due to missing acs_var_names ###
+  if (year < 2010 | year > 2019) {
+    stop("Year must be in between 2010 and 2019, inclusive")
+  }
   input_acs_var_names <- acs_var_names
   acs_results <- NA
   has_missing_variable_error <- TRUE
@@ -225,14 +225,20 @@ get_acs_results_for_available_variables <- function (acs_var_names, state, count
       FALSE   # FALSE will be assigned to has_missing_variable_error; cannot use return here, otherwise the rest of the function will not execute
     }, error = function(condition) {  # note that in error handler, the codes are inside a new function; this is why we need <<- for assigning acs_var_names
       error_is_caused_by_missing_variable <- grepl(pattern = "Your API call has errors.  The API message returned is error: error: unknown variable '", x=condition$message, fixed = TRUE)
+      error_is_caused_by_occational_request_failure <- grepl(pattern = "Your API call has errors.  The API message returned is <html><head><title>Error report</title></head><body><h1>HTTP Status 404 ", x=condition$message, fixed = TRUE) || grepl(pattern = "incorrect number of dimensions", x=condition$message, fixed = TRUE)
       if (error_is_caused_by_missing_variable) {  # remove the missing variable. Note that only one missing variable will be found by per get_acs run.
         front_trimmed_error_message <- sub("Your API call has errors.  The API message returned is error: error: unknown variable '", "", condition$message) # remove the former part
         code_of_the_missing_variable <- sub("E'.", "", front_trimmed_error_message)  # remove the latter part
         acs_var_names <<- acs_var_names[acs_var_names != code_of_the_missing_variable]
         print(paste("Removing missing variable:", code_of_the_missing_variable))
         return(TRUE)
+      } else if (error_is_caused_by_occational_request_failure) {
+        print("Occational error occurred when sending get_acs request. Trying again")
+        return(TRUE)
       } else {
-        return (FALSE)
+        print(acs_var_names)
+        print(condition$message)
+        stop("Unknown error occurred")
       }
     })
   }
@@ -252,70 +258,77 @@ get_acs_results_for_available_variables <- function (acs_var_names, state, count
   return(acs_results)
 }
 
-get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, fill_missing_GEOID_with_zero=FALSE) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
+get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, geoid_type = "Census Tract",fill_missing_GEOID_with_zero=FALSE) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
   using_external_data <- FALSE
-  var_names <- acs_var_names
+  names_of_interested_variables <- acs_var_names   # variable names we want to output
 
   if (is.null(acs_var_names) && is.null(year) && !is.null(external_data)) {  # when no acs_var_names, year, but have external_data
     using_external_data <- TRUE
-    var_names <- unique(external_data$variable)
+    names_of_interested_variables <- unique(external_data$variable)
   }
 
   point_buffer <- get_point_buffer_for_lat_long(long, lat, radius_meters)
 
-  intersects <- st_intersects(point_buffer, counties)
-  if (length(intersects) < 1) {
+  index_of_intersecting_counties <- st_intersects(point_buffer, counties)
+  if (length(index_of_intersecting_counties) < 1) {
     message("get_count_variable_for_lat_long error: buffer does not overlap US counties")
   }
 
-  state_county_fips <- unique(as.character(counties$GEOID[intersects[[1]]]))
-  print(state_county_fips)
+  intersecting_counties_fips <- unique(as.character(counties$GEOID[index_of_intersecting_counties[[1]]]))
+  print(intersecting_counties_fips)
 
-  block_group_states <- substr(state_county_fips, 1, 2)
-  block_group_counties <- substr(state_county_fips, 3, 5)
+  intersecting_counties_fips_state_codes <- substr(intersecting_counties_fips, 1, 2)
+  intersecting_counties_fips_county_codes <- substr(intersecting_counties_fips, 3, 5)
 
-  block_group_results <- list()
-  for (i in seq_along(state_county_fips)) {
-    tracts_for_state_county <- get_statecounty_tracts(state=block_group_states[i], county=block_group_counties[i])
+  columns_of_variable_value_to_geometry_dataframe_list <- list()
+  for (i in seq_along(intersecting_counties_fips)) {
+    geoid_to_geometry_dataframe <- get_statecounty_tracts(state=intersecting_counties_fips_state_codes[i], county=intersecting_counties_fips_county_codes[i], geoid_type=geoid_type)
 
-    count_results <- NA
+    geoid_to_variable_name_to_variable_value_dataframe <- NA
 
     if (using_external_data) {
-      count_results <- external_data
+      geoid_to_variable_name_to_variable_value_dataframe <- external_data
     } else {
       # Census API throws intermittent errors with old years.  Add a retry mechanism to try to track it down
       tries <- 0
-      while (length(count_results) == 1 && is.na(count_results) && tries < 10) {  # the first condition ensures the loop breaks without executing is.na (such that no warning is made)
+      while (length(geoid_to_variable_name_to_variable_value_dataframe) == 1 && is.na(geoid_to_variable_name_to_variable_value_dataframe) && tries < 10) {  # the first condition ensures the loop breaks without executing is.na (such that no warning is made)
         tries <- tries + 1
         try(
-          count_results <- get_acs_results_for_available_variables(
-            acs_var_names=var_names,
-            state=block_group_states[i],
-            county=block_group_counties[i],
+          geoid_to_variable_name_to_variable_value_dataframe <- get_acs_results_for_available_variables(
+            acs_var_names=names_of_interested_variables,
+            state=intersecting_counties_fips_state_codes[i],
+            county=intersecting_counties_fips_county_codes[i],
             year=year)
         )
       }
-      if (length(unique(count_results$variable)) < length(var_names)) {   # if missing variables were pruned, update var_names to let it only include the available variables
-        var_names <- var_names[var_names %in% count_results$variable]  # not assigning acs_results$variable directly to var_names because although they are the same, the order of variables is different due to calling get_acs
+      if (length(unique(geoid_to_variable_name_to_variable_value_dataframe$variable)) < length(names_of_interested_variables)) {   # if missing variables were pruned, update names_of_interested_variables to let it only include the available variables
+        names_of_interested_variables <- names_of_interested_variables[names_of_interested_variables %in% geoid_to_variable_name_to_variable_value_dataframe$variable]  # not assigning acs_results$variable directly to names_of_interested_variables because although they are the same, the order of variables is different due to calling get_acs
       }
     }
 
-    count_results$estimate[is.na(count_results$estimate)] <- 0
-    count_results_wide <- dcast(count_results, GEOID ~ variable, value.var="estimate" )
-    print(nrow(count_results_wide))
-    tracts_for_state_county <- left_join(x=tracts_for_state_county, y=count_results_wide, by="GEOID")
-    block_group_results[[i]]  <- tracts_for_state_county[,var_names]
+    geoid_to_variable_name_to_variable_value_dataframe$estimate[is.na(geoid_to_variable_name_to_variable_value_dataframe$estimate)] <- 0
+    geoid_to_columns_of_variable_value_dataframe <- dcast(geoid_to_variable_name_to_variable_value_dataframe, GEOID ~ variable, value.var="estimate" )
+
+    columns_of_variable_value_to_geometry_dataframe <- left_join(x=geoid_to_geometry_dataframe, y=geoid_to_columns_of_variable_value_dataframe, by="GEOID")  # GEOID is used for matching features to geometries; thus in ACMT, only the GEOID between census tract and features should match
+    columns_of_variable_value_to_geometry_dataframe_list[[i]]  <- columns_of_variable_value_to_geometry_dataframe[, names_of_interested_variables]
   }
-  if (length(block_group_results) < 1) {
+  if (length(columns_of_variable_value_to_geometry_dataframe_list) < 1) {
     message("get_count_variable_for_lat_long: No block group data returned from census")
   }
-  population <- do.call(rbind, block_group_results)
-  population <- st_transform(population, 4326)
+  all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe <- do.call(rbind, columns_of_variable_value_to_geometry_dataframe_list)
+  all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe <- st_transform(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe, 4326)
   if (fill_missing_GEOID_with_zero) {
-    population[is.na(population)] <- 0
+    all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe[is.na(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe)] <- 0
   }
-  result <- lapply(var_names, function(x) { suppressWarnings(st_interpolate_aw(population[,x], point_buffer, extensive=T)[[x]])})
-  return(data.frame(name=var_names, estimate=unlist(result)))
+
+  # calculated weighted variable values for the point buffer
+
+  values_of_interested_variables <- lapply(names_of_interested_variables, function(x) { suppressWarnings(st_interpolate_aw(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe[, x], point_buffer, extensive=T)[[x]])})
+  return(data.frame(name=names_of_interested_variables, estimate=unlist(values_of_interested_variables)))
+
+  # weighted_varaible_value_to_point_buffer_geometry_dataframe <- st_interpolate_aw(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe, point_buffer, extensive=T)
+  # weighted_variable_values_of_point_buffer <- unlist(st_set_geometry(weighted_varaible_value_to_point_buffer_geometry_dataframe, value = NULL))  # take away geometry
+  # return(data.frame(name=names(weighted_variable_values_of_point_buffer), estimate=weighted_variable_values_of_point_buffer))
 }
 
 
@@ -338,11 +351,11 @@ get_acs_standard_columns <- function(year=2017, codes_of_variables_to_get=NA) {
   all_var_cols <- c(as.character(acs_columns$acs_col), as.character(acs_columns$universe_col))
   unique_var_cols <- unique(all_var_cols)
   unique_var_cols <- unique_var_cols[unique_var_cols != ""]
-  return(list(acs_proportion_names=acs_proportion_names, 
-              acs_count_names=acs_count_names, 
-              acs_unique_var_cols=unique_var_cols, 
-              acs_columns=acs_columns, 
-              acs_proportion_pretty_name_map=data.frame(acs_proportion_names, acs_proportion_pretty_names), 
+  return(list(acs_proportion_names=acs_proportion_names,
+              acs_count_names=acs_count_names,
+              acs_unique_var_cols=unique_var_cols,
+              acs_columns=acs_columns,
+              acs_proportion_pretty_name_map=data.frame(acs_proportion_names, acs_proportion_pretty_names),
               acs_count_pretty_name_map=data.frame(acs_count_names, acs_count_pretty_names)))
 }
 
@@ -396,14 +409,17 @@ get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, externa
   context_measurement_dataframe <- data.frame(names=c(acs_proportion_names, acs_count_names), values=c(proportion_vals, count_vals))
 
   if(!is.null(external_data_name_to_info_list)) {
-    external_data <- load_external_data(external_data_name_to_info_list)
+    external_data_list <- load_external_data(external_data_name_to_info_list)
 
-    external_data_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=NULL, year=NULL, external_data=external_data, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero)
-
-    external_data_measurement_dataframe <- data.frame(names=external_data_count_results$name, values=external_data_count_results$estimate)
+    variable_to_value_dataframe_list <- list()
+    for (external_data_name in names(external_data_name_to_info_list)) {
+      external_data_weighted_over_point_buffer_dataframe <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=NULL, year=NULL, external_data=external_data_list[[external_data_name]], geoid_type = external_data_name_to_info_list[[external_data_name]]$geoid_type, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero)
+      variable_to_value_dataframe <- data.frame(names=external_data_weighted_over_point_buffer_dataframe$name, values=external_data_weighted_over_point_buffer_dataframe$estimate)
+      variable_to_value_dataframe_list[[external_data_name]] <- variable_to_value_dataframe
+    }
+    external_data_measurement_dataframe <- do.call(rbind, variable_to_value_dataframe_list)
 
     context_measurement_dataframe <- rbind(context_measurement_dataframe, external_data_measurement_dataframe)
-
   }
 
   return(context_measurement_dataframe)

@@ -90,6 +90,27 @@ test_that("Checking get_statecounty_tracts. Testing result corretness.", {
   expect_equal(state_county_tract$INTPTLON[275], "-122.3674088")
   expect_equal(dim(state_county_tract$geometry[82][[1]][[1]]), c(92, 2))
   expect_equal(state_county_tract$geometry[82][[1]][[1]][43,1], -122.112381)
+
+  # not using water
+  statecounty_tracts_2010 <- get_statecounty_tracts(state="53", county="033", year=2010)  # no water in 2010
+  expect_equal(dim(statecounty_tracts_2010), c(398, 15))
+  expect_equal(statecounty_tracts_2010[[94,1]], "53")
+  expect_equal(statecounty_tracts_2010[[188,2]], "033")
+  expect_equal(statecounty_tracts_2010[[278,3]], "029408")
+  expect_equal(statecounty_tracts_2010[[92,4]], "53033032322")
+  expect_equal(statecounty_tracts_2010[[14,6]], "Census Tract 272")
+  expect_equal(as.integer(statecounty_tracts_2010[[391,9]]), 1834052)
+
+
+  # water available; the result should be stripped off of water area
+  statecounty_tracts_2011 <- get_statecounty_tracts(state="53", county="033", year=2011)
+  expect_equal(dim(statecounty_tracts_2011), c(397, 13))
+  expect_equal(statecounty_tracts_2011[[94,1]], "53")
+  expect_equal(statecounty_tracts_2011[[188,2]], "033")
+  expect_equal(statecounty_tracts_2011[[278,3]], "030313")
+  expect_equal(statecounty_tracts_2011[[92,4]], "53033031301")
+  expect_equal(statecounty_tracts_2011[[14,6]], "Census Tract 312.06")
+  expect_equal(as.integer(statecounty_tracts_2011[[391,9]]), 1593774)
 })
 
 test_that("Checking get_acs_results_for_available_variables(). Testing invalid input.", {
@@ -98,7 +119,6 @@ test_that("Checking get_acs_results_for_available_variables(). Testing invalid i
   some_work_in_2011 <- c("B15003_001", "B07201_002")
   all_work_in_2011 <- c("B07201_002", "B07201_004")
   all_work_in_2012 <- c("B15003_001", "B15003_002")
-
 
   expect_error(get_acs_results_for_available_variables(all_not_work_in_2011, "53", "033", 2011), regexp = "All ACS variables are missing for year 2011") # no result, produce error
 
@@ -116,7 +136,7 @@ test_that("Checking get_acs_results_for_available_variables(). Testing invalid i
   expect_equal(acs_result_for_B15003_001_002_2012$estimate[1], 4444)
   expect_equal(acs_result_for_B15003_001_002_2012$estimate[100], 0)
 
-  expect_equal(get_acs_results_for_available_variables(all_work_in_2012, "53", "033", 2001), NA) # should only handle missing variable errors; return NA if other errors
+  expect_error(get_acs_results_for_available_variables(all_work_in_2012, "53", "033", 2001), regexp = "Year must be in between 2010 and 2019, inclusive") # uncovered error
 })
 
 test_that("Checking get_count_variable_for_lat_long. Testing result corretness.", {

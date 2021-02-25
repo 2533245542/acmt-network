@@ -32,7 +32,7 @@ load_external_data <- function (external_data_name_to_info_list=NULL) {
 
     list_of_loaded_data_dataframe[[external_data_name]] <- read_csv(paste0("external_data/", expected_processed_file_name))
   }
-  return(bind_rows(list_of_loaded_data_dataframe))
+  return(list_of_loaded_data_dataframe)
 }
 
 

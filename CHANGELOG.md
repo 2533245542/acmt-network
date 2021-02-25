@@ -24,9 +24,12 @@ v0.0.4
 
 v0.0.5
 =====
-* TODO Add national walkability index data.
-* TODO Let external data handler able to handle different types of GEOID.
+* Add national walkability index data.
+* Let external data handler able to handle different types of GEOID.
 
+v0.0.6
+=====
+* Add example.
 
 Future
 =====

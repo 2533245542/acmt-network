@@ -68,6 +68,8 @@ If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, added f
 Below is an example of a `external_data_name_to_info_list` that uses CDC's Food Environment Index (mRFEI) as ACMT's additional context measures. 
 
 See `external_data-file_downloader_and_processor.R` for the details of implementing your own `download_file` and `process_file` function
+
+Note: when the downloaded file is large (>100MB), it is highly recommended to create the processed file outside of ACMT-network and then drag it into ACMT-network because it is slow for Docker to download and process such a large file internally.
 ```
 external_data_name_to_info_list <- list(
   mrfei=list(download_file=download_file_mrefi,  # function to download the mRFEI data to workspace;
@@ -102,6 +104,82 @@ external_data_name_to_info_list <- list(
 measures_for_2013_with_external_data_with_fill_missing <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE)
 
 
+```
+
+
+## Versions
+Docker uses `Debian GNU/Linux 9.11 (stretch), GEOS 3.5.1, GDAL 2.1.2, PROJ 4.9.3` with the following session info.
+```
+R version 3.6.1 (2019-07-05)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Debian GNU/Linux 9 (stretch)
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/libopenblasp-r0.2.19.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=C
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+ [1] readxl_1.3.1        lwgeom_0.1-7        tigris_0.8.2
+ [4] reshape2_1.4.3      raster_3.0-7        sp_1.3-2
+ [7] USAboundaries_0.3.1 units_0.6-5         stringi_1.4.3
+[10] geosphere_1.5-10    tidycensus_0.9.2    sf_0.8-0
+[13] jsonlite_1.6        forcats_0.4.0       stringr_1.4.0
+[16] dplyr_0.8.3         purrr_0.3.3         readr_1.3.1
+[19] tidyr_1.0.0         tibble_2.1.3        ggplot2_3.2.1
+[22] tidyverse_1.3.0     httr_1.4.1
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.3         lubridate_1.7.4    lattice_0.20-38    class_7.3-15
+ [5] assertthat_0.2.1   zeallot_0.1.0      plyr_1.8.5         R6_2.4.1
+ [9] cellranger_1.1.0   backports_1.1.5    reprex_0.3.0       e1071_1.7-3
+[13] pillar_1.4.2       rlang_0.4.2        lazyeval_0.2.2     uuid_0.1-2
+[17] rstudioapi_0.10    rgdal_1.4-8        foreign_0.8-71     munsell_0.5.0
+[21] broom_0.5.2        compiler_3.6.1     modelr_0.1.5       pkgconfig_2.0.3
+[25] tidyselect_0.2.5   codetools_0.2-16   fansi_0.4.0        crayon_1.3.4
+[29] dbplyr_1.4.2       withr_2.1.2        rappdirs_0.3.1     grid_3.6.1
+[33] nlme_3.1-140       gtable_0.3.0       lifecycle_0.1.0    DBI_1.0.0
+[37] magrittr_1.5       scales_1.1.0       KernSmooth_2.23-15 cli_2.0.0
+[41] fs_1.3.1           xml2_1.2.2         generics_0.0.2     vctrs_0.2.0
+[45] tools_3.6.1        glue_1.3.1         hms_0.5.2          colorspace_1.4-1
+[49] maptools_0.9-9     classInt_0.4-2     rvest_0.3.5        haven_2.2.0
+```
+
+Experimentally, it is equivalent to using `MacOS, GEOS 3.8.1, GDAL 3.1.4, PROJ 6.3.1` with the following session info.
+```
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Catalina 10.15.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] sf_0.9-7     readxl_1.3.1
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.6         magrittr_2.0.1     units_0.6-7        tidyselect_1.1.0   R6_2.5.0          
+ [6] rlang_0.4.10       dplyr_1.0.3        tools_4.0.3        grid_4.0.3         KernSmooth_2.23-17
+[11] e1071_1.7-4        DBI_1.1.1          ellipsis_0.3.1     class_7.3-17       assertthat_0.2.1  
+[16] tibble_3.0.5       lifecycle_0.2.0    crayon_1.3.4       purrr_0.3.4        vctrs_0.3.6       
+[21] glue_1.4.2         compiler_4.0.3     pillar_1.4.7       cellranger_1.1.0   generics_0.1.0    
+[26] classInt_0.4-3     pkgconfig_2.0.3   
 ```
 
 ## References
