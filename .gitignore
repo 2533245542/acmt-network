@@ -1,8 +1,11 @@
 ./examples/
-documentation_*
-src/app/workspace/testing/
-src/app/workspace/ACMT
-src/app/workspace/external_data
+./documentation_*
+./src/app/workspace/testing/
+./src/app/workspace/ACMT
+./src/app/workspace/external_data
+
+./documentation_development.md
+./documentation_from_docker_to_network.md
 
 # added for v0.0.3
-src/app/workspace/tests/development_tests.md
+./src/app/workspace/tests/development_tests.md
