@@ -3,6 +3,7 @@
 ./src/app/workspace/testing/
 ./src/app/workspace/ACMT
 ./src/app/workspace/external_data
+./src/app/workspace/ACMT/
 
 ./documentation_development.md
 ./documentation_from_docker_to_network.md
