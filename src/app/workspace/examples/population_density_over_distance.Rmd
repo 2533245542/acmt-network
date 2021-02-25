@@ -1,0 +1,233 @@
+---
+title: "ACMT Example: Population density over distance"
+author: "Weipeng Zhou"
+date: "2/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# knit this file with the working directory of "workspace/" instead of "workspace/examples"
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_knit$set(root.dir = '../')
+```
+
+## Introduction
+Automatic Context Measurement Tool (ACMT) is a convenient tool for studying neighbourhoods in the United States. Based on the user-provided address and radius, ACMT locates a geographical area and outputs context measurements (population, education level, commute time, etc.) for the area. ACMT is easy to install, highly reproducible and works consistently across computer platforms.
+
+There are various ways of using ACMT and here we show one example -- 5-city comparison of population density decay as function of distance from City Hall.
+
+We use ACMT to get population densities for 5 cities (Seattle, Los Angeles, Chicago, New York and Boston) over 5 radiuses (1000, 2000, 3000, 4000, 5000). We consider the center of a city to be the location of its City Hall. After getting the densities, we make a plot of density over radius, categoried by cities; and we will be able to tell which city is the most populated across space.
+
+We take the following steps:
+
+1. Find the addresses of each city's City Hall  
+
+2. Use ACMT's geocoder to convert the addresses to coordinates  
+
+3. Use ACMT to get the population measurement for each coordinate over 5 radiuses (1000, 2000, 3000, 4000, 5000)  
+
+4. Calculate population density  
+
+5. Plot density vs. radius, categoried by cities
+
+## Example
+### 1. Find the addresses of each city's City Hall
+We have gathered the City Hall addresses for Seattle, Los Angeles, Chicago, New York and Boston from Google.
+
+```{r, results = 'hide'}
+source("RefreshAPIKey.R")
+source("GeocoderACMT.R")
+
+library(ggplot2)
+city_hall_to_address_list <- list(
+  seattle_city_hall="600 4th Ave, Seattle, WA 98104",
+  los_angeles_city_hall="200 N Spring St, Los Angeles, CA 90012",
+  chicago_city_hall="121 N LaSalle St, Chicago, IL 60602",
+  new_york_city_hall="City Hall Park, New York, NY 10007",
+  boston_city_hall="1 City Hall Square #500, Boston, MA 02201"
+)
+```
+
+### 2. Use ACMT's geocoder to convert the addresses to coordinates
+ACMT comes with a handy geocoder that converts addresses to latitude/longtitude coordinates. We check if geocoder is available in the version of ACMT you installed; if it is not available, we use the pre-computed coordinates.
+
+```{r, results='hide'}
+convert_address_to_lat_long <- function (city_hall_to_address_list) { # function to get get lat/long for each address
+  city_hall_to_lat_long_list <- vector(mode="list", length=length(city_hall_to_address_list))
+  names(city_hall_to_lat_long_list) <- names(city_hall_to_address_list)
+  for (name in names(city_hall_to_address_list)){
+    city_hall_to_lat_long_list[[name]] <- geocode(city_hall_to_address_list[[name]])
+  }
+  return(city_hall_to_lat_long_list)
+}
+```
+
+```{r, results='hide'}
+# is geocoder available?
+geocoder_is_available <- FALSE
+tryCatch({  # note that codes in try is not inside a new function, just treat it as normal R code
+  geocode("1959 NE Pacific Street, Seattle, WA 98195")
+  geocoder_is_available <- TRUE
+}, error = function(condition) {  # note that in error handler, the codes is inside a new function; this is why we need <<- for assigning acs_var_names
+  print(condition$message)
+  print("Geocoder not available: using stored address to lat/long mappings instead")
+})
+
+city_hall_to_lat_long_list <- NULL
+# call geocoder if available, use hard coded info otherwise
+if (geocoder_is_available) {
+  city_hall_to_lat_long_list <- convert_address_to_lat_long(city_hall_to_address_list)
+} else {
+  city_hall_to_lat_long_list <- list(
+    seattle_city_hall=list(latitude=47.60328, longitude=-122.3302),
+    los_angeles_city_hall=list(latitude=34.05397, longitude=-118.2436),
+    chicago_city_hall=list(latitude=41.88334, longitude=-87.63229),
+    new_york_city_hall=list(latitude=40.66392, longitude=-73.93835),
+    boston_city_hall=list(latitude=42.35773, longitude=-71.05919)
+  )
+}
+```
+
+```{r}
+print(city_hall_to_lat_long_list[1:2])
+```
+
+### 3. Use ACMT to get the population measurement for each coordinate over 5 radiuses (1000, 2000, 3000, 4000, 5000)
+We create a function for querying ACMT measurements for a list of coordinates and radiuses. We are interested in the variable `total_pop_count`.
+
+```{r, results='hide'}
+# function to get the environmental measures for the variables we are intersted
+get_variable_measures_from_acmt <- function (city_hall_to_lat_long_list, radius_vector, year, names_of_variable_to_get, external_data_name_to_info_list=NULL) {
+  city_hall_to_distance_to_variable_to_measures_list <- vector(mode="list", length=length(city_hall_to_lat_long_list))
+  names(city_hall_to_distance_to_variable_to_measures_list) <- names(city_hall_to_lat_long_list)
+
+  for(city_hall in names(city_hall_to_distance_to_variable_to_measures_list)) {
+    distance_to_variable_to_measures_list <- vector(mode="list", length=length(radius_vector))
+    names(distance_to_variable_to_measures_list) <- as.character(radius_vector)
+    for (distance in radius_vector) {
+      print(city_hall)
+      print(distance)
+      # get lat/long
+      latitude <- city_hall_to_lat_long_list[[city_hall]]$latitude
+      longitude <- city_hall_to_lat_long_list[[city_hall]]$longitude
+
+      # get environmental measures for all variables
+      environmental_measures <- get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = distance, year=year, external_data_name_to_info_list=external_data_name_to_info_list)
+
+      # get environmental measures for the variables are interested
+      variable_to_measures_list <- vector(mode="list", length=length(names_of_variable_to_get))
+      names(variable_to_measures_list) <- names_of_variable_to_get
+      for (name_of_variable in names_of_variable_to_get) {
+        value_of_variable <- environmental_measures[environmental_measures$names == name_of_variable, ]$values  # 66370.01, seattle, r=2000, year=2017
+        variable_to_measures_list[[name_of_variable]] <- value_of_variable
+      }
+      #distance_to_variable_to_measures_list[[which(distance == radius_vector)]] <- variable_to_measures_list
+      distance_to_variable_to_measures_list[[as.character(distance)]] <- variable_to_measures_list
+    }
+    city_hall_to_distance_to_variable_to_measures_list[[city_hall]] <- distance_to_variable_to_measures_list
+  }
+  return(city_hall_to_distance_to_variable_to_measures_list)
+}
+```
+
+```{r, results='hide'}
+city_hall_to_lat_long_list <- city_hall_to_lat_long_list
+radius_vector <- c(1000, 2000, 3000, 4000, 5000)
+year <- 2017
+names_of_variable_to_get <- c("total_pop_count")
+
+start_time_get_variable_measures_from_acmt <- Sys.time()
+city_hall_to_distance_to_variable_to_measures_list <- get_variable_measures_from_acmt(city_hall_to_lat_long_list=city_hall_to_lat_long_list, radius_vector=radius_vector, year=year, names_of_variable_to_get=names_of_variable_to_get)
+end_time_get_variable_measures_from_acmt <- Sys.time()
+```
+
+```{r}
+print(city_hall_to_distance_to_variable_to_measures_list[1:2])
+print("Between start and end of getting ACMT measures: ")
+print(end_time_get_variable_measures_from_acmt - start_time_get_variable_measures_from_acmt)
+```
+
+### 4. Calculate population density
+We create a function for computing population density for the given radiues.
+
+```{r, results = 'hide'}
+add_density_measures <- function(city_hall_to_distance_to_variable_to_measures_list) {
+  city_hall_to_distance_to_variable_to_measures_with_population_density_list <- city_hall_to_distance_to_variable_to_measures_list  # R's way of making a deep copy
+  for (city_hall in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list)){
+    for(distance_character in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]])){
+      for(variable in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]])) {
+        if(variable == "total_pop_count"){  # add other "if" statements if you want to compute other measures
+          total_pop_count <- city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]][[variable]]
+          distance_numeric <- as.numeric(distance_character)
+          population_density <-  total_pop_count/(pi*distance_numeric^2)  # distance is radius
+          city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]][["population_density"]] <- population_density
+        }
+      }
+    }
+  }
+  return(city_hall_to_distance_to_variable_to_measures_with_population_density_list)
+}
+```
+
+```{r, results = 'hide'}
+city_hall_to_distance_to_variable_to_measures_with_population_density_list <- add_density_measures(city_hall_to_distance_to_variable_to_measures_list)
+```
+
+```{r}
+print(city_hall_to_distance_to_variable_to_measures_with_population_density_list[1:2])
+```
+
+### 5. Plot density vs. radius, categoried by cities
+We create a function for converting the data we have so far to `ggplot` friendly format. We then use `ggplot` to create our plot.
+
+```{r, results = 'hide'}
+convert_to_dataframe_for_plotting <- function (city_hall_to_distance_to_variable_to_measures_with_population_density_list) {
+  city_hall_vector <- c()
+  radius_vector <- c()
+  variable_vector <- c()
+  value_vector <- c()
+
+  for(city_hall in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list)){
+    for(distance_character in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]])){
+      for(variable in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]])){
+        city_hall_vector <- c(city_hall_vector, city_hall)
+        radius_vector <- c(radius_vector, as.numeric(distance_character))
+        variable_vector <- c(variable_vector, variable)
+        value_vector <- c(value_vector, city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]][[variable]])
+      }
+    }
+  }
+
+  dataframe_for_plotting <- data.frame(city_hall_vector, radius_vector, variable_vector, value_vector, stringsAsFactors=FALSE)
+  names(dataframe_for_plotting) <- c("city_hall", "distance", "variable", "value")
+  return(dataframe_for_plotting)
+}
+```
+
+```{r, results = 'hide'}
+dataframe_for_plotting <- convert_to_dataframe_for_plotting(city_hall_to_distance_to_variable_to_measures_with_population_density_list)
+```
+
+```{r}
+print(head(dataframe_for_plotting))
+```
+
+```{r}
+ggplot(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], aes(x=distance)) +
+        geom_line(aes(y=value, col=city_hall)) +
+        labs(y="population density (people/m^2)",
+             x="radius (m)")
+```
+
+## Results
+We see that New York has a much higher population density, and its density does not reduce much over distances.
+
+```{r, include=FALSE}
+##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
+## tests
+library(testthat)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", distance==2000)$value, 0.005281557)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", distance==3000)$value, 0.005563233)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", distance==1000)$value, 0.009057937)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", distance==5000)$value, 0.005571173)
+```
