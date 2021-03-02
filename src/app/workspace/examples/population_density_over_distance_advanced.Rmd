@@ -1,5 +1,5 @@
 ---
-title: 'ACMT Example: Population density over distance'
+title: 'ACMT Example: Population density over distance (advanced)'
 author: "Weipeng Zhou"
 date: "2/22/2021"
 output:
@@ -18,7 +18,7 @@ Automatic Context Measurement Tool (ACMT) is a convenient tool for studying neig
 
 There are various ways of using ACMT and here we show one example -- 5-city comparison of population density decay as function of distance from City Hall.
 
-We use ACMT to get population densities for 5 cities (Seattle, Los Angeles, Chicago, New York and Boston) over 5 radiuses (1000, 2000, 3000, 4000, 5000). We consider the center of a city to be the location of its City Hall. After getting the densities, we make a plot of density over radius, categoried by cities; and we will be able to tell which city is the most populated across space.
+We use ACMT to get population densities for 5 cities (Seattle, Los Angeles, Chicago, New York and Boston) over 5 radiuses (1000, 2000, 3000, 4000, 5000). We consider the center of a city to be the location of its City Hall. We compute the density using the land area within a region only. After getting the densities, we make a plot of density over radius, categoried by cities; and we will be able to tell which city is the most populated across space. We also explore the relationship between population density and national walkability index.
 
 We take the following steps:
 
@@ -26,11 +26,11 @@ We take the following steps:
 
 2. Use ACMT's geocoder to convert the addresses to coordinates  
 
-3. Use ACMT to get the population measurement for each coordinate over 5 radiuses (1000, 2000, 3000, 4000, 5000)  
+3. Use ACMT to get the population, land area and national walkability index measurement for each coordinate over 5 radiuses (1000, 2000, 3000, 4000, 5000)
 
-4. Calculate population density  
+4. Calculate population density
 
-5. Plot density vs. radius, categoried by cities
+5. Plot density vs. radius, categoried by cities, as well as vs. walkability index.
 
 ## Example
 ### 1. Find the addresses of each city's City Hall
@@ -91,7 +91,7 @@ if (geocoder_is_available) {
 ```
 
 ```{r}
-print(city_hall_to_lat_long_list[1:2])
+print(city_hall_to_lat_long_list[1])
 ```
 
 ### 3. Use ACMT to get the population measurement for each coordinate over 5 radiuses (1000, 2000, 3000, 4000, 5000)
@@ -136,16 +136,23 @@ get_variable_measures_from_acmt <- function (city_hall_to_lat_long_list, radius_
 city_hall_to_lat_long_list <- city_hall_to_lat_long_list
 radius_vector <- c(1000, 2000, 3000, 4000, 5000)
 year <- 2017
-names_of_variable_to_get <- c("total_pop_count")  # the name of the variable in ACMT's returned result
+names_of_variable_to_get <- c("total_pop_count", "AC_UNPR", "NatWalkInd")  # population, land area in acres, national walkability index
 codes_of_acs_variables_to_get <- c("B01001_001")  # speed up; ask ACMT to only query this variable from the ACS server to speed up computation; B01001_001 is population; check ACSColumns.csv for mappings between codes and variables.
+external_data_name_to_info_list <- list(  # provide info for getting walkability data; we took a shortcut here; see the tutorial of external data for detail
+        walkability=list(vector_of_expected_downloaded_file_name=NULL,
+                         download_file=NULL,
+                         process_file=NULL,
+                         geoid_type="Block Group"
+        )
+)
 
 start_time_get_variable_measures_from_acmt <- Sys.time()
-city_hall_to_radius_to_variable_to_measures_list <- get_variable_measures_from_acmt(city_hall_to_lat_long_list=city_hall_to_lat_long_list, radius_vector=radius_vector, year=year, names_of_variable_to_get=names_of_variable_to_get, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
+city_hall_to_radius_to_variable_to_measures_list <- get_variable_measures_from_acmt(city_hall_to_lat_long_list=city_hall_to_lat_long_list, radius_vector=radius_vector, year=year, names_of_variable_to_get=names_of_variable_to_get, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get, external_data_name_to_info_list=external_data_name_to_info_list)
 end_time_get_variable_measures_from_acmt <- Sys.time()
 ```
 
 ```{r}
-print(city_hall_to_radius_to_variable_to_measures_list[1])
+print(city_hall_to_radius_to_variable_to_measures_list[1:2])
 print("Between start and end of getting ACMT measures: ")
 print(end_time_get_variable_measures_from_acmt - start_time_get_variable_measures_from_acmt)
 ```
@@ -161,8 +168,8 @@ add_density_measures <- function(city_hall_to_radius_to_variable_to_measures_lis
       for(variable in names(city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]])) {
         if(variable == "total_pop_count"){  # add other "if" statements if you want to compute other measures
           total_pop_count <- city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]][[variable]]
-          radius_numeric <- as.numeric(radius_character)
-          population_density <-  total_pop_count/(pi*radius_numeric^2)
+          #radius_numeric <- as.numeric(radius_character)  # do not use radius
+          population_density <-  total_pop_count/(city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]][["AC_UNPR"]] * 4046.864798)
           city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]][["population_density"]] <- population_density
         }
       }
@@ -222,21 +229,30 @@ ggplot(dataframe_for_plotting[dataframe_for_plotting$variable == "population_den
              x="radius (m)")
 ```
 
+```{r}
+ggplot(dataframe_for_plotting[dataframe_for_plotting$variable == "NatWalkInd", ], aes(x=radius)) +
+        geom_line(aes(y=value, col=city_hall)) +
+        labs(y="national walkability index",
+             x="radius (m)")
+```
+
+
 ## Results
-We see that New York City has a much higher population density, and its density does not reduce much over radiuses.
+We see that New York City still has a much higher population density than others, but its density reduction is less drastic than we saw when not using land area to calculate population density. Also, because of the use of land area as denominator, the population density of all cities all increased, and LA increased the least because other cities have a higher proportion of water and thus benefits more from switching from using a circular area as denominator to using land area.
 
-However, this approach has a critical flaw. The population density is calculated by dividing the total population by a circular area. By doing so, we assume households are eventually distributed within the circular area. Nevertheless, this assumption can be problematic. For example, there is a significant amount of sea area near Seattle City Hall, and households are mostly in the land area. Thus, when calculating population density, the denominator should only be the land part of the circular area.
-
-The problem is, ACMT does not naively provide land area and we need to import external data into ACMT.
-
-In another example, we refine our analysis on population density and demonstrate how external data can be imported into ACMT. We show an example of importing National Walkability Index dataset, which includes land area data, into ACMT. We also include national walkability index in our analysis.
+Regarding to the walkability index, ACMT gets the walkabiltity index for a radius by summing the walkability index of each block in the area. We see New York City is again at the top. According to the definition of walability index, New York City has high mix of employment types and occupied housing, mix of employment types, street intersection density, and proportion of carpool workers (https://www.epa.gov/smartgrowth/smart-location-mapping#:~:text=National%20Walkability%20Index%20score.,results%20of%20indicator%20rank%20scores.&text=The%20mix%20of%20employment%20types%20and%20occupied%20housing.).
 
 ```{r, include=FALSE}
 ##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
 ## tests
 library(testthat)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.005281557)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.005563233)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.009057937)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.005571173)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.006724624113)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.006043467243)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.01101281183)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.0075403099)
+
+0.005281557
+0.005563233
+0.009057937
+0.005571173
 ```

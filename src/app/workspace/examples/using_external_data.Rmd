@@ -1,8 +1,10 @@
 ---
-title: "ACMT Example: Using external data"
+title: 'ACMT Example: Using external data'
 author: "Weipeng Zhou"
 date: "2/22/2021"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -118,11 +120,11 @@ external_data_name_to_info_list <- list(
                    geoid_type="Census Tract"
         )
 )
-context_measurements <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list)
+context_measurements <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 200, year=2013, external_data_name_to_info_list=external_data_name_to_info_list)
 ```
 
 ```{r}
-print(head(context_measurements[context_measurements$variable == "mRFEI", ]))
+print(filter(context_measurements, context_measurements$names == "mRFEI"))
 ```
 
 ```{r, include=FALSE}
@@ -131,7 +133,7 @@ library(testthat)
 ## tests
 expect_equal(dim(context_measurements), c(204, 2))
 expect_equal(context_measurements[204, 1], "mRFEI")
-expect_true(is.na(context_measurements[204, 2]))
+expect_equal(context_measurements[204, 2], 1.295134243)
 ```
 
 ## FAQ

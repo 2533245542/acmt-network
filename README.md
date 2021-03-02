@@ -64,6 +64,9 @@ If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, added f
 
 `external_data_name_to_info_list=external_data_name_to_info_list`: Other than ACS measures, users can also provide context measures of their choice. This requires passing an `external_data_name_to_info_list`. `external_data_name_to_info_list` let ACMT know how to download and process the user-provided context measures to the ACMT-like format. 
 
+`codes_of_acs_variables_to_get`: (optional) for speeding up ACMT run time; ask ACMT to only query this variable from the ACS server to speed up computation; B01001_001 is population; check ACSColumns.csv for mappings between codes and variables.
+
+
 
 Below is an example of a `external_data_name_to_info_list` that uses CDC's Food Environment Index (mRFEI) as ACMT's additional context measures. 
 

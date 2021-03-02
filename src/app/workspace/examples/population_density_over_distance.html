@@ -477,22 +477,22 @@ if (geocoder_is_available) {
 <h3>3. Use ACMT to get the population measurement for each coordinate over 5 radiuses (1000, 2000, 3000, 4000, 5000)</h3>
 <p>We create a function for querying ACMT measurements for a list of coordinates and radiuses. We are interested in the variable <code>total_pop_count</code>.</p>
 <pre class="r"><code># function to get the environmental measures for the variables we are intersted
-get_variable_measures_from_acmt &lt;- function (city_hall_to_lat_long_list, radius_vector, year, names_of_variable_to_get, external_data_name_to_info_list=NULL) {
-  city_hall_to_distance_to_variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(city_hall_to_lat_long_list))
-  names(city_hall_to_distance_to_variable_to_measures_list) &lt;- names(city_hall_to_lat_long_list)
+get_variable_measures_from_acmt &lt;- function (city_hall_to_lat_long_list, radius_vector, year, names_of_variable_to_get, external_data_name_to_info_list=NULL, codes_of_acs_variables_to_get=NA) {
+  city_hall_to_radius_to_variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(city_hall_to_lat_long_list))
+  names(city_hall_to_radius_to_variable_to_measures_list) &lt;- names(city_hall_to_lat_long_list)
 
-  for(city_hall in names(city_hall_to_distance_to_variable_to_measures_list)) {
-    distance_to_variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(radius_vector))
-    names(distance_to_variable_to_measures_list) &lt;- as.character(radius_vector)
-    for (distance in radius_vector) {
+  for(city_hall in names(city_hall_to_radius_to_variable_to_measures_list)) {
+    radius_to_variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(radius_vector))
+    names(radius_to_variable_to_measures_list) &lt;- as.character(radius_vector)
+    for (radius in radius_vector) {
       print(city_hall)
-      print(distance)
+      print(radius)
       # get lat/long
       latitude &lt;- city_hall_to_lat_long_list[[city_hall]]$latitude
       longitude &lt;- city_hall_to_lat_long_list[[city_hall]]$longitude
 
       # get environmental measures for all variables
-      environmental_measures &lt;- get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = distance, year=year, external_data_name_to_info_list=external_data_name_to_info_list)
+      environmental_measures &lt;- get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, external_data_name_to_info_list=external_data_name_to_info_list, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
 
       # get environmental measures for the variables are interested
       variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(names_of_variable_to_get))
@@ -501,215 +501,189 @@ get_variable_measures_from_acmt &lt;- function (city_hall_to_lat_long_list, radi
         value_of_variable &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  # 66370.01, seattle, r=2000, year=2017
         variable_to_measures_list[[name_of_variable]] &lt;- value_of_variable
       }
-      #distance_to_variable_to_measures_list[[which(distance == radius_vector)]] &lt;- variable_to_measures_list
-      distance_to_variable_to_measures_list[[as.character(distance)]] &lt;- variable_to_measures_list
+      #radius_to_variable_to_measures_list[[which(radius == radius_vector)]] &lt;- variable_to_measures_list
+      radius_to_variable_to_measures_list[[as.character(radius)]] &lt;- variable_to_measures_list
     }
-    city_hall_to_distance_to_variable_to_measures_list[[city_hall]] &lt;- distance_to_variable_to_measures_list
+    city_hall_to_radius_to_variable_to_measures_list[[city_hall]] &lt;- radius_to_variable_to_measures_list
   }
-  return(city_hall_to_distance_to_variable_to_measures_list)
+  return(city_hall_to_radius_to_variable_to_measures_list)
 }</code></pre>
 <pre class="r"><code>city_hall_to_lat_long_list &lt;- city_hall_to_lat_long_list
 radius_vector &lt;- c(1000, 2000, 3000, 4000, 5000)
 year &lt;- 2017
-names_of_variable_to_get &lt;- c(&quot;total_pop_count&quot;)
+names_of_variable_to_get &lt;- c(&quot;total_pop_count&quot;)  # the name of the variable in ACMT&#39;s returned result
+codes_of_acs_variables_to_get &lt;- c(&quot;B01001_001&quot;)  # speed up; ask ACMT to only query this variable from the ACS server to speed up computation; B01001_001 is population; check ACSColumns.csv for mappings between codes and variables.
 
 start_time_get_variable_measures_from_acmt &lt;- Sys.time()
-city_hall_to_distance_to_variable_to_measures_list &lt;- get_variable_measures_from_acmt(city_hall_to_lat_long_list=city_hall_to_lat_long_list, radius_vector=radius_vector, year=year, names_of_variable_to_get=names_of_variable_to_get)
+city_hall_to_radius_to_variable_to_measures_list &lt;- get_variable_measures_from_acmt(city_hall_to_lat_long_list=city_hall_to_lat_long_list, radius_vector=radius_vector, year=year, names_of_variable_to_get=names_of_variable_to_get, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
 end_time_get_variable_measures_from_acmt &lt;- Sys.time()</code></pre>
-<pre class="r"><code>print(city_hall_to_distance_to_variable_to_measures_list[1:2])</code></pre>
+<pre class="r"><code>print(city_hall_to_radius_to_variable_to_measures_list[1])</code></pre>
 <pre><code>## $seattle_city_hall
 ## $seattle_city_hall$`1000`
 ## $seattle_city_hall$`1000`$total_pop_count
-## [1] 19913.15
+## [1] 19913.15419
 ## 
 ## 
 ## $seattle_city_hall$`2000`
 ## $seattle_city_hall$`2000`$total_pop_count
-## [1] 66370.01
+## [1] 66370.00762
 ## 
 ## 
 ## $seattle_city_hall$`3000`
 ## $seattle_city_hall$`3000`$total_pop_count
-## [1] 124443
+## [1] 124443.0068
 ## 
 ## 
 ## $seattle_city_hall$`4000`
 ## $seattle_city_hall$`4000`$total_pop_count
-## [1] 171655.8
+## [1] 171655.8143
 ## 
 ## 
 ## $seattle_city_hall$`5000`
 ## $seattle_city_hall$`5000`$total_pop_count
-## [1] 212616
-## 
-## 
-## 
-## $los_angeles_city_hall
-## $los_angeles_city_hall$`1000`
-## $los_angeles_city_hall$`1000`$total_pop_count
-## [1] 20238.99
-## 
-## 
-## $los_angeles_city_hall$`2000`
-## $los_angeles_city_hall$`2000`$total_pop_count
-## [1] 75561.93
-## 
-## 
-## $los_angeles_city_hall$`3000`
-## $los_angeles_city_hall$`3000`$total_pop_count
-## [1] 157296.7
-## 
-## 
-## $los_angeles_city_hall$`4000`
-## $los_angeles_city_hall$`4000`$total_pop_count
-## [1] 303411.8
-## 
-## 
-## $los_angeles_city_hall$`5000`
-## $los_angeles_city_hall$`5000`$total_pop_count
-## [1] 490890.9</code></pre>
+## [1] 212616.0304</code></pre>
 <pre class="r"><code>print(&quot;Between start and end of getting ACMT measures: &quot;)</code></pre>
 <pre><code>## [1] &quot;Between start and end of getting ACMT measures: &quot;</code></pre>
 <pre class="r"><code>print(end_time_get_variable_measures_from_acmt - start_time_get_variable_measures_from_acmt)</code></pre>
-<pre><code>## Time difference of 37.83095 mins</code></pre>
+<pre><code>## Time difference of 13.21731448 mins</code></pre>
 </div>
 <div id="calculate-population-density" class="section level3">
 <h3>4. Calculate population density</h3>
 <p>We create a function for computing population density for the given radiues.</p>
-<pre class="r"><code>add_density_measures &lt;- function(city_hall_to_distance_to_variable_to_measures_list) {
-  city_hall_to_distance_to_variable_to_measures_with_population_density_list &lt;- city_hall_to_distance_to_variable_to_measures_list  # R&#39;s way of making a deep copy
-  for (city_hall in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list)){
-    for(distance_character in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]])){
-      for(variable in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]])) {
+<pre class="r"><code>add_density_measures &lt;- function(city_hall_to_radius_to_variable_to_measures_list) {
+  city_hall_to_radius_to_variable_to_measures_with_population_density_list &lt;- city_hall_to_radius_to_variable_to_measures_list  # R&#39;s way of making a deep copy
+  for (city_hall in names(city_hall_to_radius_to_variable_to_measures_with_population_density_list)){
+    for(radius_character in names(city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]])){
+      for(variable in names(city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]])) {
         if(variable == &quot;total_pop_count&quot;){  # add other &quot;if&quot; statements if you want to compute other measures
-          total_pop_count &lt;- city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]][[variable]]
-          distance_numeric &lt;- as.numeric(distance_character)
-          population_density &lt;-  total_pop_count/(pi*distance_numeric^2)  # distance is radius
-          city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]][[&quot;population_density&quot;]] &lt;- population_density
+          total_pop_count &lt;- city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]][[variable]]
+          radius_numeric &lt;- as.numeric(radius_character)
+          population_density &lt;-  total_pop_count/(pi*radius_numeric^2)
+          city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]][[&quot;population_density&quot;]] &lt;- population_density
         }
       }
     }
   }
-  return(city_hall_to_distance_to_variable_to_measures_with_population_density_list)
+  return(city_hall_to_radius_to_variable_to_measures_with_population_density_list)
 }</code></pre>
-<pre class="r"><code>city_hall_to_distance_to_variable_to_measures_with_population_density_list &lt;- add_density_measures(city_hall_to_distance_to_variable_to_measures_list)</code></pre>
-<pre class="r"><code>print(city_hall_to_distance_to_variable_to_measures_with_population_density_list[1:2])</code></pre>
+<pre class="r"><code>city_hall_to_radius_to_variable_to_measures_with_population_density_list &lt;- add_density_measures(city_hall_to_radius_to_variable_to_measures_list)</code></pre>
+<pre class="r"><code>print(city_hall_to_radius_to_variable_to_measures_with_population_density_list[1:2])</code></pre>
 <pre><code>## $seattle_city_hall
 ## $seattle_city_hall$`1000`
 ## $seattle_city_hall$`1000`$total_pop_count
-## [1] 19913.15
+## [1] 19913.15419
 ## 
 ## $seattle_city_hall$`1000`$population_density
-## [1] 0.006338554
+## [1] 0.006338553844
 ## 
 ## 
 ## $seattle_city_hall$`2000`
 ## $seattle_city_hall$`2000`$total_pop_count
-## [1] 66370.01
+## [1] 66370.00762
 ## 
 ## $seattle_city_hall$`2000`$population_density
-## [1] 0.005281557
+## [1] 0.005281557393
 ## 
 ## 
 ## $seattle_city_hall$`3000`
 ## $seattle_city_hall$`3000`$total_pop_count
-## [1] 124443
+## [1] 124443.0068
 ## 
 ## $seattle_city_hall$`3000`$population_density
-## [1] 0.004401271
+## [1] 0.004401271037
 ## 
 ## 
 ## $seattle_city_hall$`4000`
 ## $seattle_city_hall$`4000`$total_pop_count
-## [1] 171655.8
+## [1] 171655.8143
 ## 
 ## $seattle_city_hall$`4000`$population_density
-## [1] 0.003414984
+## [1] 0.00341498392
 ## 
 ## 
 ## $seattle_city_hall$`5000`
 ## $seattle_city_hall$`5000`$total_pop_count
-## [1] 212616
+## [1] 212616.0304
 ## 
 ## $seattle_city_hall$`5000`$population_density
-## [1] 0.002707111
+## [1] 0.002707111377
 ## 
 ## 
 ## 
 ## $los_angeles_city_hall
 ## $los_angeles_city_hall$`1000`
 ## $los_angeles_city_hall$`1000`$total_pop_count
-## [1] 20238.99
+## [1] 20238.99139
 ## 
 ## $los_angeles_city_hall$`1000`$population_density
-## [1] 0.006442271
+## [1] 0.006442271046
 ## 
 ## 
 ## $los_angeles_city_hall$`2000`
 ## $los_angeles_city_hall$`2000`$total_pop_count
-## [1] 75561.93
+## [1] 75561.93326
 ## 
 ## $los_angeles_city_hall$`2000`$population_density
-## [1] 0.006013028
+## [1] 0.006013027594
 ## 
 ## 
 ## $los_angeles_city_hall$`3000`
 ## $los_angeles_city_hall$`3000`$total_pop_count
-## [1] 157296.7
+## [1] 157296.7153
 ## 
 ## $los_angeles_city_hall$`3000`$population_density
-## [1] 0.005563233
+## [1] 0.005563233283
 ## 
 ## 
 ## $los_angeles_city_hall$`4000`
 ## $los_angeles_city_hall$`4000`$total_pop_count
-## [1] 303411.8
+## [1] 303411.8262
 ## 
 ## $los_angeles_city_hall$`4000`$population_density
-## [1] 0.006036186
+## [1] 0.006036186491
 ## 
 ## 
 ## $los_angeles_city_hall$`5000`
 ## $los_angeles_city_hall$`5000`$total_pop_count
-## [1] 490890.9
+## [1] 490890.9248
 ## 
 ## $los_angeles_city_hall$`5000`$population_density
-## [1] 0.006250217</code></pre>
+## [1] 0.006250217376</code></pre>
 </div>
 <div id="plot-density-vs.-radius-categoried-by-cities" class="section level3">
 <h3>5. Plot density vs. radius, categoried by cities</h3>
 <p>We create a function for converting the data we have so far to <code>ggplot</code> friendly format. We then use <code>ggplot</code> to create our plot.</p>
-<pre class="r"><code>convert_to_dataframe_for_plotting &lt;- function (city_hall_to_distance_to_variable_to_measures_with_population_density_list) {
+<pre class="r"><code>convert_to_dataframe_for_plotting &lt;- function (city_hall_to_radius_to_variable_to_measures_with_population_density_list) {
   city_hall_vector &lt;- c()
   radius_vector &lt;- c()
   variable_vector &lt;- c()
   value_vector &lt;- c()
 
-  for(city_hall in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list)){
-    for(distance_character in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]])){
-      for(variable in names(city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]])){
+  for(city_hall in names(city_hall_to_radius_to_variable_to_measures_with_population_density_list)){
+    for(radius_character in names(city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]])){
+      for(variable in names(city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]])){
         city_hall_vector &lt;- c(city_hall_vector, city_hall)
-        radius_vector &lt;- c(radius_vector, as.numeric(distance_character))
+        radius_vector &lt;- c(radius_vector, as.numeric(radius_character))
         variable_vector &lt;- c(variable_vector, variable)
-        value_vector &lt;- c(value_vector, city_hall_to_distance_to_variable_to_measures_with_population_density_list[[city_hall]][[distance_character]][[variable]])
+        value_vector &lt;- c(value_vector, city_hall_to_radius_to_variable_to_measures_with_population_density_list[[city_hall]][[radius_character]][[variable]])
       }
     }
   }
 
   dataframe_for_plotting &lt;- data.frame(city_hall_vector, radius_vector, variable_vector, value_vector, stringsAsFactors=FALSE)
-  names(dataframe_for_plotting) &lt;- c(&quot;city_hall&quot;, &quot;distance&quot;, &quot;variable&quot;, &quot;value&quot;)
+  names(dataframe_for_plotting) &lt;- c(&quot;city_hall&quot;, &quot;radius&quot;, &quot;variable&quot;, &quot;value&quot;)
   return(dataframe_for_plotting)
 }</code></pre>
-<pre class="r"><code>dataframe_for_plotting &lt;- convert_to_dataframe_for_plotting(city_hall_to_distance_to_variable_to_measures_with_population_density_list)</code></pre>
+<pre class="r"><code>dataframe_for_plotting &lt;- convert_to_dataframe_for_plotting(city_hall_to_radius_to_variable_to_measures_with_population_density_list)</code></pre>
 <pre class="r"><code>print(head(dataframe_for_plotting))</code></pre>
-<pre><code>##           city_hall distance           variable        value
-## 1 seattle_city_hall     1000    total_pop_count 1.991315e+04
-## 2 seattle_city_hall     1000 population_density 6.338554e-03
-## 3 seattle_city_hall     2000    total_pop_count 6.637001e+04
-## 4 seattle_city_hall     2000 population_density 5.281557e-03
-## 5 seattle_city_hall     3000    total_pop_count 1.244430e+05
-## 6 seattle_city_hall     3000 population_density 4.401271e-03</code></pre>
-<pre class="r"><code>ggplot(dataframe_for_plotting[dataframe_for_plotting$variable == &quot;population_density&quot;, ], aes(x=distance)) +
+<pre><code>##           city_hall radius           variable           value
+## 1 seattle_city_hall   1000    total_pop_count 1.991315419e+04
+## 2 seattle_city_hall   1000 population_density 6.338553844e-03
+## 3 seattle_city_hall   2000    total_pop_count 6.637000762e+04
+## 4 seattle_city_hall   2000 population_density 5.281557393e-03
+## 5 seattle_city_hall   3000    total_pop_count 1.244430068e+05
+## 6 seattle_city_hall   3000 population_density 4.401271037e-03</code></pre>
+<pre class="r"><code>ggplot(dataframe_for_plotting[dataframe_for_plotting$variable == &quot;population_density&quot;, ], aes(x=radius)) +
         geom_line(aes(y=value, col=city_hall)) +
         labs(y=&quot;population density (people/m^2)&quot;,
              x=&quot;radius (m)&quot;)</code></pre>
@@ -718,7 +692,10 @@ end_time_get_variable_measures_from_acmt &lt;- Sys.time()</code></pre>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
-<p>We see that New York has a much higher population density, and its density does not reduce much over distances.</p>
+<p>We see that New York City has a much higher population density, and its density does not reduce much over radiuses.</p>
+<p>However, this approach has a critical flaw. The population density is calculated by dividing the total population by a circular area. By doing so, we assume households are eventually distributed within the circular area. Nevertheless, this assumption can be problematic. For example, there is a significant amount of sea area near Seattle City Hall, and households are mostly in the land area. Thus, when calculating population density, the denominator should only be the land part of the circular area.</p>
+<p>The problem is, ACMT does not naively provide land area and we need to import external data into ACMT.</p>
+<p>In another example, we refine our analysis on population density and demonstrate how external data can be imported into ACMT. We show an example of importing National Walkability Index dataset, which includes land area data, into ACMT. We also include national walkability index in our analysis.</p>
 </div>
 
 

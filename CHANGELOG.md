@@ -29,9 +29,17 @@ v0.0.5
 
 v0.0.6
 =====
-* Add example.
+* Added example for population density and importing external data.
+
+v0.0.7
+=====
+* get_acs has intermittent errors, handled
+* TODO one more example usign both external and internal data
+* TODO updated populatino density example with faster implementation
+* TODO fixed external data example
 
 Future
 =====
 * Verify acmt-network on existing work
 * Write user instructions
+* allowed ACMT to select a set of variables for external data to interpolate as well (currently only supports core data)

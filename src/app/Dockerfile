@@ -12,3 +12,4 @@ RUN yes | apt-get install libgdal-dev
 RUN R -e "install.packages(c('geosphere', 'lwgeom', 'raster', 'sf', 'tidycensus', 'tigris', 'units', 'USAboundaries', 'reshape2'))"
 #RUN R -e "install.packages(c('tidycensus', 'USAboundaries', 'reshape2'))"
 RUN yes | apt-get install curl
+RUN yes | apt-get install fish

@@ -258,7 +258,7 @@ get_acs_results_for_available_variables <- function (acs_var_names, state, count
   return(acs_results)
 }
 
-get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, geoid_type = "Census Tract",fill_missing_GEOID_with_zero=FALSE) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
+get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, geoid_type = "Census Tract",fill_missing_GEOID_with_zero=FALSE, include_land_and_water_area=FALSE) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
   using_external_data <- FALSE
   names_of_interested_variables <- acs_var_names   # variable names we want to output
 
@@ -302,7 +302,7 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
         )
       }
       if (length(unique(geoid_to_variable_name_to_variable_value_dataframe$variable)) < length(names_of_interested_variables)) {   # if missing variables were pruned, update names_of_interested_variables to let it only include the available variables
-        names_of_interested_variables <- names_of_interested_variables[names_of_interested_variables %in% geoid_to_variable_name_to_variable_value_dataframe$variable]  # not assigning acs_results$variable directly to names_of_interested_variables because although they are the same, the order of variables is different due to calling get_acs
+        names_of_interested_variables <- names_of_interested_variables[names_of_interested_variables %in% geoid_to_variable_name_to_variable_value_dataframe$variable]  # not assigning acs_results$variable directly to names_of_interested_variables because although they are the same, the order of variables is different due to calling get_acs; in short, we want to keep the order of the variables to pass tests
       }
     }
 
@@ -311,7 +311,15 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
 
     columns_of_variable_value_to_geometry_dataframe <- left_join(x=geoid_to_geometry_dataframe, y=geoid_to_columns_of_variable_value_dataframe, by="GEOID")  # GEOID is used for matching features to geometries; thus in ACMT, only the GEOID between census tract and features should match
     columns_of_variable_value_to_geometry_dataframe_list[[i]]  <- columns_of_variable_value_to_geometry_dataframe[, names_of_interested_variables]
+    if(include_land_and_water_area && !using_external_data){  # can only include land and water during retreving ACS vars; in other words, land and water only comes with ACS
+      columns_of_variable_value_to_geometry_dataframe_list[[i]]  <- columns_of_variable_value_to_geometry_dataframe[, c("ALAND", "AWATER", names_of_interested_variables)]  # TODO
+    }
   }
+
+  if(include_land_and_water_area && !using_external_data) {
+    names_of_interested_variables <- c("ALAND", "AWATER", names_of_interested_variables)  # TODO
+  }
+
   if (length(columns_of_variable_value_to_geometry_dataframe_list) < 1) {
     message("get_count_variable_for_lat_long: No block group data returned from census")
   }
@@ -322,35 +330,34 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
   }
 
   # calculated weighted variable values for the point buffer
-
   values_of_interested_variables <- lapply(names_of_interested_variables, function(x) { suppressWarnings(st_interpolate_aw(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe[, x], point_buffer, extensive=T)[[x]])})
   return(data.frame(name=names_of_interested_variables, estimate=unlist(values_of_interested_variables)))
-
-  # weighted_varaible_value_to_point_buffer_geometry_dataframe <- st_interpolate_aw(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe, point_buffer, extensive=T)
-  # weighted_variable_values_of_point_buffer <- unlist(st_set_geometry(weighted_varaible_value_to_point_buffer_geometry_dataframe, value = NULL))  # take away geometry
-  # return(data.frame(name=names(weighted_variable_values_of_point_buffer), estimate=weighted_variable_values_of_point_buffer))
 }
 
-
-get_acs_standard_columns <- function(year=2017, codes_of_variables_to_get=NA) {
+get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA) {
   # To do: cache this
   print("Read ACS columns")
   acs_columns <- read.csv("ACMT/ACSColumns.csv")
 
-  if (!is.na(codes_of_variables_to_get[1])) {  # filter acs_columns by provided variables
-    acs_columns <- acs_columns[acs_columns$acs_col %in% codes_of_variables_to_get, ]
+  if (!is.na(codes_of_acs_variables_to_get[1])) {  # filter acs_columns by provided variables
+    acs_columns <- acs_columns[acs_columns$acs_col %in% codes_of_acs_variables_to_get, ]
   }
 
-  acs_varnames <- acs_columns$acs_col
+  acs_varnames <- acs_columns$acs_col   # in fact ACS variable codes
   print(acs_varnames)
   names(acs_varnames) <- acs_columns$var_name
-  acs_proportion_names <- paste(acs_columns$var_name[acs_columns$universe_col != ""], "proportion", sep="_")
-  acs_count_names <- paste(acs_columns$var_name, "count", sep="_")
-  acs_proportion_pretty_names <- acs_columns$pretty_name_proportion[acs_columns$universe_col != ""]
-  acs_count_pretty_names <- acs_columns$pretty_name_count
-  all_var_cols <- c(as.character(acs_columns$acs_col), as.character(acs_columns$universe_col))
+
+  acs_count_names <- paste(acs_columns$var_name, "count", sep="_")  # all variables have counts
+  if (length(acs_columns$var_name[acs_columns$universe_col != ""]) == 0) {   # prevent having something exactly like "_proportion"
+    acs_proportion_names <- character(0)
+  } else {
+    acs_proportion_names <- paste(acs_columns$var_name[acs_columns$universe_col != ""], "proportion", sep="_")   # only non-universal variables have proportions
+  }
+  acs_count_pretty_names <- acs_columns$pretty_name_count  # all have pretty name for count
+  acs_proportion_pretty_names <- acs_columns$pretty_name_proportion[acs_columns$universe_col != ""]  # only non-universal varaibles have pretty name for proportion
+  all_var_cols <- c(as.character(acs_columns$acs_col), as.character(acs_columns$universe_col))  #  acs_columns$acs_col is a superset of acs_columns$universe_col
   unique_var_cols <- unique(all_var_cols)
-  unique_var_cols <- unique_var_cols[unique_var_cols != ""]
+  unique_var_cols <- unique_var_cols[unique_var_cols != ""]  # all variable codes
   return(list(acs_proportion_names=acs_proportion_names,
               acs_count_names=acs_count_names,
               acs_unique_var_cols=unique_var_cols,
@@ -362,7 +369,7 @@ get_acs_standard_columns <- function(year=2017, codes_of_variables_to_get=NA) {
 
 
 # TODO: not handling margin of error correctly at all
-get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE) {
+get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, codes_of_acs_variables_to_get=NA, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE, include_land_and_water_area=FALSE) {
   # section: inspect input
   if (year < 2010 | year > 2019) {
     stop("Year must be in between 2010 and 2019 (inclusive)")
@@ -372,16 +379,21 @@ get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, externa
   }
 
   # section: get ACS context measurements
-  acs_info <- get_acs_standard_columns(year=year)
+  acs_info <- get_acs_standard_columns(year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
   acs_columns <- acs_info$acs_columns
   acs_proportion_names <- acs_info$acs_proportion_names
   acs_count_names <- acs_info$acs_count_names
   acs_unique_var_cols <- acs_info$acs_unique_var_cols
-  acs_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=acs_unique_var_cols, year=year, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero)
+  acs_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=acs_unique_var_cols, year=year, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, include_land_and_water_area=include_land_and_water_area)
 
   acs_unique_var_cols_contains_missing_variables <- (length(acs_count_results$name) < length(acs_unique_var_cols))
+
+  if(include_land_and_water_area) {  # TODO exclude the two extra variables(ALAND, AWATER) when checking if some ACS variables are missing for this year
+    acs_unique_var_cols_contains_missing_variables <- (length(acs_count_results$name) - 2 < length(acs_unique_var_cols))
+  }
+
   if (acs_unique_var_cols_contains_missing_variables) {  # get_acs_standard_columns on only the non-missing variables
-    acs_info <- get_acs_standard_columns(year=year, codes_of_variables_to_get=acs_count_results$name)
+    acs_info <- get_acs_standard_columns(year=year, codes_of_acs_variables_to_get=acs_count_results$name)
     acs_columns <- acs_info$acs_columns
     acs_proportion_names <- acs_info$acs_proportion_names
     acs_count_names <- acs_info$acs_count_names
@@ -407,6 +419,10 @@ get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, externa
   }
 
   context_measurement_dataframe <- data.frame(names=c(acs_proportion_names, acs_count_names), values=c(proportion_vals, count_vals))
+  if (include_land_and_water_area) {  # Add AWATER and ALAND land_area_square_meter, water_area_square_meter
+    context_measurement_dataframe[nrow(context_measurement_dataframe) + 1,] <- list("land_area_square_meter", acs_count_results$estimate[acs_count_results$name == "ALAND"])  # append a row
+    context_measurement_dataframe[nrow(context_measurement_dataframe) + 1,] <- list("water_area_square_meter", acs_count_results$estimate[acs_count_results$name == "AWATER"])
+  }
 
   if(!is.null(external_data_name_to_info_list)) {
     external_data_list <- load_external_data(external_data_name_to_info_list)

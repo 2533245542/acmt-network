@@ -182,9 +182,9 @@ test_that("Checking get_count_variable_for_lat_long. Testing result corretness."
 
 test_that("Checking get_acs_standard_columns(). Testing retreived context measurements' corretness.", {
   ## assert codes_of_variables_to_get works as expected
-  expect_equal(nrow(get_acs_standard_columns(year=2010, codes_of_variables_to_get=c("B01001_010", "B01001_011", "B01001_012"))$acs_columns), 3)# shoud contain only 3 variables
+  expect_equal(nrow(get_acs_standard_columns(year=2010, codes_of_acs_variables_to_get=c("B01001_010", "B01001_011", "B01001_012"))$acs_columns), 3)# shoud contain only 3 variables
   expect_equal(nrow(get_acs_standard_columns(year=2010)$acs_columns), 110) # shoud contain 110 variables, before removing missing variables
-  expect_equal(nrow(get_acs_standard_columns(year=2011, codes_of_variables_to_get=c("B08302_014", "B08302_015", "B25001_001"))$acs_columns), 3)# shoud contain only 3 variables
+  expect_equal(nrow(get_acs_standard_columns(year=2011, codes_of_acs_variables_to_get=c("B08302_014", "B08302_015", "B25001_001"))$acs_columns), 3)# shoud contain only 3 variables
   expect_equal(nrow(get_acs_standard_columns(year=2011)$acs_columns), 110) # shoud contain 110 variables, before removing missing variables
 
   ## ACS standard columns for all years should be the same
@@ -333,3 +333,12 @@ test_that("After using the new ACSColumns.csv, some ACS variables should be miss
   }
 })
 
+test_that("speed up ACMT by only querying for certain variabels", {
+  latitude <- 47.60328
+  longitude <- -122.3302
+  radius <- 2000
+  year <- 2017
+  codes_of_acs_variables_to_get <- c("B01001_001")
+  environmental_measures_with_certain_varaibles <- get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
+  expect_equal(filter(environmental_measures_with_certain_varaibles, names == "total_pop_count")$values, 66370.00762)
+})

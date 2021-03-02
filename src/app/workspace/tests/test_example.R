@@ -9,5 +9,6 @@ test_that("Examples should run without error", {
   # We just need to ensure that it runs without error
   # The corretness of ACMT is based on other tests
   expect_error(rmarkdown::render("examples/population_density_over_distance.Rmd", "html_document"), regexp = NA)
+  expect_error(rmarkdown::render("examples/population_density_over_distance_advanced.Rmd", "html_document"), regexp = NA)
   expect_error(rmarkdown::render("examples/using_external_data.Rmd", "html_document"), regexp = NA)
 })
