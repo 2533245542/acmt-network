@@ -68,7 +68,7 @@ convert_address_to_lat_long <- function (city_hall_to_address_list) { # function
 # is geocoder available?
 geocoder_is_available <- FALSE
 tryCatch({  # note that codes in try is not inside a new function, just treat it as normal R code
-  geocode("1959 NE Pacific Street, Seattle, WA 98195")
+  geocode("1 City Hall Square #500, Boston, MA 02201")
   geocoder_is_available <- TRUE
 }, error = function(condition) {  # note that in error handler, the codes is inside a new function; this is why we need <<- for assigning acs_var_names
   print(condition$message)

@@ -30,6 +30,9 @@ geocode <- function(address) {
     if (!is.null(df$lat)) { latitude <- as.numeric(as.character(df$lat)) }
     if (!is.null(df$long)) { longitude <- as.numeric(as.character(df$long)) }
   }
+  if (is.na(latitude) && is.na(longitude)) {
+    stop("The state of this address is not loaded into database")
+  }
   return(list(latitude=latitude, longitude=longitude))
 }
 

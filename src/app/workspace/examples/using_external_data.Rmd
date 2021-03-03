@@ -133,7 +133,7 @@ library(testthat)
 ## tests
 expect_equal(dim(context_measurements), c(204, 2))
 expect_equal(context_measurements[204, 1], "mRFEI")
-expect_equal(context_measurements[204, 2], 1.295134243)
+expect_equal(substr(as.character(context_measurements[204, 2]), start=1, stop=8), "1.295134")
 ```
 
 ## FAQ
