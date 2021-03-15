@@ -15,6 +15,7 @@ library(lwgeom)
 
 source("external_data-file_downloader_and_processor.R")
 source("external_data-file_loader.R")
+source("external_data-variable_name_to_interpolation_type_mapping.R")
 
 path <- "http://host.docker.internal:5000/latlong?"
 
@@ -153,7 +154,7 @@ show_map_for_lat_long <- function(long, lat, radius_meters, projection=NULL) {
 }
 
 state_list <- list()
-get_statecounty_tracts <- function(state, county, year=2017, geoid_type="Census Tract") {
+get_statecounty_tracts <- function(state, county, year=2017, geoid_type="Census Tract", use_lower_resolution_geo_data=FALSE) {
   if (!geoid_type %in% c("Census Tract", "Block Group")) {
     stop("Unsupported GEOID type")
   }
@@ -170,9 +171,9 @@ get_statecounty_tracts <- function(state, county, year=2017, geoid_type="Census 
 
     tracts <- NULL
     if (geoid_type == "Census Tract") {
-      tracts <- st_as_sf(tracts(state = state, county = county, year=year))
+      tracts <- st_as_sf(tracts(state = state, county = county, year=year, cb=use_lower_resolution_geo_data))
     } else if (geoid_type == "Block Group") {
-      tracts <- st_as_sf(block_groups(state = state, county = county, year=year))
+      tracts <- st_as_sf(block_groups(state = state, county = county, year=year, cb=use_lower_resolution_geo_data))
     } else {
       stop("Unsupported GEOID type")
     }
@@ -261,7 +262,15 @@ get_acs_results_for_available_variables <- function (acs_var_names, state, count
   return(acs_results)
 }
 
-get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, geoid_type = "Census Tract",fill_missing_GEOID_with_zero=FALSE, include_land_and_water_area=FALSE) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
+acs_variable_name_to_interpolate_by_sum_boolean_mapping <- c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+names(acs_variable_name_to_interpolate_by_sum_boolean_mapping) <- c("B01001_001", "B01001_002", "B01001_003", "B01001_004", "B01001_005", "B01001_006", "B01001_007", "B01001_008", "B01001_009", "B01001_010", "B01001_011", "B01001_012", "B01001_013", "B01001_014", "B01001_015", "B01001_016", "B01001_026", "B01001_027", "B01001_028", "B01001_029", "B01001_030", "B01001_031", "B01001_032", "B01001_033", "B01001_034", "B01001_035", "B01001_036", "B01001_037", "B01001_038", "B01001_039", "B01001_040", "B25001_001", "B05012_002", "B05012_003", "B02001_002", "B02001_003", "B02001_004", "B02001_005", "B02001_006", "B02001_007", "B02001_008", "B05001_002", "B05001_003", "B05001_004", "B05001_005", "B05001_006", "B06008_001", "B06008_002", "B06008_003", "B06008_004", "B06008_005", "B06008_006", "B06008_007", "B06008_013", "B07201_002", "B07201_004", "B07201_014", "B08006_001", "B08006_003", "B08006_004", "B08006_008", "B08006_014", "B08006_015", "B08006_016", "B08006_017", "B08302_002", "B08302_003", "B08302_004", "B08302_005", "B08302_006", "B08302_007", "B08302_008", "B08302_009", "B08302_010", "B08302_011", "B08302_012", "B08302_013", "B08302_014", "B08302_015", "B15003_001", "B15003_002", "B15003_003", "B15003_004", "B15003_005", "B15003_006", "B15003_007", "B15003_008", "B15003_009", "B15003_010", "B15003_011", "B15003_012", "B15003_013", "B15003_014", "B15003_015", "B15003_016", "B15003_017", "B15003_018", "B15003_019", "B15003_020", "B15003_021", "B15003_022", "B15003_023", "B15003_024", "B15003_025", "B15002_002", "B15002_011", "B15002_015", "B15002_019", "B15002_028", "B15002_032")
+
+get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, geoid_type = "Census Tract",fill_missing_GEOID_with_zero=FALSE, include_land_and_water_area=FALSE, use_lower_resolution_geo_data=FALSE, variable_name_to_interpolate_by_sum_boolean_mapping=NULL) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
+
+  if (is.null(variable_name_to_interpolate_by_sum_boolean_mapping)) {
+    stop("Function get_count_variable_for_lat_long is not provided with variable_name_to_interpolate_by_sum_boolean_mapping")
+  }
+
   using_external_data <- FALSE
   names_of_interested_variables <- acs_var_names   # variable names we want to output
 
@@ -285,7 +294,7 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
 
   columns_of_variable_value_to_geometry_dataframe_list <- list()
   for (i in seq_along(intersecting_counties_fips)) {
-    geoid_to_geometry_dataframe <- get_statecounty_tracts(state=intersecting_counties_fips_state_codes[i], county=intersecting_counties_fips_county_codes[i], geoid_type=geoid_type)
+    geoid_to_geometry_dataframe <- get_statecounty_tracts(state=intersecting_counties_fips_state_codes[i], county=intersecting_counties_fips_county_codes[i], geoid_type=geoid_type, use_lower_resolution_geo_data=use_lower_resolution_geo_data)
 
     geoid_to_variable_name_to_variable_value_dataframe <- NA
 
@@ -332,8 +341,19 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
     all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe[is.na(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe)] <- 0
   }
 
+  for (variable_name in names_of_interested_variables) {
+    if (is.na(variable_name_to_interpolate_by_sum_boolean_mapping[variable_name])) {
+      stop(paste("Interploation by sum boolean for", variable_name, "does not exist."))
+    }
+  }
+
   # calculated weighted variable values for the point buffer
-  values_of_interested_variables <- lapply(names_of_interested_variables, function(x) { suppressWarnings(st_interpolate_aw(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe[, x], point_buffer, extensive=T)[[x]])})
+  #values_of_interested_variables <- mapply(FUN = function(variable_name, interpolate_by_sum_boolean) { suppressWarnings(st_interpolate_aw(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe[, variable_name], point_buffer, extensive=interpolate_by_sum_boolean)[[variable_name]])}, names_of_interested_variables, variable_name_to_interpolate_by_sum_boolean_mapping, SIMPLIFY = TRUE)
+  #return(data.frame(name=names_of_interested_variables, estimate=unname(values_of_interested_variables)))
+  interpolate_one_varaible <- function(variable_name, variable_name_to_interpolate_by_sum_boolean_mapping) {
+    suppressWarnings(st_interpolate_aw(all_intersecting_counties_columns_of_variable_value_to_geometry_dataframe[, variable_name], point_buffer, extensive=variable_name_to_interpolate_by_sum_boolean_mapping[variable_name])[[variable_name]])
+  }
+  values_of_interested_variables <- lapply(names_of_interested_variables, FUN = interpolate_one_varaible, variable_name_to_interpolate_by_sum_boolean_mapping)
   return(data.frame(name=names_of_interested_variables, estimate=unlist(values_of_interested_variables)))
 }
 
@@ -342,7 +362,7 @@ get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA
   print("Read ACS columns")
   acs_columns <- read.csv("ACMT/ACSColumns.csv")
 
-  if (!is.na(codes_of_acs_variables_to_get[1])) {  # filter acs_columns by provided variables
+  if (!is.na(codes_of_acs_variables_to_get[1])) {  # filter acs_columns by the provided variables
     acs_columns <- acs_columns[acs_columns$acs_col %in% codes_of_acs_variables_to_get, ]
   }
 
@@ -351,7 +371,7 @@ get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA
   names(acs_varnames) <- acs_columns$var_name
 
   acs_count_names <- paste(acs_columns$var_name, "count", sep="_")  # all variables have counts
-  if (length(acs_columns$var_name[acs_columns$universe_col != ""]) == 0) {   # prevent having something exactly like "_proportion"
+  if (length(acs_columns$var_name[acs_columns$universe_col != ""]) == 0) {   # prevent having something that is exactly "_proportion"
     acs_proportion_names <- character(0)
   } else {
     acs_proportion_names <- paste(acs_columns$var_name[acs_columns$universe_col != ""], "proportion", sep="_")   # only non-universal variables have proportions
@@ -369,10 +389,7 @@ get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA
               acs_count_pretty_name_map=data.frame(acs_count_names, acs_count_pretty_names)))
 }
 
-
-
-# TODO: not handling margin of error correctly at all
-get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, codes_of_acs_variables_to_get=NA, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE, include_land_and_water_area=FALSE) {
+get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, codes_of_acs_variables_to_get=NA, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE, include_land_and_water_area=FALSE, use_lower_resolution_geo_data=TRUE) {
   # section: inspect input
   if (year < 2010 | year > 2019) {
     stop("Year must be in between 2010 and 2019 (inclusive)")
@@ -387,7 +404,7 @@ get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, codes_o
   acs_proportion_names <- acs_info$acs_proportion_names
   acs_count_names <- acs_info$acs_count_names
   acs_unique_var_cols <- acs_info$acs_unique_var_cols
-  acs_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=acs_unique_var_cols, year=year, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, include_land_and_water_area=include_land_and_water_area)
+  acs_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=acs_unique_var_cols, year=year, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, include_land_and_water_area=include_land_and_water_area, use_lower_resolution_geo_data=use_lower_resolution_geo_data, variable_name_to_interpolate_by_sum_boolean_mapping=acs_variable_name_to_interpolate_by_sum_boolean_mapping)
 
   acs_unique_var_cols_contains_missing_variables <- (length(acs_count_results$name) < length(acs_unique_var_cols))
 
@@ -432,7 +449,7 @@ get_acmt_standard_array <- function(long, lat, radius_meters, year=2017, codes_o
 
     variable_to_value_dataframe_list <- list()
     for (external_data_name in names(external_data_name_to_info_list)) {
-      external_data_weighted_over_point_buffer_dataframe <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=NULL, year=NULL, external_data=external_data_list[[external_data_name]], geoid_type = external_data_name_to_info_list[[external_data_name]]$geoid_type, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero)
+      external_data_weighted_over_point_buffer_dataframe <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=NULL, year=NULL, external_data=external_data_list[[external_data_name]], geoid_type = external_data_name_to_info_list[[external_data_name]]$geoid_type, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, use_lower_resolution_geo_data=use_lower_resolution_geo_data, variable_name_to_interpolate_by_sum_boolean_mapping=external_data_name_to_info_list[[external_data_name]]$variable_name_to_interpolate_by_sum_boolean_mapping)
       variable_to_value_dataframe <- data.frame(names=external_data_weighted_over_point_buffer_dataframe$name, values=external_data_weighted_over_point_buffer_dataframe$estimate)
       variable_to_value_dataframe_list[[external_data_name]] <- variable_to_value_dataframe
     }

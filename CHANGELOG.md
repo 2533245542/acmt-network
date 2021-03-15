@@ -34,9 +34,15 @@ v0.0.6
 v0.0.7
 =====
 * get_acs has intermittent errors, handled
-* TODO one more example usign both external and internal data
-* TODO updated populatino density example with faster implementation
-* TODO fixed external data example
+* One more example using both external and internal data
+* Updated population density example with faster implementation
+* Fixed external data example
+
+v0.0.8
+=====
+* Speed up getting census tract or block group data by defaulting to get a lower resolution map
+* Allow users to specify which type of interpolation(sum or average) to use for which variable
+* Change advanced example to let national walkability index to be average
 
 Future
 =====

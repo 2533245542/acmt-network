@@ -94,7 +94,8 @@ external_data_name_to_info_list <- list(
         mrfei=list(vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls"),  # files that should be downloaded for mrfei
                    download_file=download_file_mrefi,  # function to download file
                    process_file=process_file_mrefi,   # function to process file
-                   geoid_type="Census Tract"
+                   geoid_type="Census Tract",
+                   variable_name_to_interpolate_by_sum_boolean_mapping=c(mRFEI=TRUE)
         )
 )
 ```
@@ -107,6 +108,8 @@ Requirements:
 
 * `geoid_type` should be carefully chosen by the user. There are various levels of GEOID and ACMT currently only supports two, "Census Tract" and "Block Group". For example, mRFEI is at "Census Tract" level while National Walkability Index is at "Block Group" level.
 
+* `variable_name_to_interpolate_by_sum_boolean_mapping` is a named logical vector specifying the mapping between an external variable and its interpolation type. For example, if we have a variable `population of an area`, according to the definition of `tigris`, is an extensive variable and we should set its interpolation type to sum; in contrast, the variable `population density of an area` is not an extensive variable and we should set its interpolation type to mean.
+
 ## Results
 When the 4 steps are done, we can run ACMT with external data.
 
@@ -117,7 +120,8 @@ external_data_name_to_info_list <- list(
         mrfei=list(vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls"),
                    download_file=download_file_mrefi,
                    process_file=process_file_mrefi,
-                   geoid_type="Census Tract"
+                   geoid_type="Census Tract",
+                   variable_name_to_interpolate_by_sum_boolean_mapping=c(mRFEI=TRUE)
         )
 )
 context_measurements <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 200, year=2013, external_data_name_to_info_list=external_data_name_to_info_list)
@@ -133,7 +137,7 @@ library(testthat)
 ## tests
 expect_equal(dim(context_measurements), c(204, 2))
 expect_equal(context_measurements[204, 1], "mRFEI")
-expect_equal(substr(as.character(context_measurements[204, 2]), start=1, stop=8), "1.295134")
+expect_equal(substr(as.character(context_measurements[204, 2]), start=1, stop=8), "1.303625")  # to sync the remote and local version
 ```
 
 ## FAQ
@@ -151,7 +155,8 @@ external_data_name_to_info_list <- list(
   mrfei=list(vector_of_expected_downloaded_file_name=NULL,  # the files should be downloaded for mrfei
              download_file=NULL,  # function to download file
              process_file=NULL,   # function to process file
-             geoid_type="Census Tract"
+             geoid_type="Census Tract",
+             variable_name_to_interpolate_by_sum_boolean_mapping=mrfei_variable_name_to_interpolate_by_sum_boolean_mapping
   )
 )
 ```
@@ -178,12 +183,14 @@ external_data_name_to_info_list <- list(
   mrfei=list(vector_of_expected_downloaded_file_name=NULL,
              download_file=NULL,
              process_file=NULL,
-             geoid_type="Census Tract"
+             geoid_type="Census Tract",
+             variable_name_to_interpolate_by_sum_boolean_mapping=mrfei_variable_name_to_interpolate_by_sum_boolean_mapping
   ),
   walkability=list(vector_of_expected_downloaded_file_name=NULL,
              download_file=NULL,
              process_file=NULL,
-             geoid_type="Block Group"
+             geoid_type="Block Group",
+             variable_name_to_interpolate_by_sum_boolean_mapping=walkability_variable_name_to_interpolate_by_sum_boolean_mapping
   )
 )
 ```

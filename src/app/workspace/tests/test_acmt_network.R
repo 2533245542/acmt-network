@@ -143,7 +143,7 @@ test_that("Checking get_count_variable_for_lat_long. Testing result corretness."
   # test year=2011
   list_of_acs_var_names <- c("B01001_001", "B01001_002", "B01001_003", "B01001_004", "B01001_005", "B01001_006", "B01001_007", "B01001_008", "B01001_009", "B01001_010", "B01001_011", "B01001_012", "B01001_013", "B01001_014", "B01001_015", "B01001_016", "B01001_026", "B01001_027", "B01001_028", "B01001_029", "B01001_030", "B01001_031", "B01001_032", "B01001_033", "B01001_034", "B01001_035", "B01001_036", "B01001_037", "B01001_038", "B01001_039", "B01001_040", "B25001_001", "B05012_002", "B05012_003", "B02001_002", "B02001_003", "B02001_004", "B02001_005", "B02001_006", "B02001_007", "B02001_008", "B05001_002", "B05001_003", "B05001_004", "B05001_005", "B05001_006", "B06008_001", "B06008_002", "B06008_003", "B06008_004", "B06008_005", "B06008_006", "B06008_007", "B06008_013", "B07201_002", "B07201_004", "B07201_014", "B08006_001", "B08006_003", "B08006_004", "B08006_008", "B08006_014", "B08006_015", "B08006_016", "B08006_017", "B08302_002", "B08302_003", "B08302_004", "B08302_005", "B08302_006", "B08302_007", "B08302_008", "B08302_009", "B08302_010", "B08302_011", "B08302_012", "B08302_013", "B08302_014", "B08302_015", "B15003_001", "B15003_002", "B15003_003", "B15003_004", "B15003_005", "B15003_006", "B15003_007", "B15003_008", "B15003_009", "B15003_010", "B15003_011", "B15003_012", "B15003_013", "B15003_014", "B15003_015", "B15003_016", "B15003_017", "B15003_018", "B15003_019", "B15003_020", "B15003_021", "B15003_022", "B15003_023", "B15003_024", "B15003_025", "B15002_002", "B15002_011", "B15002_015", "B15002_019", "B15002_028", "B15002_032")
 
-  count_results_in_test_2010 <- get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names = list_of_acs_var_names, year=2010)
+  count_results_in_test_2010 <- get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names = list_of_acs_var_names, year=2010, variable_name_to_interpolate_by_sum_boolean_mapping=acs_variable_name_to_interpolate_by_sum_boolean_mapping)
   expect_equal(dim(count_results_in_test_2010), c(82, 2))
   expect_equal(count_results_in_test_2010[1,2], 51120.98)
   expect_equal(count_results_in_test_2010[12,1], "B01001_012")
@@ -154,7 +154,7 @@ test_that("Checking get_count_variable_for_lat_long. Testing result corretness."
   expect_equal(count_results_in_test_2010[82,2], 6308.99184)
 
   # compared to 2010, it has 3 extra variables, B07201_002, B07201_004, B07201_014
-  count_results_in_test_2011 <- get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names =list_of_acs_var_names, year=2011)
+  count_results_in_test_2011 <- get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names =list_of_acs_var_names, year=2011, variable_name_to_interpolate_by_sum_boolean_mapping=acs_variable_name_to_interpolate_by_sum_boolean_mapping)
   expect_equal(dim(count_results_in_test_2011), c(85, 2))
   expect_equal(count_results_in_test_2011[1,2],51601.22724)
   expect_equal(count_results_in_test_2011[12,1],"B01001_012")
@@ -168,7 +168,7 @@ test_that("Checking get_count_variable_for_lat_long. Testing result corretness."
   # compared to 2011, it has 25 more variables
   # the number of available variables are the same for year=2011 and after, and these years have no missing variables anymore
   # ("B15003_001", "B15003_002", "B15003_003", "B15003_004", "B15003_005", "B15003_006", "B15003_007", "B15003_008", "B15003_009", "B15003_010", "B15003_011", "B15003_012", "B15003_013", "B15003_014", "B15003_015", "B15003_016", "B15003_017", "B15003_018", "B15003_019", "B15003_020", "B15003_021", "B15003_022", "B15003_023", "B15003_024", "B15003_025")
-  count_results_in_test_2013 <- get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names =list_of_acs_var_names, year=2013)
+  count_results_in_test_2013 <- get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names =list_of_acs_var_names, year=2013, variable_name_to_interpolate_by_sum_boolean_mapping=acs_variable_name_to_interpolate_by_sum_boolean_mapping)
   expect_equal(dim(count_results_in_test_2013), c(110, 2))
   expect_equal(count_results_in_test_2013[1,2],53223.07818)
   expect_equal(count_results_in_test_2013[12,1],"B01001_012")
@@ -178,6 +178,10 @@ test_that("Checking get_count_variable_for_lat_long. Testing result corretness."
   expect_equal(count_results_in_test_2013[74,2],3467.624946)
   expect_equal(count_results_in_test_2013[104,2],1926.745257)
   expect_equal(count_results_in_test_2013[109,2],1085.485675)
+
+  # error handling for variable_name_to_interpolate_by_sum_boolean_mapping
+  expect_error(get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names =c("B01001_001", "B01001_002", "B01001_003"), year=2013, variable_name_to_interpolate_by_sum_boolean_mapping=NULL), regexp="Function get_count_variable_for_lat_long is not provided with variable_name_to_interpolate_by_sum_boolean_mapping")
+  expect_error(get_count_variable_for_lat_long(long=-122.333, lat=47.663, radius_meters = 2000, acs_var_names =c("B01001_001", "B01001_002", "B01001_003"), year=2013, variable_name_to_interpolate_by_sum_boolean_mapping=c('non_existing_variable'=0)), regexp="Interploation by sum boolean for .*")
 })
 
 test_that("Checking get_acs_standard_columns(). Testing retreived context measurements' corretness.", {
@@ -254,7 +258,7 @@ test_that("Checking get_acs_standard_columns(). Testing retreived context measur
 
 test_that("Checking get_acmt_standard_array(). Testing retreived context measurements' corretness.", {
   # check that the results of running ACMT for (long=-122.333, lat=47.663, radius_meters=2000, year=2010) fits our expectation
-  measures_for_2010 <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2010)
+  measures_for_2010 <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2010, use_lower_resolution_geo_data = FALSE)
   expect_equal(dim(measures_for_2010), c(151, 2))  # 151 context measurement variables
   expect_equal(measures_for_2010[1,]$names, "men_proportion")
   expect_equal(measures_for_2010[1,]$values, 0.527210877307653)
@@ -268,7 +272,7 @@ test_that("Checking get_acmt_standard_array(). Testing retreived context measure
   expect_equal(measures_for_2010[151,]$values, 6308.99184)
 
 
-  measures_for_2011 <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2011)
+  measures_for_2011 <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2011, use_lower_resolution_geo_data = FALSE)
   expect_equal(dim(measures_for_2011), c(154, 2))
   expect_equal(measures_for_2011[1,]$names, "men_proportion")
   expect_equal(measures_for_2011[1,]$values, 0.5093951915)
@@ -282,7 +286,7 @@ test_that("Checking get_acmt_standard_array(). Testing retreived context measure
   expect_equal(measures_for_2011[144,]$values, 3932.895066)
 
 
-  measures_for_2013 <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013)
+  measures_for_2013 <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, use_lower_resolution_geo_data = FALSE)
   expect_equal(dim(measures_for_2013), c(203, 2))
   expect_equal(measures_for_2013[1,]$names,"men_proportion")
   expect_equal(measures_for_2013[1,]$values,0.4996009046)
@@ -339,6 +343,24 @@ test_that("speed up ACMT by only querying for certain variabels", {
   radius <- 2000
   year <- 2017
   codes_of_acs_variables_to_get <- c("B01001_001")
-  environmental_measures_with_certain_varaibles <- get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
+  environmental_measures_with_certain_varaibles <- get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get, use_lower_resolution_geo_data = FALSE)
   expect_equal(filter(environmental_measures_with_certain_varaibles, names == "total_pop_count")$values, 66370.00762)
+})
+
+
+test_that("Checking get_acmt_standard_array() with lower resolution. Testing retreived context measurements' corretness.", {
+  measures_for_2013 <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, use_lower_resolution_geo_data = TRUE)
+  expect_equal(dim(measures_for_2013), c(203, 2))
+  expect_equal(measures_for_2013[1,]$names,"men_proportion")
+  expect_equal(measures_for_2013[1,]$values,0.4995895087)
+  expect_equal(measures_for_2013[24,]$names,"females_30_to_34_proportion")
+  expect_equal(measures_for_2013[24,]$values,0.1134541253)
+  expect_equal(measures_for_2013[76,]$names,"eighth_grade_proportion")
+  expect_equal(measures_for_2013[76,]$values,0.003084673185)
+  expect_equal(measures_for_2013[128,]$names,"white_alone_count")
+  expect_equal(measures_for_2013[128,]$values,40947.38446)
+  expect_equal(measures_for_2013[151,]$names,"workers_over_15_count")
+  expect_equal(measures_for_2013[151,]$values,33426.79825)
+  expect_equal(measures_for_2013[193,]$names,"associates_degree_count")
+  expect_equal(measures_for_2013[193,]$values,1838.901203)
 })

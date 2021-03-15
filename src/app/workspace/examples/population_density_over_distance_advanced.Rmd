@@ -142,7 +142,9 @@ external_data_name_to_info_list <- list(  # provide info for getting walkability
         walkability=list(vector_of_expected_downloaded_file_name=NULL,
                          download_file=NULL,
                          process_file=NULL,
-                         geoid_type="Block Group"
+                         geoid_type="Block Group",
+                         variable_name_to_interpolate_by_sum_boolean_mapping=walkability_variable_name_to_interpolate_by_sum_boolean_mapping
+
         )
 )
 
@@ -152,7 +154,7 @@ end_time_get_variable_measures_from_acmt <- Sys.time()
 ```
 
 ```{r}
-print(city_hall_to_radius_to_variable_to_measures_list[1:2])
+print(city_hall_to_radius_to_variable_to_measures_list[1])
 print("Between start and end of getting ACMT measures: ")
 print(end_time_get_variable_measures_from_acmt - start_time_get_variable_measures_from_acmt)
 ```
@@ -236,23 +238,17 @@ ggplot(dataframe_for_plotting[dataframe_for_plotting$variable == "NatWalkInd", ]
              x="radius (m)")
 ```
 
-
 ## Results
 We see that New York City still has a much higher population density than others, but its density reduction is less drastic than we saw when not using land area to calculate population density. Also, because of the use of land area as denominator, the population density of all cities all increased, and LA increased the least because other cities have a higher proportion of water and thus benefits more from switching from using a circular area as denominator to using land area.
 
-Regarding to the walkability index, ACMT gets the walkabiltity index for a radius by summing the walkability index of each block in the area. We see New York City is again at the top. According to the definition of walability index, New York City has high mix of employment types and occupied housing, mix of employment types, street intersection density, and proportion of carpool workers (https://www.epa.gov/smartgrowth/smart-location-mapping#:~:text=National%20Walkability%20Index%20score.,results%20of%20indicator%20rank%20scores.&text=The%20mix%20of%20employment%20types%20and%20occupied%20housing.).
+Regarding to the walkability index, we see New York City is again at the top. According to the definition of walkability index, New York City has high mix of employment types and occupied housing, mix of employment types, street intersection density, and proportion of carpool workers (https://www.epa.gov/smartgrowth/smart-location-mapping#:~:text=National%20Walkability%20Index%20score.,results%20of%20indicator%20rank%20scores.&text=The%20mix%20of%20employment%20types%20and%20occupied%20housing.).
 
 ```{r, include=FALSE}
 ##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
 ## tests
 library(testthat)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.006724624113)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.006043467243)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.01101281183)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.0075403099)
-
-0.005281557
-0.005563233
-0.009057937
-0.005571173
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.006713610105)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.006037685641)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.01109492827)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.007535991617)
 ```

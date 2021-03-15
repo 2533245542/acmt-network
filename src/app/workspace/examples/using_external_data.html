@@ -439,7 +439,8 @@ summary {
         mrfei=list(vector_of_expected_downloaded_file_name=c(&quot;downloaded_mrfei.xls&quot;),  # files that should be downloaded for mrfei
                    download_file=download_file_mrefi,  # function to download file
                    process_file=process_file_mrefi,   # function to process file
-                   geoid_type=&quot;Census Tract&quot;
+                   geoid_type=&quot;Census Tract&quot;,
+                   variable_name_to_interpolate_by_sum_boolean_mapping=c(mRFEI=TRUE)
         )
 )</code></pre>
 <p>Requirements:</p>
@@ -447,6 +448,7 @@ summary {
 <li><p>The first level name of the list (<code>mrfei</code> in this case) should make up the <code>&lt;dataset_name&gt;</code> part of the processed file (<code>processed_mrfei.csv</code> in this case). More specifically, <code>paste0(&quot;processed_&quot;, names(external_data_name_to_info_list)[0], &quot;.csv&quot;) == 'processed_&lt;dataset_name&gt;.csv'</code>.</p></li>
 <li><p><code>vector_of_expected_downloaded_file_name</code> should be the names of the files downloaded by the download function (for checking if downloading succeeds).</p></li>
 <li><p><code>geoid_type</code> should be carefully chosen by the user. There are various levels of GEOID and ACMT currently only supports two, “Census Tract” and “Block Group”. For example, mRFEI is at “Census Tract” level while National Walkability Index is at “Block Group” level.</p></li>
+<li><p><code>variable_name_to_interpolate_by_sum_boolean_mapping</code> is a named logical vector specifying the mapping between an external variable and its interpolation type. For example, if we have a variable <code>population of an area</code>, according to the definition of <code>tigris</code>, is an extensive variable and we should set its interpolation type to sum; in contrast, the variable <code>population density of an area</code> is not an extensive variable and we should set its interpolation type to mean.</p></li>
 </ul>
 </div>
 </div>
@@ -459,13 +461,14 @@ external_data_name_to_info_list &lt;- list(
         mrfei=list(vector_of_expected_downloaded_file_name=c(&quot;downloaded_mrfei.xls&quot;),
                    download_file=download_file_mrefi,
                    process_file=process_file_mrefi,
-                   geoid_type=&quot;Census Tract&quot;
+                   geoid_type=&quot;Census Tract&quot;,
+                   variable_name_to_interpolate_by_sum_boolean_mapping=c(mRFEI=TRUE)
         )
 )
 context_measurements &lt;- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 200, year=2013, external_data_name_to_info_list=external_data_name_to_info_list)</code></pre>
 <pre class="r"><code>print(filter(context_measurements, context_measurements$names == &quot;mRFEI&quot;))</code></pre>
-<pre><code>##   names   values
-## 1 mRFEI 1.295134</code></pre>
+<pre><code>##   names     values
+## 1 mRFEI 1.30362514</code></pre>
 </div>
 <div id="faq" class="section level2">
 <h2>FAQ</h2>
@@ -479,7 +482,8 @@ context_measurements &lt;- get_acmt_standard_array(long=-122.333, lat=47.663, ra
   mrfei=list(vector_of_expected_downloaded_file_name=NULL,  # the files should be downloaded for mrfei
              download_file=NULL,  # function to download file
              process_file=NULL,   # function to process file
-             geoid_type=&quot;Census Tract&quot;
+             geoid_type=&quot;Census Tract&quot;,
+             variable_name_to_interpolate_by_sum_boolean_mapping=mrfei_variable_name_to_interpolate_by_sum_boolean_mapping
   )
 )</code></pre>
 </div>
@@ -502,12 +506,14 @@ context_measurements &lt;- get_acmt_standard_array(long=-122.333, lat=47.663, ra
   mrfei=list(vector_of_expected_downloaded_file_name=NULL,
              download_file=NULL,
              process_file=NULL,
-             geoid_type=&quot;Census Tract&quot;
+             geoid_type=&quot;Census Tract&quot;,
+             variable_name_to_interpolate_by_sum_boolean_mapping=mrfei_variable_name_to_interpolate_by_sum_boolean_mapping
   ),
   walkability=list(vector_of_expected_downloaded_file_name=NULL,
              download_file=NULL,
              process_file=NULL,
-             geoid_type=&quot;Block Group&quot;
+             geoid_type=&quot;Block Group&quot;,
+             variable_name_to_interpolate_by_sum_boolean_mapping=walkability_variable_name_to_interpolate_by_sum_boolean_mapping
   )
 )</code></pre>
 </div>

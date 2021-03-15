@@ -177,7 +177,7 @@ city_hall_to_radius_to_variable_to_measures_with_population_density_list <- add_
 ```
 
 ```{r}
-print(city_hall_to_radius_to_variable_to_measures_with_population_density_list[1:2])
+print(city_hall_to_radius_to_variable_to_measures_with_population_density_list[1])
 ```
 
 ### 5. Plot density vs. radius, categoried by cities
@@ -235,8 +235,8 @@ In another example, we refine our analysis on population density and demonstrate
 ##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
 ## tests
 library(testthat)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.005281557)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.005563233)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.009057937)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.005571173)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.005230759)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.005561481459)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.009131229584)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.005571771875)
 ```
