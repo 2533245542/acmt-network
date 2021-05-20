@@ -1,0 +1,1 @@
+Airbnb host room type, lat/long https://www.kaggle.com/kritikseth/us-airbnb-open-data
