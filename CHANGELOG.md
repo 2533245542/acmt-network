@@ -50,7 +50,7 @@ v0.0.9
 * Add more external data (NO2, food access)
 * Sets working directory automatically
 * Add an option to return only point estimates for a geographic coordinates
-* TODO allow to find the collect measures within a radial buffer based on buffer coordinate
+* allow to find the collect measures within a radial buffer based on buffer coordinate
 
 Future
 =====
