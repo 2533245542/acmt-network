@@ -73,7 +73,7 @@ test_that("Checking get_point_buffer_for_lat_long. Testing result corretness.", 
 })
 
 test_that("Checking get_statecounty_tracts. Testing result corretness.", {
-  state_county_tract <- get_statecounty_tracts(state = "53", county = "033")
+  state_county_tract <- get_geometries_of_a_county(state = "53", county = "033")
 
   expect_equal(dim(state_county_tract), c(397, 13))
   expect_equal(unique(state_county_tract$STATEFP), "53")
@@ -92,7 +92,7 @@ test_that("Checking get_statecounty_tracts. Testing result corretness.", {
   expect_equal(state_county_tract$geometry[82][[1]][[1]][43,1], -122.112381)
 
   # not using water
-  statecounty_tracts_2010 <- get_statecounty_tracts(state="53", county="033", year=2010)  # no water in 2010
+  statecounty_tracts_2010 <- get_geometries_of_a_county(state="53", county="033", year=2010)  # no water in 2010
   expect_equal(dim(statecounty_tracts_2010), c(398, 15))
   expect_equal(statecounty_tracts_2010[[94,1]], "53")
   expect_equal(statecounty_tracts_2010[[188,2]], "033")
@@ -103,7 +103,7 @@ test_that("Checking get_statecounty_tracts. Testing result corretness.", {
 
 
   # water available; the result should be stripped off of water area
-  statecounty_tracts_2011 <- get_statecounty_tracts(state="53", county="033", year=2011)
+  statecounty_tracts_2011 <- get_geometries_of_a_county(state="53", county="033", year=2011)
   expect_equal(dim(statecounty_tracts_2011), c(397, 13))
   expect_equal(statecounty_tracts_2011[[94,1]], "53")
   expect_equal(statecounty_tracts_2011[[188,2]], "033")
@@ -364,3 +364,22 @@ test_that("Checking get_acmt_standard_array() with lower resolution. Testing ret
   expect_equal(measures_for_2013[193,]$names,"associates_degree_count")
   expect_equal(measures_for_2013[193,]$values,1838.901203)
 })
+
+test_that("Checking option return_point_estimate", {
+  measures_return_point_estimate <- get_acmt_standard_array(lat=47.663, long=-122.30, radius_meters = 20000, year=2013, external_data_name_to_info_list=list(food_access=external_data_presets_walkability), fill_missing_GEOID_with_zero = TRUE, return_point_estimate=TRUE)
+  expect_equal(filter(measures_return_point_estimate, names=="females_10_to_14_proportion")$values, 0.02113353, tolerance = 1e-8)
+  expect_equal(filter(measures_return_point_estimate, names=="females_10_to_14_count")$values, 44)
+  expect_equal(filter(measures_return_point_estimate, names=="some_college_1_year_or_more_count")$values, 164)
+  expect_equal(filter(measures_return_point_estimate, names=="males_18_to_19_count")$values, 11)
+  expect_equal(filter(measures_return_point_estimate, names=="COUNTHU10")$values, 514)
+  expect_equal(filter(measures_return_point_estimate, names=="NatWalkInd")$values, 18.667)
+})
+
+test_that("Test travelable buffer", {
+  latitude <- 47.665505
+  longitude <- -122.300000
+  travelable_buffer <- get_travelable_buffer(latitude=latitude, longitude=longitude, travel_type = "bike", travel_time=20)
+  expect_equal(travelable_buffer[[1]][2][[1]][[1]][1,1], -122.3516, tolerance = 0.0001)
+  expect_equal(travelable_buffer[[1]][2][[1]][[1]][1,2], 47.6652, tolerance = 0.0001)
+})
+

@@ -44,6 +44,14 @@ v0.0.8
 * Allow users to specify which type of interpolation(sum or average) to use for which variable
 * Change advanced example to let national walkability index to be average
 
+v0.0.9
+=====
+* Make using external data more user friendly (now have presets and can specify the processed file name)
+* Add more external data (NO2, food access)
+* Sets working directory automatically
+* Add an option to return only point estimates for a geographic coordinates
+* TODO allow to find the collect measures within a radial buffer based on buffer coordinate
+
 Future
 =====
 * Verify acmt-network on existing work

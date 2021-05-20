@@ -11,7 +11,11 @@ load_external_data <- function (external_data_name_to_info_list=NULL) {
 
   for (external_data_name in vector_of_external_data_names) {
     vector_of_expected_downloaded_file_name <- external_data_name_to_info_list[[external_data_name]]$vector_of_expected_downloaded_file_name
-    expected_processed_file_name <- paste0("processed_", external_data_name, ".csv")
+
+    expected_processed_file_name <- external_data_name_to_info_list[[external_data_name]]$expected_processed_file_name
+    if(is.null(expected_processed_file_name)) {  # when expected_processed_file_name not specified in the info list
+      expected_processed_file_name <- paste0("processed_", external_data_name, ".csv")
+    }
 
     file_downloading_completed <- is_empty(setdiff(vector_of_expected_downloaded_file_name, vector_of_existing_file_names))  # could have multiple downloaded files
     file_processing_completed <- expected_processed_file_name %in% vector_of_existing_file_names  # could only have one processed file

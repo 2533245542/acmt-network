@@ -40,8 +40,10 @@ services:
     app:
         build:
             context: ./src/app
+        working_dir: /home/rstudio/workspace/
         environment:
             PASSWORD: "${RSTUDIO_PASSWORD}"
+            DISABLE_AUTH: "${DISABLE_AUTHENTICATION}"
         volumes:
             - ./src/app/workspace:/home/rstudio/workspace
         ports:

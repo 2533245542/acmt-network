@@ -66,7 +66,7 @@ If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, added f
 
 `codes_of_acs_variables_to_get`: (optional) for speeding up ACMT run time; ask ACMT to only query this variable from the ACS server to speed up computation; B01001_001 is population; check ACSColumns.csv for mappings between codes and variables.
 
-
+`return_point_estimate`: (Boolean, default False) return the non-interpolated estimate for the geographic coordinate. Note that for census tract, the census tract data is returned and for block group, block group data is returned.
 
 Below is an example of a `external_data_name_to_info_list` that uses CDC's Food Environment Index (mRFEI) as ACMT's additional context measures. 
 

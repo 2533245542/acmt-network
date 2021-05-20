@@ -1,3 +1,4 @@
+#' interpolatable data
 # Instructions for building costomized download_file(()
 # download_file() has no input and output.
 # ACMT first checks if `vector_of_expected_downloaded_file_name` are downloaded (exist in external_data); if they are not downloaded, ACMT runs the respective download_file() to download the files.
@@ -26,7 +27,6 @@
 download_file_mrefi <- function () {  # download the external dataset and give it a name (will use it in creating external_data_name_to_info_list)
   download.file(url = "https://www.cdc.gov/obesity/downloads/2_16_mrfei_data_table.xls", destfile = "external_data/downloaded_mrfei.xls")
 }
-
 process_file_mrefi <- function () {  # process the file and name it processed_mrfei.csv (mrfei can change depending on how you name your dataset in external_data_name_to_info_list, but "processed" and ".csv" are fixed characters)
   library(readxl)
   raw_mrfei_dataframe <- read_excel("external_data/downloaded_mrfei.xls")
@@ -49,7 +49,6 @@ download_file_walkability <- function () {  # download the external dataset and 
   download.file(url = "ftp://newftp.epa.gov/EPADataCommons/OP/WalkabilityIndex.zip", destfile = "external_data/downloaded_walkability.zip")
   options(timeout=default_timeout_duration)
 }
-
 process_file_walkability <- function () {  # process the file and name it processed_mrfei.csv (mrfei can change depending on how you name your dataset in external_data_name_to_info_list, but "processed" and ".csv" are fixed characters)
   # variables used
   #{
@@ -98,4 +97,150 @@ process_file_walkability <- function () {  # process the file and name it proces
 
   # write to processed_walkability.csv
   write_csv(acmt_formatted_walkability_index_dataframe, "external_data/processed_walkability.csv")
+}
+
+# section: USDA Food Access https://www.ers.usda.gov/data-products/food-access-research-atlas/download-the-data/
+download_file_food_access <- function () {
+  download.file(url = "https://www.ers.usda.gov/webdocs/DataFiles/80591/DataDownload2015.xlsx?v=7588.8", destfile = "external_data/downloaded_food_access.xlsx")
+}
+process_file_food_access <- function () {
+  library(readxl)
+  library(tidyverse)
+  raw_food_access_dataframe <- read_excel(path="external_data/downloaded_food_access.xlsx", sheet = "Food Access Research Atlas")
+  state_county_pruned_food_access_dataframe <- dplyr::select(as_tibble(raw_food_access_dataframe), -c(State, County))
+
+  acmt_formatted_food_access_dataframe <- state_county_pruned_food_access_dataframe %>%
+    gather(key="variable", value="estimate", -CensusTract) %>%
+    rename(GEOID=CensusTract)
+
+  write_csv(acmt_formatted_food_access_dataframe, "external_data/processed_food_access.csv")
+}
+
+# section: NO2 http://spatialmodel.com/concentrations/Bechle_LUR.html#annual
+download_file_no2 <- function () {
+  download.file(url = "https://github.com/spatialmodel/concentrations/releases/download/Bechle_blockgroups/BechleLUR_BlockGroup_Annual.txt", destfile = "external_data/downloaded_no2.csv")
+}
+process_file_no2 <- function () {
+  library(tidyverse)
+  raw_no2 <- read_csv("external_data/downloaded_no2.csv")
+  processed_no2 <- raw_no2 %>%
+    dplyr::select(STFID, Y2010) %>%
+    add_column(variable="NO2", .before = "Y2010") %>%
+    rename(GEOID=STFID, estimate=Y2010)
+
+  write_csv(processed_no2, "external_data/processed_no2.csv")
+}
+
+# section: O3 https://www.epa.gov/hesc/rsig-related-downloadable-data-files
+download_file_o3 <- function () {
+  download.file(url = "https://ofmpub.epa.gov/rsig/rsigserver?data/FAQSD/outputs/2017_ozone_daily_8hour_maximum.txt.gz", destfile = "external_data/downloaded_o3.txt.gz")
+}
+process_file_o3 <- function () {
+  # one record per one day, one GEOID, long and lat
+  library(tidyverse)
+
+  raw_o3 <- read_csv("external_data/2017_ozone_daily_8hour_maximum.txt")
+  colnames(raw_o3) <- c("Date", "FIPS", "Longitude", "Latitude", "O3", "O3_stderr")
+  raw_o3$O3 <- as.numeric(raw_o3$O3)  # original name is not friendly for programming
+  raw_o3$O3_stderr <- as.numeric(raw_o3$O3_stderr)
+  aggregated_raw_o3 <- raw_o3 %>%
+    dplyr::select(-Date, -Longitude, -Latitude) %>%
+    group_by(FIPS) %>%
+    summarise(O3=mean(O3), O3_stderr=mean(O3_stderr)) %>%
+    rename(GEOID=FIPS)
+
+  processed_o3 <- aggregated_raw_o3 %>%
+    gather(key="variable", value="estimate", -GEOID)
+
+  write_csv(processed_o3, "external_data/processed_o3.csv")
+}
+
+# section: PM2.5 https://www.epa.gov/hesc/rsig-related-downloadable-data-files
+download_file_pm25 <- function () {
+  download.file(url = "https://ofmpub.epa.gov/rsig/rsigserver?data/FAQSD/outputs/2017_pm25_daily_average.txt.gz", destfile = "external_data/downloaded_pm25.txt.gz")
+}
+process_file_pm25 <- function () {
+  library(tidyverse)
+  raw_pm25 <- read_csv("external_data/2017_pm25_daily_average.txt", col_types = "Dcdddd")
+  colnames(raw_pm25) <- c("Date", "GEOID", "Longitude", "Latitude", "PM25", "PM25_stderr")
+  aggregated_pm25 <- raw_pm25 %>%
+    dplyr::select(-Date, -Longitude, -Latitude) %>%
+    group_by(GEOID) %>%
+    summarise(PM25=mean(PM25), PM25_stderr=mean(PM25_stderr))
+  processed_pm25 <- aggregated_pm25 %>%
+    gather(key="variable", value="estimate", -GEOID)
+
+  write_csv(processed_pm25, "external_data/processed_pm25.csv")
+}
+
+#' point estimate data
+
+# section: 911 calls https://data.seattle.gov/Public-Safety/Seattle-Real-Time-Fire-911-Calls/kzjm-xkqj
+download_file_call911 <- function () {
+  # download .csv file Seattle Real Time Fire 911 Calls
+}
+process_file_call911 <- function () {
+  library(tidyverse)
+  raw_call911 <- read_csv("external_data/downloaded_call911.csv", col_types = "cccddcc")
+  colnames(raw_call911) <- c("Address", "Type", "Datetime", "Latitude", "Longitude", "ReportLocation", "IncidentNumber")
+  call911_selected <- raw_call911 %>%  # select 2015 start to 2020 end data
+    dplyr::select(Type, Datetime, Latitude, Longitude)
+
+  call911_selected$Datetime <-
+    as.Date(substr(call911_selected$Datetime, start = 1, stop = 10), format = "%m/%d/%Y")
+
+  call911_selected_2015_to_2020 <- call911_selected %>%
+    filter(Datetime > "2015-01-01" & Datetime < "2020-12-31")
+
+  processed_call911 <- call911_selected_2015_to_2020 %>%
+    dplyr::select(-Datetime) %>%
+    rename(variable=Type, latitude=Latitude, longitude=Longitude) %>%
+    add_column(estimate=1, .before = "latitude") %>%
+    mutate(variable=str_c("is_call911 ", variable)) %>%
+    drop_na(latitude, longitude)  # dropped 563 rows out of 500362 rows
+
+  write_csv(processed_call911, "external_data/processed_call911.csv")
+}
+
+# section: crime seattle
+download_file_crime_seattle <- function () {
+}
+process_file_crime_seattle <- function () {
+  library(tidyverse)
+  raw_crime_seattle <- read_csv("external_data/downloaded_crime_seattle.csv")
+
+  crime_seattle_selected <- raw_crime_seattle %>%
+    dplyr::select(`Report DateTime`, Offense, Latitude, Longitude)
+
+  crime_seattle_selected$`Report DateTime` <-
+    as.Date(substr(crime_seattle_selected$`Report DateTime`, start = 1, stop = 10), format = "%m/%d/%Y")
+
+  crime_seattle_selected_2015_to_2020 <- crime_seattle_selected %>%
+    filter(`Report DateTime` > "2015-01-01" & `Report DateTime` < "2020-12-31")
+
+  processed_crime_seattle <- crime_seattle_selected_2015_to_2020 %>%
+    dplyr::select(-`Report DateTime`) %>%
+    rename(variable=Offense, latitude=Latitude, longitude=Longitude) %>%
+    add_column(estimate=1, .before = "latitude") %>%
+    mutate(variable=str_c("is_crime_seattle ", variable))
+
+  write_csv(processed_crime_seattle, "external_data/processed_crime_seattle.csv")
+}
+
+# section: airbnb
+download_file_airbnb <- function () {
+}
+process_file_airbnb <- function () {
+  library(tidyverse)
+  raw_airbnb <- read_csv("external_data/downloaded_airbnb.csv", col_types = "ccccccddccccccccc")
+
+  airbnb_selected <- raw_airbnb %>%
+    dplyr::select(room_type, latitude, longitude)
+
+  processed_airbnb <- airbnb_selected %>%
+    rename(variable=room_type) %>%
+    add_column(estimate=1, .before = "latitude") %>%
+    mutate(variable=str_c("is_airbnb ", variable))
+
+  write_csv(processed_airbnb, "external_data/processed_airbnb.csv")
 }
