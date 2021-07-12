@@ -73,20 +73,6 @@ get_geoid_for_lat_long_annonymous <- function (latitude, longitude, geoid_type =
   return(edited_geoid)
 }
 
-
-#' Plot a geographical region with background map
-#'
-#' Returns a ggplot object.
-#'
-library("leaflet")
-plot_buffer_with_background <- function (buffer, longitude, latitude) {
-  m <- leaflet() %>%
-    addTiles() %>%  # Add default OpenStreetMap map tiles
-    addMarkers(lng=longitude, lat=latitude) %>%
-    addPolygons(data = buffer)
-  return(m)
-}
-
 #' Do same as osrm 3.4.1 package does
 #'
 #'

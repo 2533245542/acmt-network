@@ -13,12 +13,6 @@ library(reshape2)
 library(tigris)
 library(lwgeom)
 
-source("external_data-file_downloader_and_processor.R")
-source("external_data-file_loader.R")
-#source("external_data-variable_name_to_interpolation_type_mapping.R")
-source("external_data-presets.R")
-source("util-geocoding.R")
-
 path <- "http://host.docker.internal:5000/latlong?"
 
 geocode <- function(address) {

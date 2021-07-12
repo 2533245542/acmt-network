@@ -52,6 +52,14 @@ v0.0.9
 * Add an option to return only point estimates for a geographic coordinates
 * allow to find the collect measures within a radial buffer based on buffer coordinate
 
+v0.0.10
+=====
+* TODO added the option of not mapping a folder in app, and instead do the copying of the folder into app
+* TODO add more point counting datasets (crime for LA, Chicago, NYC, boston)
+* TODO a plot utility for plotting the buffer as well as the coordinate points
+* TODO set up shiny-server for the app container
+* TODO add shiny app to the app container
+
 Future
 =====
 * Verify acmt-network on existing work

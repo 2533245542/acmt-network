@@ -15,3 +15,11 @@ test_that("using call 911 data", {
 })
 
 
+test_that("using call crime boston", {
+  external_data_name_to_info_list <- list(crime_boston=external_data_presets_crime_boston)
+  result <- get_aggregated_point_measures(latitude = 42.3650142, longitude = -71.0800319, radius = 2000, external_data_name_to_info_list=external_data_name_to_info_list)
+
+  expect_equal(filter(result$aggregated_result, variable=="is_crime_boston ASSAULT - AGGRAVATED")$aggregated_estimate, 201)
+  expect_equal(filter(result$aggregated_result, variable=="is_crime_boston AUTO THEFT")$aggregated_estimate, 61)
+  #plot_buffer_with_background(buffer=result$created_buffer, longitude=-71.0800319, latitude=42.3650142)
+})

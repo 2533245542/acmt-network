@@ -75,8 +75,26 @@ external_data_presets_crime_seattle <- list(vector_of_expected_downloaded_file_n
                                       process_file=process_file_crime_seattle
 )
 
+external_data_presets_crime_boston <- list(vector_of_expected_downloaded_file_name=c("downloaded_crime_boston.csv"),
+                                            expected_processed_file_name='processed_crime_boston.csv',
+                                            download_file=download_file_crime_boston,
+                                            process_file=process_file_crime_boston
+)
+
+external_data_presets_crime_chicago <- list(vector_of_expected_downloaded_file_name=c("downloaded_crime_chicago.csv"),
+                                           expected_processed_file_name='processed_crime_chicago.csv',
+                                           download_file=download_file_crime_chicago,
+                                           process_file=process_file_crime_chicago
+)
+external_data_presets_crime_los_angeles <- list(vector_of_expected_downloaded_file_name=c("downloaded_crime_los_angeles.csv"),
+                                            expected_processed_file_name='processed_crime_los_angeles.csv',
+                                            download_file=download_file_crime_los_angeles,
+                                            process_file=process_file_crime_los_angeles
+)
+
 external_data_presets_airbnb <- list(vector_of_expected_downloaded_file_name=c("downloaded_airbnb.csv"),
                                             expected_processed_file_name='processed_airbnb.csv',
                                             download_file=download_file_airbnb,
                                             process_file=process_file_airbnb
 )
+

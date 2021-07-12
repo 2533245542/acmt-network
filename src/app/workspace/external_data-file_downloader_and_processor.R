@@ -215,17 +215,90 @@ process_file_crime_seattle <- function () {
   crime_seattle_selected$`Report DateTime` <-
     as.Date(substr(crime_seattle_selected$`Report DateTime`, start = 1, stop = 10), format = "%m/%d/%Y")
 
-  crime_seattle_selected_2015_to_2020 <- crime_seattle_selected %>%
-    filter(`Report DateTime` > "2015-01-01" & `Report DateTime` < "2020-12-31")
+  crime_seattle_selected_2020 <- crime_seattle_selected %>%
+    filter(`Report DateTime` >= "2020-01-01" & `Report DateTime` <= "2020-12-31")
 
-  processed_crime_seattle <- crime_seattle_selected_2015_to_2020 %>%
+  processed_crime_seattle <- crime_seattle_selected_2020 %>%
     dplyr::select(-`Report DateTime`) %>%
     rename(variable=Offense, latitude=Latitude, longitude=Longitude) %>%
     add_column(estimate=1, .before = "latitude") %>%
-    mutate(variable=str_c("is_crime_seattle ", variable))
+    mutate(variable=str_c("is_crime_seattle ", variable)) %>%
+    filter(latitude!=0 & longitude!=0)
 
   write_csv(processed_crime_seattle, "external_data/processed_crime_seattle.csv")
 }
+
+# section: crime boston
+download_file_crime_boston <- function () {
+}
+process_file_crime_boston <- function () {
+  library(tidyverse)
+  raw_crime_boston <- read_csv("external_data/downloaded_crime_boston.csv")
+
+  crime_boston_selected <- raw_crime_boston %>%
+    dplyr::select(OCCURRED_ON_DATE, OFFENSE_DESCRIPTION, Lat, Long)
+
+  crime_boston_selected$OCCURRED_ON_DATE <- as.Date(substr(crime_boston_selected$OCCURRED_ON_DATE, start = 1, stop = 10), format = "%Y-%m-%d")
+
+  processed_crime_boston <- crime_boston_selected %>%
+    dplyr::select(-OCCURRED_ON_DATE) %>%
+    rename(variable=OFFENSE_DESCRIPTION, latitude=Lat, longitude=Long) %>%
+    add_column(estimate=1, .before = "latitude") %>%
+    mutate(variable=str_c("is_crime_boston ", variable)) %>%
+    filter(latitude!=0 & longitude!=0)
+
+  write_csv(processed_crime_boston, "external_data/processed_crime_boston.csv")
+}
+
+# section: crime chicago
+download_file_crime_chicago <- function () {
+}
+process_file_crime_chicago <- function () {
+  library(tidyverse)
+  raw_crime_chicago <- read_csv("external_data/downloaded_crime_chicago.csv")
+
+  crime_chicago_selected <- raw_crime_chicago %>%
+    dplyr::select(Date, `Primary Type`, Latitude, Longitude)
+
+  crime_chicago_selected$Date <- as.Date(substr(crime_chicago_selected$Date, start = 1, stop = 10), format = "%m/%d/%Y")
+
+  crime_chicago_selected_2020 <- crime_chicago_selected %>%
+    filter(Date >= "2020-01-01" & Date <= "2020-12-31")
+
+  processed_crime_chicago <- crime_chicago_selected_2020 %>%
+    dplyr::select(-Date) %>%
+    rename(variable=`Primary Type`, latitude=Latitude, longitude=Longitude) %>%
+    add_column(estimate=1, .before = "latitude") %>%
+    mutate(variable=str_c("is_crime_chicago ", variable)) %>%
+    drop_na()  # 210829 rows before dropping NA; 208468 rows after dropping; 2361 rows dropped
+
+  write_csv(processed_crime_chicago, "external_data/processed_crime_chicago.csv")
+}
+
+# section: crime los_angeles
+download_file_crime_los_angeles <- function () {
+}
+process_file_crime_los_angeles <- function () {
+  library(tidyverse)
+  raw_crime_los_angeles <- read_csv("external_data/downloaded_crime_los_angeles.csv", col_types = "ccccccccccccccccccccccccccdd")
+
+  crime_los_angeles_selected <- raw_crime_los_angeles %>% dplyr::select(`Date Rptd`, `Crm Cd Desc`, LAT, LON)
+
+  crime_los_angeles_selected$`Date Rptd` <- as.Date(substr(crime_los_angeles_selected$`Date Rptd`, start = 1, stop = 10), format = "%m/%d/%Y")
+
+  crime_los_angeles_selected_2020 <- crime_los_angeles_selected %>%
+    filter(`Date Rptd` >= "2020-01-01" & `Date Rptd` <= "2020-12-31")
+
+  processed_crime_los_angeles <- crime_los_angeles_selected_2020 %>%
+    dplyr::select(-`Date Rptd`) %>%
+    rename(variable=`Crm Cd Desc`, latitude=LAT, longitude=LON) %>%
+    add_column(estimate=1, .before = "latitude") %>%
+    mutate(variable=str_c("is_crime_los_angeles ", variable)) %>%
+    filter(latitude!=0 & longitude!=0)
+
+  write_csv(processed_crime_los_angeles, "external_data/processed_crime_los_angeles.csv")
+}
+
 
 # section: airbnb
 download_file_airbnb <- function () {

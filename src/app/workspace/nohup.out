@@ -1,0 +1,11 @@
+[2021-06-24T19:37:04.412] [INFO] shiny-server - Shiny Server v1.5.16.958 (Node.js v12.20.0)
+[2021-06-24T19:37:04.424] [INFO] shiny-server - Using config file "/etc/shiny-server/shiny-server.conf"
+[2021-06-24T19:37:04.498] [WARN] shiny-server - Running as root unnecessarily is a security risk! You could be running more securely as non-root.
+[2021-06-24T19:37:04.512] [INFO] shiny-server - Starting listener on http://[::]:3838
+[2021-06-24T19:37:24.422] [INFO] shiny-server - Created bookmark state directory: /var/lib/shiny-server/bookmarks
+[2021-06-24T19:37:24.430] [INFO] shiny-server - Created user bookmark state directory: /var/lib/shiny-server/bookmarks/shiny
+[2021-06-24T20:26:08.227] [INFO] shiny-server - SIGHUP received, reloading configuration
+[2021-06-24T20:26:08.440] [INFO] shiny-server - Stopping listener on http://[::]:3838
+[2021-06-24T20:26:08.552] [INFO] shiny-server - Shutting down worker processes (with notification)
+[2021-06-24T20:26:10.471] [WARN] shiny-server - Running as root unnecessarily is a security risk! You could be running more securely as non-root.
+[2021-06-24T20:26:10.556] [INFO] shiny-server - Starting listener on http://[::]:3838

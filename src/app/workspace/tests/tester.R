@@ -1,4 +1,5 @@
 library(testthat)
+source("setup-acmt.R")
 test_file(path='tests/test_acmt_network.R')
 test_file(path='tests/test_external_data.R')
 test_file(path='tests/test_util.R')

@@ -191,3 +191,20 @@ Docker-ACMT (not fully dockerized): https://github.com/smooney27/docker-acmt
 Postgis-Docker (where we borrowed the geocoder): https://github.com/uwrit/postgis-docker  
 Docker tutorials: https://docs.docker.com/get-started/  
 mRFEI: https://www.cdc.gov/obesity/resources/reports.html
+
+## Others
+### Map a local folder into the app container
+Currently, we copied the workspace folder `/src/app/workspace` into app's `/home/rstudio/workspace`.
+
+But we can also create a mapping between these two folders to enable easy file transfer.
+
+To do so, there are two steps. Step one is to uncomment the below code in `docker-compose.yml`.
+```
+#        volumes:
+#            - ./src/app/workspace:/home/rstudio/workspace
+```
+
+Step two is to comment the below code in `src/app/Dockerfile`
+```
+COPY workspace/* /home/rstudio/workspace
+```
