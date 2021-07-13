@@ -44,8 +44,8 @@ services:
         environment:
             PASSWORD: "${RSTUDIO_PASSWORD}"
             DISABLE_AUTH: "${DISABLE_AUTHENTICATION}"
-        volumes:
-            - ./src/app/workspace:/home/rstudio/workspace
+#        volumes:
+#            - ./src/app/workspace:/home/rstudio/workspace
         ports:
             - "8787:8787"
             - "3838:3838"
