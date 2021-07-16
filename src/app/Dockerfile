@@ -4,7 +4,7 @@ FROM rocker/verse:3.6.1
 
 # Copy local files into app container
 RUN mkdir home/rstudio/workspace
-#COPY workspace/ /home/rstudio/workspace
+COPY workspace/ /home/rstudio/workspace
 
 # Install packages for running acmt
 RUN apt-get update
