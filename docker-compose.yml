@@ -48,7 +48,7 @@ services:
 #            - ./src/app/workspace:/home/rstudio/workspace
         ports:
             - "8787:8787"
-            - "3838:8000"
+            - "8000:3838"
         depends_on:
             - api
         networks:
