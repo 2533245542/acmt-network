@@ -13,9 +13,13 @@ library(reshape2)
 library(tigris)
 library(lwgeom)
 
+enable_connection_to_docker_network <- TRUE
 path <- "http://host.docker.internal:5000/latlong?"
 
 geocode <- function(address) {
+  if (!enable_connection_to_docker_network) {
+    stop("connection to docker network is disabled")
+  }
   request <- GET(url = path, query=list(q=address))
   latitude <- NA
   longitude <- NA
@@ -42,7 +46,9 @@ unzip("ACMT/spcszn83.zip", exdir="ACMT")
 download.file(url = "https://www2.census.gov/geo/tiger/GENZ2017/shp/cb_2017_us_county_500k.zip", destfile = "ACMT/cb_2017_us_county_500k.zip")
 unzip("ACMT/cb_2017_us_county_500k.zip", exdir="ACMT")
 acs_columns_url <- "http://host.docker.internal:7000/ACSColumns.csv"
-download.file(url = acs_columns_url, destfile = "ACMT/ACSColumns.csv")
+if (enable_connection_to_docker_network) {
+  download.file(url = acs_columns_url, destfile = "ACMT/ACSColumns.csv")
+}
 
 state_plane_zones <- sf::st_read(dsn="ACMT", layer="spcszn83")
 counties <- sf::st_read(dsn="ACMT", layer="cb_2017_us_county_500k")

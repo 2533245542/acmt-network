@@ -54,11 +54,15 @@ v0.0.9
 
 v0.0.10
 =====
-* TODO added the option of not mapping a folder in app, and instead do the copying of the folder into app
-* TODO add more point counting datasets (crime for LA, Chicago, NYC, boston)
-* TODO a plot utility for plotting the buffer as well as the coordinate points
-* TODO set up shiny-server for the app container
-* TODO add shiny app to the app container
+* added the option of not mapping a folder in app, and instead do the copying of the folder into app
+* add more point counting datasets (crime for LA, Chicago, NYC, boston)
+* a plot utility for plotting the buffer as well as the coordinate points
+* set up shiny-server for the app container
+* add shiny app to the app container
+
+v0.0.11
+=====
+* allow disabling docker connection from app
 
 Future
 =====
