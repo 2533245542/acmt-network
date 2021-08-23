@@ -41,10 +41,10 @@ if (!dir.exists("ACMT")) {
   dir.create("ACMT")
 }
 
-download.file(url = "http://sandbox.idre.ucla.edu/mapshare/data/usa/other/spcszn83.zip", destfile = "ACMT/spcszn83.zip")
-unzip("ACMT/spcszn83.zip", exdir="ACMT")
-download.file(url = "https://www2.census.gov/geo/tiger/GENZ2017/shp/cb_2017_us_county_500k.zip", destfile = "ACMT/cb_2017_us_county_500k.zip")
-unzip("ACMT/cb_2017_us_county_500k.zip", exdir="ACMT")
+#download.file(url = "http://sandbox.idre.ucla.edu/mapshare/data/usa/other/spcszn83.zip", destfile = "ACMT/spcszn83.zip")
+#unzip("ACMT/spcszn83.zip", exdir="ACMT")
+#download.file(url = "https://www2.census.gov/geo/tiger/GENZ2017/shp/cb_2017_us_county_500k.zip", destfile = "ACMT/cb_2017_us_county_500k.zip")
+#unzip("ACMT/cb_2017_us_county_500k.zip", exdir="ACMT")
 acs_columns_url <- "http://host.docker.internal:7000/ACSColumns.csv"
 if (enable_connection_to_docker_network) {
   download.file(url = acs_columns_url, destfile = "ACMT/ACSColumns.csv")

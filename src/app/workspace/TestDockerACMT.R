@@ -1,5 +1,6 @@
-source("RefreshAPIKey.R")
-source("GeocoderACMT.R")
+#source("RefreshAPIKey.R")
+#source("GeocoderACMT.R")
+source("setup-acmt.R")
 
 # Test Geocoder
 location <- geocode("1959 NE Pacific Street, Seattle, WA 98195")

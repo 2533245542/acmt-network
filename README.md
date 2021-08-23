@@ -208,3 +208,15 @@ Step two is to comment the below code in `src/app/Dockerfile`
 ```
 COPY workspace/* /home/rstudio/workspace
 ```
+
+### .env file configuration
+```
+POSTGRES_DB=geocoder  # Whatever database name you'd like.
+POSTGRES_USER=dockeracmt  # Database username
+POSTGRES_PASSWORD=acmt  # Database password
+#GEOCODER_STATES=WA, CA, IL, NY, MA   # Comma-delimited state abbrevations. acmt-network will load state TIGER files for each state specified here. Note: Setting this to "*" (without quotes) will load data for all US states.
+GEOCODER_STATES=WY,WA  # Comma-delimited state abbrevations. acmt-network will load state TIGER files for each state specified here. Note: Setting this to "*" (without quotes) will load data for all US states.
+GEOCODER_YEAR=2017  # The specific year to download TIGER files for (The Census bureau publishes updated files each year).
+RSTUDIO_PASSWORD=acmtPassword  # the password to enter log into the web-based RStudio
+DISABLE_AUTHENTICATION=true  # directly open rstudio without entering username and password
+```
