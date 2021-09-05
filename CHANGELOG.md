@@ -64,8 +64,12 @@ v0.0.11
 =====
 * allow disabling docker connection from app
 
+v0.0.12
+=====
+* add an option to bypass SSL
+
 Future
 =====
 * Verify acmt-network on existing work
 * Write user instructions
-* allowed ACMT to select a set of variables for external data to interpolate as well (currently only supports core data)
+* Allowed ACMT to select a set of variables for external data to interpolate as well (currently only supports core data)

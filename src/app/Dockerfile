@@ -13,6 +13,9 @@ RUN yes | apt-get install libudunits2-dev
 RUN yes | apt-get install libgdal-dev
 RUN R -e "install.packages(c('geosphere', 'lwgeom', 'raster', 'sf', 'tidycensus', 'tigris', 'units', 'USAboundaries', 'reshape2', 'rgeos', 'osrm', 'leaflet'))"
 RUN echo "setwd(\"/home/rstudio/workspace/\")" > ~/../home/rstudio/.Rprofile  #set up working diretory
+ARG BYPASS_SSL
+RUN echo BYPASS_SSL=$BYPASS_SSL > ~/../home/rstudio/.Renviron  #pass the flag for R to access
+RUN chown -R rstudio ~/../home/rstudio/.Renviron  # let rstudio have permission to write .Renviron
 RUN yes | apt-get install curl
 RUN yes | apt-get install fish
 

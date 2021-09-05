@@ -1,3 +1,4 @@
+#!/bin/bash
 GISDATA="/gisdata"
 TMPDIR="${GISDATA}/temp/"
 UNZIPTOOL=unzip
@@ -33,10 +34,17 @@ get_fips_from_abbr () {
 get_fips_files () {
     local url=$1
     local fips=$2
-    local files=($(wget --no-verbose -O - $url \
-        | perl -nle 'print if m{(?=\"tl)(.*?)(?<=>)}g' \
-        | perl -nle 'print m{(?=\"tl)(.*?)(?<=>)}g' \
-        | sed -e 's/[\">]//g'))
+    if [ "$BYPASS_SSL" = true ]; then
+      local files=($(wget --no-check-certificate --no-verbose -O - $url \
+          | perl -nle 'print if m{(?=\"tl)(.*?)(?<=>)}g' \
+          | perl -nle 'print m{(?=\"tl)(.*?)(?<=>)}g' \
+          | sed -e 's/[\">]//g'))
+    else
+      local files=($(wget --no-verbose -O - $url \
+          | perl -nle 'print if m{(?=\"tl)(.*?)(?<=>)}g' \
+          | perl -nle 'print m{(?=\"tl)(.*?)(?<=>)}g' \
+          | sed -e 's/[\">]//g'))
+    fi
     local matched=($(echo "${files[*]}" | tr ' ' '\n' | grep "tl_${YEAR}_${fips}"))
     echo "${matched[*]}"
 }
@@ -66,7 +74,11 @@ create_indicies () {
 
 load_national_data () {
     cd $GISDATA
-    wget ${BASEURL}/STATE/tl_${YEAR}_us_state.zip --mirror --reject=html --no-verbose
+    if [ "$BYPASS_SSL" = true ]; then
+      wget --no-check-certificate ${BASEURL}/STATE/tl_${YEAR}_us_state.zip --mirror --reject=html --no-verbose
+    else
+      wget ${BASEURL}/STATE/tl_${YEAR}_us_state.zip --mirror --reject=html --no-verbose
+    fi
     cd ${BASEPATH}/STATE
     rm -f ${TMPDIR}/*.*
 
@@ -85,7 +97,11 @@ load_national_data () {
     ${PSQL} -c "CREATE INDEX tiger_data_state_all_the_geom_gist ON tiger_data.state_all USING gist(the_geom);"
     ${PSQL} -c "VACUUM ANALYZE tiger_data.state_all"
     cd $GISDATA
-    wget ${BASEURL}/COUNTY/tl_${YEAR}_us_county.zip --mirror --reject=html --no-verbose
+    if [ "$BYPASS_SSL" = true ]; then
+      wget --no-check-certificate ${BASEURL}/COUNTY/tl_${YEAR}_us_county.zip --mirror --reject=html --no-verbose
+    else
+      wget ${BASEURL}/COUNTY/tl_${YEAR}_us_county.zip --mirror --reject=html --no-verbose
+    fi
     cd $GISDATA/${BASEPATH}/COUNTY
     rm -f ${TMPDIR}/*.*
     ${PSQL} -c "DROP SCHEMA IF EXISTS tiger_staging CASCADE;"
@@ -115,9 +131,13 @@ load_state_data () {
     #############
     # Place
     #############                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-    cd $GISDATA                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-    wget $BASEURL/PLACE/tl_${YEAR}_${FIPS}_place.zip --mirror --reject=html --no-verbose                                                                                                                                                                                                                                                                                                                                                                    
-    cd $GISDATA/$BASEPATH/PLACE                                                                                                                                                                                                                                                                                                                                                                                                                       
+    cd $GISDATA
+    if [ "$BYPASS_SSL" = true ]; then
+      wget --no-check-certificate $BASEURL/PLACE/tl_${YEAR}_${FIPS}_place.zip --mirror --reject=html --no-verbose
+    else
+      wget $BASEURL/PLACE/tl_${YEAR}_${FIPS}_place.zip --mirror --reject=html --no-verbose
+    fi
+    cd $GISDATA/$BASEPATH/PLACE
     rm -f ${TMPDIR}/*.*                                                                                                                                                                                                                                                                                                                                                                                                                                                         
     ${PSQL} -c "DROP SCHEMA IF EXISTS tiger_staging CASCADE;"                                                                                                                                                                                                                                                                                                                                                                                                                   
     ${PSQL} -c "CREATE SCHEMA tiger_staging;"                                                                                                                                                                                                                                                                                                                                                                                                                                   
@@ -137,9 +157,13 @@ load_state_data () {
     #############
     # Cousub
     #############   
-    cd $GISDATA                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-    wget $BASEURL/COUSUB/tl_${YEAR}_${FIPS}_cousub.zip --mirror --reject=html --no-verbose
-    cd $GISDATA/$BASEPATH/COUSUB                                                                                                                                                                                                                                                                                                                                                                                                                      
+    cd $GISDATA
+    if [ "$BYPASS_SSL" = true ]; then
+      wget --no-check-certificate $BASEURL/COUSUB/tl_${YEAR}_${FIPS}_cousub.zip --mirror --reject=html --no-verbose
+    else
+      wget $BASEURL/COUSUB/tl_${YEAR}_${FIPS}_cousub.zip --mirror --reject=html --no-verbose
+    fi
+    cd $GISDATA/$BASEPATH/COUSUB
     rm -f ${TMPDIR}/*.*                                                                                                                                                                                                                                                                                                                                                                                                                                                         
     ${PSQL} -c "DROP SCHEMA IF EXISTS tiger_staging CASCADE;"                                                                                                                                                                                                                                                                                                                                                                                                                   
     ${PSQL} -c "CREATE SCHEMA tiger_staging;"                                                                                                                                                                                                                                                                                                                                                                                                                                   
@@ -158,9 +182,13 @@ load_state_data () {
     #############
     # Tract
     #############   
-    cd $GISDATA                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-    wget $BASEURL/TRACT/tl_${YEAR}_${FIPS}_tract.zip --mirror --reject=html --no-verbose
-    cd $GISDATA/$BASEPATH/TRACT                                                                                                                                                                                                                                                                                                                                                                                                                       
+    cd $GISDATA
+    if [ "$BYPASS_SSL" = true ]; then
+      wget --no-check-certificate $BASEURL/TRACT/tl_${YEAR}_${FIPS}_tract.zip --mirror --reject=html --no-verbose
+    else
+      wget $BASEURL/TRACT/tl_${YEAR}_${FIPS}_tract.zip --mirror --reject=html --no-verbose
+    fi
+    cd $GISDATA/$BASEPATH/TRACT
     rm -f ${TMPDIR}/*.*                                                                                                                                                                                                                                                                                                                                                                                                                                                         
     ${PSQL} -c "DROP SCHEMA IF EXISTS tiger_staging CASCADE;"                                                                                                                                                                                                                                                                                                                                                                                                                   
     ${PSQL} -c "CREATE SCHEMA tiger_staging;"                                                                                                                                                                                                                                                                                                                                                                                                                                   
@@ -185,7 +213,11 @@ load_state_data () {
 
     for i in "${files[@]}"
     do
-        wget $BASEURL/FACES/$i --no-verbose --mirror 
+        if [ "$BYPASS_SSL" = true ]; then
+          wget --no-check-certificate $BASEURL/FACES/$i --no-verbose --mirror
+        else
+          wget $BASEURL/FACES/$i --no-verbose --mirror
+        fi
     done
 
     cd $GISDATA/$BASEPATH/FACES/                                                                                                                                                                                                                                                                                                                                                                                                                      
@@ -218,7 +250,11 @@ load_state_data () {
 
     for i in "${files[@]}"
     do
-        wget $BASEURL/FEATNAMES/$i --no-verbose --mirror 
+        if [ "$BYPASS_SSL" = true ]; then
+          wget --no-check-certificate $BASEURL/FEATNAMES/$i --no-verbose --mirror
+        else
+          wget $BASEURL/FEATNAMES/$i --no-verbose --mirror
+        fi
     done
 
     cd $GISDATA/$BASEPATH/FEATNAMES/
@@ -251,7 +287,11 @@ load_state_data () {
 
     for i in "${files[@]}"
     do
-        wget $BASEURL/EDGES/$i --no-verbose --mirror 
+        if [ "$BYPASS_SSL" = true ]; then
+          wget --no-check-certificate $BASEURL/EDGES/$i --no-verbose --mirror
+        else
+          wget $BASEURL/EDGES/$i --no-verbose --mirror
+        fi
     done
 
     cd $GISDATA/$BASEPATH/EDGES/
@@ -296,8 +336,12 @@ load_state_data () {
     files=($(get_fips_files $BASEURL/ADDR $FIPS))
 
     for i in "${files[@]}" 
-    do 
-        wget $BASEURL/ADDR/$i --no-verbose --mirror  
+    do
+        if [ "$BYPASS_SSL" = true ]; then
+          wget --no-check-certificate $BASEURL/ADDR/$i --no-verbose --mirror
+        else
+          wget $BASEURL/ADDR/$i --no-verbose --mirror
+        fi
     done
 
     cd $GISDATA/$BASEPATH/ADDR/

@@ -9,6 +9,7 @@ services:
             POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
             GEOCODER_STATES: "${GEOCODER_STATES}"
             GEOCODER_YEAR: "${GEOCODER_YEAR}"
+            BYPASS_SSL: "${BYPASS_SSL}"
         ports:
             - "5433:5432"
         networks:
@@ -40,6 +41,8 @@ services:
     app:
         build:
             context: ./src/app
+            args:
+              BYPASS_SSL: "${BYPASS_SSL}"
         working_dir: /home/rstudio/workspace/
         environment:
             PASSWORD: "${RSTUDIO_PASSWORD}"
