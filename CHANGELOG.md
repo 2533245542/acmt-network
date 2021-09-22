@@ -68,6 +68,11 @@ v0.0.12
 =====
 * add an option to bypass SSL
 
+v0.0.13
+=====
+* revise the rmarkdown files and the paper
+
+
 Future
 =====
 * Verify acmt-network on existing work

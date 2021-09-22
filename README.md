@@ -45,7 +45,6 @@ Type `docker volume ls -f dangling=true` in the terminal to find any dangling vo
 ## Uninstalling ACMT-Network
 An ACMT-Network instance is created based on four Docker images that we created when installing ACMT-Network. To remove these images, in Docker Dashboard, select `Images` on the left panel; on the right panel, remove `acmt-network_app`, `acmt-network_files`, `acmt-network_api` and `acmt-network_db`.
 
-
 ## Reinstall after editing ACMT-Network
 If you edited ACMT-Network (changed `Dockerfile`s, `docker-compose.yml`, added files to `src/files` etc.), you might want to reinstall and instantiate ACMT-Network to see the changes. This can be done by first removing the previous ACMT-Network instance and then typing `docker-compose up --build` in the terminal. It rebuilds the Docker images and creates a new ACMT-Network instance.
 

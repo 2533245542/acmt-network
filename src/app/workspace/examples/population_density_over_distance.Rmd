@@ -37,8 +37,7 @@ We take the following steps:
 We have gathered the City Hall addresses for Seattle, Los Angeles, Chicago, New York and Boston from Google.
 
 ```{r, results = 'hide'}
-source("RefreshAPIKey.R")
-source("GeocoderACMT.R")
+source("setup-acmt.R")
 
 library(ggplot2)
 city_hall_to_address_list <- list(

@@ -1,5 +1,5 @@
-BYPASS_SSL <- as.logical(Sys.getenv("BYPASS_SSL"))  # in most cases this should be false
-if (BYPASS_SSL) {
+BYPASS_SSL <- as.logical(Sys.getenv("BYPASS_SSL"))  # in most cases this should be false, or when Docker not enabled -- NA
+if (!is.na(BYPASS_SSL) && BYPASS_SSL) {
   library(httr)
   httr::set_config(config(ssl_verifypeer=0L))
 }

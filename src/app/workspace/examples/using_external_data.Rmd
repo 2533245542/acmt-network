@@ -114,8 +114,7 @@ Requirements:
 When the 4 steps are done, we can run ACMT with external data.
 
 ```{r, results = 'hide'}
-source("RefreshAPIKey.R")
-source("GeocoderACMT.R")
+source("setup-acmt.R")
 external_data_name_to_info_list <- list(
         mrfei=list(vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls"),
                    download_file=download_file_mrefi,

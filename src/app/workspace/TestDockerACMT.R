@@ -1,5 +1,3 @@
-#source("RefreshAPIKey.R")
-#source("GeocoderACMT.R")
 source("setup-acmt.R")
 
 # Test Geocoder
