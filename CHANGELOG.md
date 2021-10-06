@@ -72,6 +72,9 @@ v0.0.13
 =====
 * revise the rmarkdown files and the paper
 
+v0.0.14
+=====
+* user can optionally mount folder from local to docker
 
 Future
 =====

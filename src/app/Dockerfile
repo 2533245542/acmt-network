@@ -25,6 +25,3 @@ RUN yes | apt-get install fish
 #RUN wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.16.958-amd64.deb
 #RUN yes | gdebi shiny-server-1.5.16.958-amd64.deb
 #RUN git clone https://github.com/2533245542/acmt-shiny.git /srv/shiny-server/acmt_shiny
-
-#CMD ["nohup", "shiny-server", "&"]
-#CMD ["shiny-server"]
