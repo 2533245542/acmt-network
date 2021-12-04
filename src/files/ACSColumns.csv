@@ -1,4 +1,18 @@
 acs_col,var_name,universe_col,pretty_name_count,pretty_name_proportion,acs_variable_name_to_interpolate_by_sum_boolean_mapping
+B23001_009,males_16_19_not_in_labor_force,B23001_003,Total males ages 16 to 19 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 16 to 19 with labor force determined),TRUE
+B23001_016,males_20_21_not_in_labor_force,B23001_010,Total males ages 20 to 21 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 20 to 21 with labor force determined),TRUE
+B23001_023,males_22_24_not_in_labor_force,B23001_017,Total males ages 22 to 24 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 22 to 24 with labor force determined),TRUE
+B23001_030,males_25_29_not_in_labor_force,B23001_024,Total males ages 25 to 29 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 25 to 29 with labor force determined),TRUE
+B23001_037,males_30_34_not_in_labor_force,B23001_031,Total males ages 30 to 34 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 033 to 34 with labor force determined),TRUE
+B23001_044,males_35_44_not_in_labor_force,B23001_038,Total males ages 35 to 44 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 35 to 44 with labor force determined),TRUE
+B23001_051,males_45_54_not_in_labor_force,B23001_045,Total males ages 45 to 54 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 45 to 54 with labor force determined),TRUE
+B23001_058,males_55_59_not_in_labor_force,B23001_052,Total males ages 55 to 59 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 55 to 59 with labor force determined),TRUE
+B23001_065,males_60_61_not_in_labor_force,B23001_059,Total males ages 60 to 61 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 60 to 61 with labor force determined),TRUE
+B23001_072,males_62_64_not_in_labor_force,B23001_066,Total males ages 62 to 64 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 62 to 64 with labor force determined),TRUE
+B23001_077,males_65_69_not_in_labor_force,B23001_073,Total males ages 65 to 69 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 65 to 69 with labor force determined),TRUE
+B23001_082,males_70_74_not_in_labor_force,B23001_078,Total males ages 70 to 74 not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 70 to 74 with labor force determined),TRUE
+B23001_087,males_75_older_not_in_labor_force,B23001_083,Total males ages 75 and older not in the labor force (count),Percent of total males not in the labor force (proportion of males ages 75 and older with labor force determined),TRUE
+B23001_002,total_males_16_over_labor_force_det,,"Total males 16 and older, labor force involvement determined (count)",,TRUE
 B01001_001,total_pop,,Total Population (count),,TRUE
 B01001_002,men,B01001_001,Male residents (count),Males (proportion of population),TRUE
 B01001_003,males_under_5,B01001_002,Male residents under 5 (count),Male residents under 5 (proportion of all male residents),TRUE
@@ -199,7 +213,7 @@ B19054_002,receive_idr,B19054_001,"Households receiving dividends, interest, or 
 B19058_001,total_public_asst,,"Total population, public assistance status is determined",,TRUE
 B19058_002,public_asst,B19058_001,Households receiving public assistance (count),Percent of households receiving public assistance (proportion of all households),TRUE
 B23025_001,age_16_plus,,Residents 16 years and older (count),,TRUE
-B23025_002,unemployed,B23025_001,Residents 16 and older who are unemployed (count),Percent of residents 16 and older who are unemployed (proportion of all residents 16 and over,TRUE
+B23025_005,unemployed,B23025_001,Residents 16 and older who are unemployed (count),Percent of residents 16 and older who are unemployed (proportion of all residents 16 and over),TRUE
 B25001_001,housing_units,,Housing units (count),,TRUE
 B25002_001,total_housing_units_occ,,Housing units (count),,TRUE
 B25002_003,vacant_units,B25002_001,Housing units that are vacant,Percent of housing units that are vacant (proportion of all housing units),TRUE
@@ -213,7 +227,7 @@ B25014_007,owner_2.01_or_more_per_room,B25014_002,Owner occupied households with
 B25014_008,total_renter_occ_units_rooms,,"Total renter occupied units, rooms determined (count)",,TRUE
 B25014_011,renter_1.01_to_1.5_per_room,B25014_008,Renter-occuped households with 1.01 to 1.5 people per room (count),Percent of renter-occuped households with 1.01 to 1.5 people per room (Proportion of all renter-occupied housing),TRUE
 B25014_012,renter_1.51_to_2.0_per_room,B25014_008,Renter-occupied households with 1.51 to 2.0 people per room (count),Percent of renter-occupied households with 1.51 to 2.0 people per room (proportion of all renter-occupied housing),TRUE
-B25014_013, renter_2.01_or_more_per_room,B25014_008,Renter-occupied ouseholds with 2.01 or more people per room (count),Renter-occupied households with 2.01 or more people per room (proportion of all renter-occupied housing),TRUE
+B25014_013,renter_2.01_or_more_per_room,B25014_008,Renter-occupied ouseholds with 2.01 or more people per room (count),Renter-occupied households with 2.01 or more people per room (proportion of all renter-occupied housing),TRUE
 B25016_001,total_occupied_housing_units_plumb,,"Occupied housing units, plumbing determined (count)",,TRUE
 B25016_002,no_comp_plumb_owner,B25016_001,Owner-occupied households without adequate plumbing (count),Percent of owner-occupied households without complete plumbing  (proportion of all households),TRUE
 B25016_011,no_comp_plumb_renter,B25016_001,Renter-occupied households without complete plumbing (count),Percent of renter-occupied households without complete plumbing (proportion of all households),TRUE
@@ -233,7 +247,7 @@ B25043_002,total_owner_occupied_housing_tele,B25043_001,"Owner occupied housing 
 B25043_007,no_phone_owner,B25043_002,Owner occupied households without a telephone (count),Percent of households without a telephone (proportion of all households),TRUE
 B25043_011,renter_occupied,B25003_001,Renter-occupied households (count),Percent of housing units that are renter-occupied (percent of all housing units),TRUE
 B25043_016,no_phone_renter,B25043_011,Renter occupied households without a telephone (count),Percent of renter occupied households without a telephone (proportion of all households),TRUE
-B25044_001,Occupied_housing_vehicle_determined,,"Total occupied housing units, vehicles determined",,TRUE
+B25044_001,occupied_housing_vehicle_determined,,"Total occupied housing units, vehicles determined",,TRUE
 B25044_002,total_owner_occ_housing_units_vehic,B25044_001,"Owner occupied housing units, vehicles determined (count)","Percent of owner occupied housing units, vehicles determined (proportion of all households with vehicles determined)",TRUE
 B25044_003,owner_no_vehicle,B25044_002,Owner occupied households with no vehicles available (count),Percent of owner occupied households with no vehicle available (Porportion out of all owner occupied households),TRUE
 B25044_009,total_renter_occ_vehicles,B25044_001,"Total renter occupied households, vehicles determined (count)","Percent of renter occupied housing units, vehicles determined (proportion of all households with vehicles determined)",TRUE
