@@ -76,8 +76,15 @@ v0.0.14
 =====
 * user can optionally mount folder from local to docker
 
+v0.0.15
+=====
+* allow geocoder to return the confidence of search
+
+
 Future
 =====
 * Verify acmt-network on existing work
 * Write user instructions
 * Allowed ACMT to select a set of variables for external data to interpolate as well (currently only supports core data)
+* restructure external_data to file_data
+* restructure ACS data to api_data

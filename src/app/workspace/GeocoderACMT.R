@@ -28,13 +28,14 @@ geocode <- function(address) {
   } else {
     response <- content(request, as = "text", encoding = "UTF-8")
     df <- fromJSON(response, flatten = TRUE)
+    if (!is.null(df$rating)) { rating <- as.numeric(as.character(df$rating)) }
     if (!is.null(df$lat)) { latitude <- as.numeric(as.character(df$lat)) }
     if (!is.null(df$long)) { longitude <- as.numeric(as.character(df$long)) }
   }
   if (is.na(latitude) && is.na(longitude)) {
     stop("The state of this address is not loaded into database")
   }
-  return(list(latitude=latitude, longitude=longitude))
+  return(list(latitude=latitude, longitude=longitude, rating=rating))
 }
 
 if (!dir.exists("ACMT")) {

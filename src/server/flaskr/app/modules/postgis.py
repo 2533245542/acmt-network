@@ -44,6 +44,7 @@ class PostgisConnector:
         latlong = result[1].replace('POINT(','').replace(')','',).split(' ')
 
         output = {
+            'rating': result[0],
             'lat': float(latlong[1]),
             'long': float(latlong[0]),
             'building': result[2],
