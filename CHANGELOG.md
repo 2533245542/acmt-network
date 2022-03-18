@@ -80,6 +80,9 @@ v0.0.15
 =====
 * allow geocoder to return the confidence of search
 
+v0.0.16
+=====
+* edit app's dockerfile to set acmt-shiny automatically
 
 Future
 =====

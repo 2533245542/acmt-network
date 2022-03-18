@@ -1,0 +1,24 @@
+version: '3'
+services:
+    app:
+        ports:
+            - "100:8787"  # inaccessible port
+            - "8000:3838"
+    app1:
+        build:
+            context: ./src/app
+            args:
+                BYPASS_SSL: "${BYPASS_SSL}"
+        working_dir: /home/rstudio/workspace/
+        environment:
+            PASSWORD: "${RSTUDIO_PASSWORD}"
+            DISABLE_AUTH: "${DISABLE_AUTHENTICATION}"
+        ports:
+            - "8080:3838"
+        depends_on:
+            - api
+        networks:
+            default:
+                aliases:
+                    - app1
+
