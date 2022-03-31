@@ -3,8 +3,8 @@ title: 'ACMT Example: Calculating a Neighborhood Deprivation Index'
 author: "Amy Youngbloom"
 date: "1/13/2022"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -23,248 +23,213 @@ We take the following steps:
   1. Download dispensary and alcohol retailer data and reformat into lists from WA Liquor and Cannabis Public Record website: https://lcb.wa.gov/records/frequently-requested-lists
 
   2. Geocode dispensary and alcohol retailers
-
-  3. Create a function to pull ACMT measures
-
-  4. Designate the ACS measures relevant to the NDI measure
-
-  5. Pull designated ACS measures
-
-  6. Transform list of measures into a wide dataframe
-
-  7. Run a principal component analysis to find weights for each variable measure
-
-  8. Calculate the NDI measure
-
-  9. Create a boxplot to compare the NDI measures for dispensaries versus alcohol retailers
-
-  10. Calculate a t-test to statistically compare NDI measures
+  3. Designate the ACS measures relevant to the NDI measure
+  4. Create a function and loop to pull ACMT measures
+  5. Run a principal component analysis to find weights for each variable measure
+  6. Calculate the NDI measure
+  7. Create a boxplot to compare the NDI measures for dispensaries versus alcohol retailers
+  8. Calculate a t-test to statistically compare NDI measures
 
 ```{r, results='hide'}
 source("setup-acmt.R")
 library(readxl)
 library(tidyverse)
+install.packages('janitor')
 library(janitor)
 ```
 
-## 1. Download data and reformat into lists
+## 1. Download data
 
 Verify the urls below for the Dispensaries and Alcohol retailers below. The lists are updated regularly and can be found here: https://lcb.wa.gov/records/frequently-requested-lists. See urls for these lists: Cannabis License Applicants and Off Premises, Licensees
 
 ```{r, results='hide'}
 
-download.file(url = "https://lcb.wa.gov/sites/default/files/publications/Public_Records/2019/CannabisApplicants01112022.xls", 
+#Find URL For most up-tp-date lists:
+download.file(url = "https://lcb.wa.gov/sites/default/files/publications/Public_Records/2019/CannabisApplicants03222022.xls", 
               destfile = "external_data/downloaded_cannabis.xls") ##check records website if url is outdated
 
 
-download.file(url = "https://lcb.wa.gov/sites/default/files/publications/Public_Records/2019/Off%20Premise01112022.xlsx", 
+download.file(url = "https://lcb.wa.gov/sites/default/files/publications/Public_Records/2019/Off%20Premise03222022.xlsx", 
               destfile = "external_data/downloaded_alcohol.xlsx")
 
 cannabis_dataframe <- read_excel("external_data/downloaded_cannabis.xls")
 alcohol_dataframe<-read_excel("external_data/downloaded_alcohol.xlsx")
 
-#limit to Seattle only dispensaries and create address field: 
+#limit to Seattle only dispensaries and create address field:
 seattle_dispensary<-cannabis_dataframe %>%
   janitor::clean_names() %>%
-  filter(city == "SEATTLE", priv_desc == "MARIJUANA RETAILER", (privilege_status=="ACTIVE (ISSUED)" | privilege_status=="PENDING (ISSUED)")) %>%
-     mutate(full_address = paste(street_address, 
-                      city, state, 
-                      zip_code, sep = ", "),  ID=paste(as.character(row_number()), 'disp', sep='.'), 
-            status=privilege_status, 
-            license_type='dispensary') %>%
-  subset(select=c(ID, tradename, status, full_address, license_type))
+  filter(city == "SEATTLE", priv_desc == "MARIJUANA RETAILER", (privilege_status=="ACTIVE (ISSUED)" | privilege_status == 'PENDING (ISSUED)')) %>%	
+  mutate(full_address = paste(street_address, city, state, zip_code, sep = ", "), ID=paste(as.character(row_number()), 'disp', sep='.'), status=privilege_status, license_type='dispensary') %>%
+  subset(select=c(ID, tradename, status, full_address, license_type)) %>%
+  mutate(privilege='marijuana retailer')
 
 seattle_alcohol<-alcohol_dataframe %>%
   janitor::clean_names() %>%
-  filter(loc_city == "SEATTLE", status == "ACTIVE (ISSUED)" | status == "PENDING (ISSUED)", 
-         privilege != "BEER/WINE GIFT DELIVERY") %>%
-  mutate(full_address = paste(loc_address, 
-                              loc_city, loc_st,  
-                              loc_zip, sep = ", "),  ID=paste(as.character(row_number()), 'alcohol', sep='.'), 
+  filter(loc_city == "SEATTLE", status == "ACTIVE (ISSUED)" | status == "PENDING (ISSUED)", privilege != "BEER/WINE GIFT DELIVERY") %>%
+  mutate(full_address = paste(loc_address, loc_city, loc_st, loc_zip, sep = ", "), 
+        ID=paste(as.character(row_number()), 'alcohol', sep='.'), 
          license_type='alcohol_offpremise') %>%
-  subset(select=c(ID, tradename, status, full_address, license_type, privilege))
-    
-#transform into lists & merge:
-seattle_dispensary_list<-as.list(seattle_dispensary$full_address)
-seattle_dispensary_list<-structure(seattle_dispensary_list, names=(seattle_dispensary$ID))
-
-seattle_alcohol_list<-as.list(seattle_alcohol$full_address)
-seattle_alcohol_list<-structure(seattle_alcohol_list, names=(seattle_alcohol$ID))
-
-seattle_alcohol_dispensary_list<-c(seattle_dispensary_list[1:20], seattle_alcohol_list[1:20])
+        subset(select=c(ID, tradename, status, full_address, license_type, privilege))
+## Limiting list for speed of processing
+seattle_alcohol_dispensary_list<-rbind(seattle_dispensary[1:100,], seattle_alcohol[1:200,])
 ```
 
 ```{r}
 head(seattle_alcohol_dispensary_list)
 ```
 
-## 2. Geocode dispensary and alcohol retailers list
-
-```{r}
-seattle_lat_to_long_disp_alcohol_list<-lapply(seattle_alcohol_dispensary_list, geocode)
-print(seattle_lat_to_long_disp_alcohol_list[1])
-```
-
-## 3. Create a function to pull ACMT measures
-Once we have a geocoded list of dispensaries and off premise alcohol sale licensees, we can write a function to pull ACS measures that we will need to calculate the NDI.
-
+## 2. Write a geocoding loop to geocode all addresses
 
 ```{r, results='hide'}
-get_variable_measures_from_acmt <- function(dispensary_to_lat_long_list, radius_vector, year, names_of_variable_to_get=NA, external_data_name_to_info_list=NULL, codes_of_acs_variables_to_get=NA) {
-  dispensary_to_radius_to_variable_to_measures_list <- vector(mode="list", length=length(dispensary_to_lat_long_list))
-  names(dispensary_to_radius_to_variable_to_measures_list) <- names(dispensary_to_lat_long_list)
+#add lat and long variables
+seattle_alcohol_dispensary_list<-seattle_alcohol_dispensary_list %>%
+  filter(!is.na(full_address))%>%
+  sample_n(100)%>% #subset to speed up the processing
+mutate(lat=NA, 
+       long=NA)
   
-  for(dispensary in names(dispensary_to_radius_to_variable_to_measures_list)) {
-    radius_to_variable_to_measures_list <- vector(mode="list", length=length(radius_vector))
-    names(radius_to_variable_to_measures_list) <- as.character(radius_vector)
-    for (radius in radius_vector) {
-      print(dispensary)
-      print(radius)
-      
-      latitude <- dispensary_to_lat_long_list[[dispensary]]$latitude
-      longitude <- dispensary_to_lat_long_list[[dispensary]]$longitude
-      
-      environmental_measures <- get_acmt_standard_array(long=longitude,
-                                                        lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
-      
-      variable_to_measures_list <- vector(mode="list", length=length(names_of_variable_to_get))
-      names(variable_to_measures_list) <- names_of_variable_to_get
-      for (name_of_variable in names_of_variable_to_get) {
-        value_of_variable <- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
-        variable_to_measures_list[[name_of_variable]] <- value_of_variable
-      }
-      radius_to_variable_to_measures_list[[which(radius == radius_vector)]] <- variable_to_measures_list
-      radius_to_variable_to_measures_list[[as.character(radius)]] <- variable_to_measures_list
-    }
-    dispensary_to_radius_to_variable_to_measures_list[[dispensary]] <- radius_to_variable_to_measures_list
-  }
-  return(dispensary_to_radius_to_variable_to_measures_list)
+
+#Geocoding loop
+for(i in 1:nrow(seattle_alcohol_dispensary_list)) {
+  if(!is.na(seattle_alcohol_dispensary_list$lat[i])) next #skip already geocoded)
+  if(is.na(seattle_alcohol_dispensary_list$full_address[i])) next #skip NA address values
+  print(i) #print # so you know the progress of the geocoder
+  address<-seattle_alcohol_dispensary_list$full_address
+  lat_long<-geocode(address[i])
+  seattle_alcohol_dispensary_list$lat[i]<-lat_long$latitude #add latitude to dataset
+  seattle_alcohol_dispensary_list$long[i]<-lat_long$longitude #add long to dataset
 }
 ```
 
-## 4. Designate the ACS measures relevant to the NDI measure
-Once the function is written, we need to designate which variables will be pulled and create '_count' and '_proportion' versions of each relevant variable.
+## 3. Designate the ACS measures relevant to the NDI measure
+Once the addresses are all geocoded, we need to designate which variables will be pulled and create ’_count’ and ’_proportion’ versions of each relevant variable. Note that ACS variable names change from year to year. These variable names set below are for 2019. For other years, refer to the ACS Variables by Year spreadsheet to verify the variable names for the year you are interested in.
 
 ```{r, results='hide'}
-NDI_variables<-c("B23025_005", "C24030_019", "C24030_018", "C24030_002", "B17012_002", "B17012_001", "B06009_002", "B06009_001", "B23025_002", "B23025_001", "B25014_007", "B25014_002", "B25014_013", "B25014_008", "B11012_010", "B11012_001", "B19001_006", "B19001_005", "B19001_004", "B19001_003", "B19001_002", "B19001_001", "B19058_002", "B19058_001")
+NDI_variables<-c("B23025_005", # males/females unemployed
+                "C24030_019", #males in management
+                "C24030_018", #males in professional occupations
+                "C24030_002", #total males employed
+                "B17012_002", #households in poverty
+                "B17012_001", #total households - poverty determined
+                "B06009_002", #less than HS education
+                "B06009_001", #total with education determined, 25 years and older
+                "B23025_002", #total in the labor force
+                "B23025_001", #total population 16 and older
+                "B25014_007", #owner-occupied housing 2+ ppl per room
+                "B25014_013", #renter-occupied housing, 2+ people per room
+                "B25014_001", #occupied housing units
+                "B11012_010", #female-householder, own children < 18 years
+                "B11012_001", #Total househods
+                "B19001_006", #income 25-29.9k
+                "B19001_005", #income 20-24.9k
+                "B19001_004", #income 15-19.9k
+                "B19001_003", #income 10-14.0k
+                "B19001_002", #income 5-9.9k
+                "B19001_001", #income total income
+                "B19058_002", #total residents public assistance
+                  "B19058_001") #total households- assistance determined
 acsvars<-read_csv('ACMT/ACSColumns.csv')
 acsvars<-subset(acsvars, acs_col %in% NDI_variables)
-
 ##create 'count' versions of each variable name and 'proportion' versions for each #ACS variable where applicable
 acs_count_names<-paste(acsvars$var_name, "count", sep="_")
-if (length(acsvars$var_name[acsvars$universe_col != ""]) == 0) {   # prevent having something that is exactly "_proportion"
-  acs_proportion_names <- character(0)
-} else {
-  acs_proportion_names <- paste(acsvars$var_name[!is.na(acsvars$universe_col)], "proportion", sep="_")   # only non-universal variables have proportions
-}
-```
+  if (length(acsvars$var_name[acsvars$universe_col != ""]) == 0) { # prevent having something that is exactly acs_proportion_names <- character(0)
+  } else {
+acs_proportion_names <- paste(acsvars$var_name[!is.na(acsvars$universe_col)], "proportion", sep="_") }
 
-## 5. Pull designated ACS measures
-
-Next we designate the ACS variable codes, the variable names, the year, and the radius for each variable that will be retrieved and we will run the function to pull the requested ACS variables. Note that this process will take several hours.
-
-```{r, results='hide'}
+#set year and radius and variable names
 codes_of_acs_variables_to_get<-acsvars$acs_col
 names_of_variable_to_get<-c(acs_count_names, acs_proportion_names)
-radius_vector <- c(1000)
+radius<-1000
 year <- 2019
-seattle_dispensary_ndi_measures<-get_variable_measures_from_acmt(dispensary_to_lat_long_list= seattle_lat_to_long_disp_alcohol_list , radius_vector=radius_vector, year=year,                                                                             names_of_variable_to_get=names_of_variable_to_get,                                                                                 codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
+
+#add columns to dataset to add variables to
+var.cols<-data.frame(matrix(nrow=nrow(seattle_alcohol_dispensary_list), ncol=length(names_of_variable_to_get)))
+colnames(var.cols)<-names_of_variable_to_get #name the columns
+seattle_alcohol_dispensary_list<-cbind(var.cols, seattle_alcohol_dispensary_list) #bind the columsn to the
+
 ```
 
-```{r}
-print(seattle_dispensary_ndi_measures[[1]]$`1000`$pop_25_above_count)
-```
+## 4. Create a function and loop to pull ACMT measures
 
-## 6. Transform list of measures into a wide dataframe
-Once the measures are pulled for each address, we will convert the list of measures to a dataframe and transform it to a wide dataframe so that data for each dispensary is on the same row. Once reformatted, we can merge the data back with the list of dispensary names (by ID number).
+Once the variables are designated, we can write a loop to pull the designated variables for each location in our dataset
 
-```{r, results='hide'}
-##Convert to dataframe
-convert_to_dataframe <- function (seattle_dispensary_ndi_measures) {
-  dispensary_vector <- c()
-  radius_vector <- c()
-  variable_vector <- c()
-  value_vector <- c()
+```{r acmt loop, results='hide'}
+
+#run loop to pull variables
+for(address in 1:nrow(seattle_alcohol_dispensary_list)) {
+   tryCatch({if(!is.na(seattle_alcohol_dispensary_list[,1][address])) next #skip the row if the data is already there
+  if(!is.na(seattle_alcohol_dispensary_list[,1][address])) next #skip the row if the data is already there
+  print(address) #print the number to keep track of progress
+  latitude<-seattle_alcohol_dispensary_list$lat[address] #set lat
+  longitude<-seattle_alcohol_dispensary_list$long[address] #set long
   
-  for(dispensary in names(seattle_dispensary_ndi_measures)){
-    for(radius_character in names(seattle_dispensary_ndi_measures[[dispensary]])){
-      for(variable in names(seattle_dispensary_ndi_measures[[dispensary]][[radius_character]])){
-        dispensary_vector <- c(dispensary_vector, dispensary)
-        radius_vector <- c(radius_vector, as.numeric(radius_character))
-        variable_vector <- c(variable_vector, variable)
-        value_vector <- c(value_vector, seattle_dispensary_ndi_measures[[dispensary]][[radius_character]][[variable]])
-      }
-    }
+  environmental_measures<-get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get = codes_of_acs_variables_to_get) #pull measures for given lat & long
+ 
+      for(name_of_variable in names_of_variable_to_get){ #for each measures, get the value and put it into the column of the same name
+     value_of_variable <- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+     seattle_alcohol_dispensary_list[[name_of_variable]][address]<-value_of_variable
   }
-  
-  dataframe_dispensary <- data.frame(dispensary_vector, radius_vector, variable_vector, value_vector, stringsAsFactors=FALSE)
-  names(dataframe_dispensary) <- c("dispensary", "radius", "variable", "value")
-  return(dataframe_dispensary)
+
+ for (name_of_variable in names_of_variable_to_get) {
+        seattle_alcohol_dispensary_list[[name_of_variable]][address] <- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+ }},error=function(e){cat("ERROR :", conditionMessage(e), "\n")}) #this will print any error messages
 }
 
-dataframe_dispensary <- convert_to_dataframe(seattle_dispensary_ndi_measures)
-
-dataframe_dispensary$radius<-NULL
-dispensary_wide_dataframe<-reshape(dataframe_dispensary, v.names="value",timevar = "variable", idvar = "dispensary", direction="wide")
-
-seattle_dispensary$privilege<-'marijuana retailer'
-seattle_alcohol_dispensary<-rbind(seattle_dispensary, seattle_alcohol)
-
-seattle_disp_alcohol_ndi_measures_wide<-merge(dispensary_wide_dataframe, seattle_alcohol_dispensary, by.x='dispensary', by.y='ID', all.x=TRUE)
 ```
 
-## 7. Run a principal component analysis to find weights for each variable measure
+## 5. Run a principal component analysis to find weights for each variable measure
 Now we can use the ACS measures that were just pulled to calculate the NDI score for the neighborhood around each dispensary. First we need to combine measures to calculate the total percent of residents with professional degrees and the total percent of housing that is crowded (2.01 or greater occupants per room), and total percent of households with an income less than $30,000.
 
 To create the composite NDI value, we first must get the weight for individual measure by conducting a principal component analysis of the eight designated NDI variables: (1) percent of males in professional occupations, (2) percent of households in poverty, (3) percent of residents with no high school diploma, (4) the percent of residents who are unemployed, (5) the percent of crowded housing, (6) the percent of households with income less than $30,000, (7) the percent of female-headed households with dependents less than 18 years old, and (8) the percent of households on public assistance. The loadings generated by the PCA will be used to weight each measure in calculating the overall NDI summary measure for each tract. The resulting composite NDI measure is multiplied by -1 so that a higher NDI measure indicates a neighborhood with a higher level of deprivation. Finally, we standardize the NDI measures by subtracting the mean and dividing by the standard deviation so that the measure has a mean of 0 and a standard deviation of 1.
 
 ```{r, results='hide'}
 #clean-up NDI measures
-seattle_dispensary_ndi<-seattle_disp_alcohol_ndi_measures_wide %>%
-  mutate(total_males_management_professional = value.males_in_management_count+value.males_in_professional_occup_count, 
-         total_crowded_housing = value.owner_2.01_or_more_per_room_count
-         + value.renter_2.01_or_more_per_room_count, 
-         total_income_below_30k = value.household_income_25_29k_count + value.household_income_20_24k_count + value.houseohld_income_15_19k_count + value.household_income_10_14k_count+value.hhincome_less_than_10k_count) %>% 
-  mutate(percent_males_management_professional = total_males_management_professional / value.males_16_older_workforce_count, 
-         percent_crowded_housing = total_crowded_housing / (value.total_owner_occ_housing_units_rooms_count), 
-         percent_income_below_30k = total_income_below_30k/value.households_income_determined_count) 
+seattle_dispensary_ndi<-seattle_alcohol_dispensary_list %>%
+  mutate(total_males_management_professional = males_in_management_count+males_in_professional_occup_count, 
+         total_crowded_housing = owner_2.01_or_more_per_room_count
+         + renter_2.01_or_more_per_room_count, 
+         total_income_below_30k = household_income_25_29k_count + household_income_20_24k_count + houseohld_income_15_19k_count + household_income_10_14k_count+hhincome_less_than_10k_count) %>% 
+  mutate(percent_males_management_professional = total_males_management_professional / males_16_older_workforce_count, 
+         percent_crowded_housing = total_crowded_housing / (total_occupied_housing_units_room_count), 
+         percent_income_below_30k = total_income_below_30k/households_income_determined_count) 
 
 #PCA Factor Analysis
 NDI_measures<-seattle_dispensary_ndi %>%
-  subset(select=c(percent_males_management_professional, value.households_in_poverty_proportion, value.no_hsdiploma_proportion, value.unemployed_proportion, percent_crowded_housing, percent_income_below_30k, value.female_head_kids_proportion, value.public_asst_proportion))
+  filter(!is.na(percent_males_management_professional))%>%
+  subset(select=c(percent_males_management_professional, households_in_poverty_proportion, no_hsdiploma_proportion, unemployed_proportion, percent_crowded_housing, percent_income_below_30k, female_head_kids_proportion, public_asst_proportion))
 
 ndi_pca<-princomp(NDI_measures, cor=TRUE)
 ```
 
-## 8. Calculate the NDI measure
+## 6. Calculate the NDI measure
 Once the NDI score has been calculated and standardized, we can construct a boxplot to compare the mean and distribution of NDI scores for establishments with a marijuana retailer license to those with an off-premise alcohol license.
 
 ```{r, results='hide'}
 ##assign loading values for each variable
 percent_males_management_professional_loading<-ndi_pca$loadings[1]
-value.households_in_poverty_proportion_loading<-ndi_pca$loadings[2]
-value.no_hsdiploma_proportion_loading<-ndi_pca$loadings[3]
-value.unemployed_proportion_loading<-ndi_pca$loadings[4]
+households_in_poverty_proportion_loading<-ndi_pca$loadings[2]
+no_hsdiploma_proportion_loading<-ndi_pca$loadings[3]
+unemployed_proportion_loading<-ndi_pca$loadings[4]
 percent_crowded_housing_loading<-ndi_pca$loadings[5]
 percent_income_below_30k_loading<-ndi_pca$loadings[6]
-value.female_head_kids_proportion_loading<-ndi_pca$loadings[7]
-value.public_asst_proportion_loading<-ndi_pca$loadings[8]
+female_head_kids_proportion_loading<-ndi_pca$loadings[7]
+public_asst_proportion_loading<-ndi_pca$loadings[8]
 
 #Calculated & standardize weighted NDI value using pca loadings
 seattle_dispensary_ndi <-seattle_dispensary_ndi%>%
   mutate(ndi_value=((percent_males_management_professional*percent_males_management_professional_loading)+
-           (value.households_in_poverty_proportion*value.households_in_poverty_proportion_loading)+
-           (value.no_hsdiploma_proportion*value.no_hsdiploma_proportion_loading)+
-           (value.unemployed_proportion*value.unemployed_proportion_loading)+
+           (households_in_poverty_proportion*households_in_poverty_proportion_loading)+
+           (no_hsdiploma_proportion*no_hsdiploma_proportion_loading)+
+           (unemployed_proportion*unemployed_proportion_loading)+
            (percent_crowded_housing*percent_crowded_housing_loading)) + 
            (percent_income_below_30k*percent_income_below_30k_loading) + 
-           (value.female_head_kids_proportion*value.female_head_kids_proportion_loading)+
-           (value.public_asst_proportion*value.public_asst_proportion_loading)*-1) %>%
+           (female_head_kids_proportion*female_head_kids_proportion_loading)+
+           (public_asst_proportion*public_asst_proportion_loading)*-1) %>%
   mutate(ndi_standardized=(ndi_value-mean(ndi_value))/sd(ndi_value)) %>%
   mutate(dispensary_active=ifelse(status=="ACTIVE (ISSUED)" | status=="PENDING (ISSUED)", 1, 0))
 ```
 
-## 9. Create a boxplot to compare the NDI measures for dispensaries versus alcohol retailers
+## 7. Create a boxplot to compare the NDI measures for dispensaries versus alcohol retailers
 Once the NDI score has been calculated and standardized, we can construct a boxplot to compare the mean and distribution of NDI scores for establishments with a marijuana retailer license to those with an off-premise alcohol license.
 
 ```{r}
@@ -280,7 +245,7 @@ boxplot(ndi_standardized~license_type,
         horizontal=TRUE)
 ```
 
-## 10. Calculate a t-test to statistically compare NDI measures
+## 8. Calculate a t-test to statistically compare NDI measures
 We can also statistically compare the NDI measures of neighborhoods around alcohol and marijuana retailers using an independent t-test.
 
 ```{r}
@@ -299,7 +264,8 @@ ndi_privilege_boxplot<- ggplot(seattle_dispensary_ndi[seattle_dispensary_ndi$lic
   geom_boxplot()+
   coord_flip()+
   labs(title="Neighborhood Deprivation Scores", y="Standardized NDI value", x="Privilege Type", fill="Privilege Type")+
-  theme_minimal()
+  theme_minimal()+
+  theme(legend.position = 'bottom')
 
 ndi_privilege_boxplot
 ```

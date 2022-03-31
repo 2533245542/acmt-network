@@ -364,71 +364,68 @@ summary {
 
 <h1 class="title toc-ignore">ACMT Examples: Calculating Neighborhood Composite Measures</h1>
 <h4 class="author">Amy Youngbloom</h4>
-<h4 class="date">1/12/2022</h4>
+<h4 class="date">3/22/2022</h4>
 
 </div>
 
 
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>Researchers looking at the effect of neighborhood on various health outcomes have utilized a variety of composite measures. Such measures look across several socioeconomic, housing, and demographic measures to operationalize measures such as neighborhood deprivation, vulnerability, and fragmentation. Many of these measures use American Community Survey variables in constructing the composite measure and many of these variables are built into the default ACS variable list in the ACMT. As such, pulling ACS variables and building an estimated composite measures for given locations can be easily done with the ACMT. Below is code for how to pull the relevant variables and construct several such measures using the ACMT.</p>
-<p>For each composite measures, a geocoded list of addresses must first be created. For these examples, we will use a list of Seattle High Schools as our locations and examine a 1000 radius around each high school.</p>
-<pre class="r"><code>source(&quot;setup-acmt.R&quot;)
-library(tidyverse)
+<div id="introduction" class="section level3">
+<h3>Introduction</h3>
+<p>Researchers looking at the effect of neighborhood on various health outcomes have utilized a variety of composite measures. Such measures look across several socioeconomic, housing, and demographic measures to operationalize measures such as neighborhood deprivation, vulnerability, and fragmentation. Many of these measures use American Community Survey variables in constructing the composite measure and many of these variables are built into the default ACS variable list in the ACMT. As such, pulling ACS variables and building an estimated composite measures for given locations can be easily done with the ACMT. Below is code for how to pull the relevant variables and construct several such measures using the ACMT. Note that the code is set up to pull variable from the 2019 5-year American Community survey. For other surveys, see the ACS Variables by year document.</p>
+<p>For each composite measures, a geocoded list of addresses must first be created. For these examples, we will use a list of Seattle High School and Middle Schools as our locations and examine a 1000 m radius around each school.</p>
+<div id="create-a-list-of-schools-and-addresses" class="section level4">
+<h4>Create a list of schools and addresses</h4>
+<pre class="r"><code>library(tidyverse)
 library(janitor)
+acsvars&lt;-read_csv('ACMT/ACSColumns.csv')
+source(&quot;GeocoderACMT.R&quot;)
 
 #Create list of schools and addresses
 
-seattle.schools&lt;-list('Alan T. Sugiyama High School', 'Ballard High School', 'Chief Sealth International High School', 'Cleveland High School', 'Franklin High School', 'Garfield High School', 'Ingraham High School', 'Interagency Academy', 'Lincoln High School', 'Nathan Hale High School', 'Nova', 'Ranier Beach High School', 'Roosevelt High School', 'Seattle World School', 'Skills Center', 'The Center School', 'West Seattle High School')
+seattle.schools&lt;-c('Alan T. Sugiyama High School', 'Ballard High School', 'Chief Sealth International High School', 'Cleveland High School', 'Franklin High School', 'Garfield High School', 'Ingraham High School', 'Interagency Academy', 'Lincoln High School', 'Nathan Hale High School', 'Nova', 'Ranier Beach High School', 'Roosevelt High School', 'Seattle World School', 'Skills Center', 'The Center School', 'West Seattle High School', 'Aki Kurose Middle School', 'Denny International Middle School', 'Eckstein Middle School', 'Hamilton International Middle School', 'Jane Addams Middle School', 'Madison Middle School', 'McClure Middle School', 'Meany Middle School', 'Mercer International Middle School', 'Robert Eagle Staff Middle School', 'Washington Middlw School', 'Whitman Middle School')
 
-seattle.address&lt;-list('8601 Rainier Ave. S, Seattle, WA 98118','1418 NW 65th St., Seattle, WA 98117', '2600 SW Thistle St., Seattle, WA 98126', '5511 15th Ave. S, Seattle, WA 98108', '3013 S Mt Baker Blvd., Seattle, WA 98144', '400 23rd Ave., Seattle, WA 98122', '1819 N 135th St., Seattle, WA 98133', '3528 S Ferdinand St., Seattle, WA 98118', '4400 Interlake Ave. N, Seattle, WA 98103', '10750 30th Ave. NE, Seattle, WA 98125', '2410 E Cherry St., Seattle, WA 98122', '8815 Seward Park Ave. S, Seattle, WA 98118', '1410 NE 66th St., Seattle, WA 98115', '1700 E Union St., Seattle, WA 98122', '2445 3rd Ave. S., Seattle, WA 98134', '305 Harrison St., Seattle, WA 98109', '3000 California Ave. SW, Seattle, WA 98116')
+seattle.address&lt;-c('8601 Rainier Ave. S, Seattle, WA 98118','1418 NW 65th St., Seattle, WA 98117', '2600 SW Thistle St., Seattle, WA 98126', '5511 15th Ave. S, Seattle, WA 98108', '3013 S Mt Baker Blvd., Seattle, WA 98144', '400 23rd Ave., Seattle, WA 98122', '1819 N 135th St., Seattle, WA 98133', '3528 S Ferdinand St., Seattle, WA 98118', '4400 Interlake Ave. N, Seattle, WA 98103', '10750 30th Ave. NE, Seattle, WA 98125', '2410 E Cherry St., Seattle, WA 98122', '8815 Seward Park Ave. S, Seattle, WA 98118', '1410 NE 66th St., Seattle, WA 98115', '1700 E Union St., Seattle, WA 98122', '2445 3rd Ave. S., Seattle, WA 98134', '305 Harrison St., Seattle, WA 98109', '3000 California Ave. SW, Seattle, WA 98116', '3928 S Graham St, Seattle, WA 98118', '2601 SW Kenyon St, Seattle, WA, 98126', '3003 NE 75th St, Seattle, WA 98115', '1610 N 41st St, Seattle, WA 98103', '11051 34th Ave NE, Seattle, WA 98125', '3429 45th Ave SW, Seattle, WA 98116', '1915 1st Ave W, Seattle, WA 98119', '301 21st Ave E, Seattle, WA 98112', '1600 S Columbian Way, Seattle, WA, 98108', '1330 N 90th St, Seattle, WA 98103', '2101 S Jackson St, Seattle, WA 98144', '9201 15th Ave NW, Seattle, WA 98117')
 
-address_list&lt;-structure(seattle.address, names=(seattle.schools))
-
-##geocode address list
-address_to_lat_long_list&lt;-lapply(address_list, geocode)</code></pre>
-<pre class="r"><code>print(address_to_lat_long_list[1])</code></pre>
-<pre><code>## $`Alan T. Sugiyama High School`
-## $`Alan T. Sugiyama High School`$latitude
-## [1] 47.52617
-## 
-## $`Alan T. Sugiyama High School`$longitude
-## [1] -122.2701</code></pre>
-<p>Each composite measure also requires you to write the function to utilize the ACMT. See the code below to review this step</p>
-<pre class="r"><code>## Create the function to get the environmental measures:
-get_variable_measures_from_acmt &lt;- function(address_to_lat_long_list, radius_vector, year, names_of_variable_to_get=NA, external_data_name_to_info_list=NULL, codes_of_acs_variables_to_get=NA) {
-  address_to_radius_to_variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(address_to_lat_long_list))
-  names(address_to_radius_to_variable_to_measures_list) &lt;- names(address_to_lat_long_list)
-  
-  for(address in names(address_to_radius_to_variable_to_measures_list)) {
-    radius_to_variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(radius_vector))
-    names(radius_to_variable_to_measures_list) &lt;- as.character(radius_vector)
-    for (radius in radius_vector) {
-      print(address)
-      print(radius)
-      
-      latitude &lt;- address_to_lat_long_list[[address]]$latitude
-      longitude &lt;- address_to_lat_long_list[[address]]$longitude
-      
-      environmental_measures &lt;- get_acmt_standard_array(long=longitude,
-                                                        lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
-      
-      variable_to_measures_list &lt;- vector(mode=&quot;list&quot;, length=length(names_of_variable_to_get))
-      names(variable_to_measures_list) &lt;- names_of_variable_to_get
-      for (name_of_variable in names_of_variable_to_get) {
-        value_of_variable &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
-        variable_to_measures_list[[name_of_variable]] &lt;- value_of_variable
-      }
-      radius_to_variable_to_measures_list[[which(radius == radius_vector)]] &lt;- variable_to_measures_list
-      radius_to_variable_to_measures_list[[as.character(radius)]] &lt;- variable_to_measures_list
-    }
-    address_to_radius_to_variable_to_measures_list[[address]] &lt;- radius_to_variable_to_measures_list
-  }
-  return(address_to_radius_to_variable_to_measures_list)
-}</code></pre>
+schools&lt;-data.frame(seattle.schools)
+schools$address&lt;-seattle.address</code></pre>
 </div>
-<div id="pulling-acs-variables-for-neighborhood-composite-measures" class="section level2">
-<h2>Pulling ACS Variables for Neighborhood Composite Measures</h2>
+<div id="geocode-addresses" class="section level4">
+<h4>Geocode Addresses</h4>
+<pre class="r"><code>#create lat and long columns
+schools&lt;-schools %&gt;%
+  mutate(lat=NA, 
+         long=NA)
+
+#Geocoding loop
+for (i in 1:nrow(schools)) {
+  if(!is.na(schools$lat[i])) next #skip already geocoded
+  if(is.na(schools$address[i])) next #skip NA address values
+  print(i) #print the number to track progress
+  
+  address&lt;-schools$address
+  lat_long&lt;-geocode(address[i])
+  schools$lat[i]&lt;-lat_long$latitude # add latitude to dataset
+  schools$long[i] &lt;-lat_long$longitude # add longitude to dataset
+}</code></pre>
+<pre class="r"><code>head(schools)</code></pre>
+<pre><code>##                          seattle.schools
+## 1           Alan T. Sugiyama High School
+## 2                    Ballard High School
+## 3 Chief Sealth International High School
+## 4                  Cleveland High School
+## 5                   Franklin High School
+## 6                   Garfield High School
+##                                    address      lat      long
+## 1   8601 Rainier Ave. S, Seattle, WA 98118 47.52617 -122.2701
+## 2      1418 NW 65th St., Seattle, WA 98117 47.67608 -122.3750
+## 3   2600 SW Thistle St., Seattle, WA 98126 47.52837 -122.3660
+## 4      5511 15th Ave. S, Seattle, WA 98108 47.55337 -122.3136
+## 5 3013 S Mt Baker Blvd., Seattle, WA 98144 48.16430 -122.4806
+## 6         400 23rd Ave., Seattle, WA 98122 47.60505 -122.3025</code></pre>
+</div>
+</div>
+<div id="pulling-acs-variables-for-neighborhood-composite-measures" class="section level3">
+<h3>Pulling ACS Variables for Neighborhood Composite Measures</h3>
 <p>Variables for the following neighborhood-level measures are built into the list of ACS variables in the ACMT:</p>
 <ol style="list-style-type: decimal">
 <li><p>Area Deprivation Index (Singh, 2003)</p></li>
@@ -436,14 +433,82 @@ get_variable_measures_from_acmt &lt;- function(address_to_lat_long_list, radius_
 <li><p>Social Vulnerability Index (Flanagan, 2011)</p></li>
 </ol>
 <hr />
-</div>
-<div id="area-deprivation-index" class="section level2">
-<h2>1. Area Deprivation Index</h2>
+<div id="area-deprivation-index" class="section level4">
+<h4>1. Area Deprivation Index</h4>
 <p>Singh’s composite measures of deprivation provides a validated measure looking across socioeconomic variables. This factor-based index is calculated by multiplying the value by the factor coefficients for each of the 17 variables below. The measure is standardized around a mean of 100, with a standard deviation of 20.</p>
 <p>To contruct this index, we first set the list of relevant variables.</p>
-<pre class="r"><code>adi_variables&lt;-c('B15003_002', 'B15003_003', 'B15003_004', 'B15003_005', 'B15003_006', 'B15003_007', 'B15003_008', 'B15003_009', 'B15003_010', 'B15003_011', 'B15003_012', 'B15003_013', 'B15003_001', 'B15003_017', 'B15003_018', 'B15003_019', 'B15003_020', 'B15003_021', 'B15003_022', 'B15003_023', 'B15003_024', 'B15003_025', 'B15003_001', 'C24030_018', 'C24030_019', 'C24030_045', 'C24030_046', 'C24030_002', 'C24030_029', 'B19013_001', 'B19001_002', 'B19001_011', 'B19001_012', 'B19001_013', 'B19001_014', 'B19001_015', 'B19001_016', 'B19001_017', 'B25077_001', 'B25064_001', 'B25088_002', 'B25003_002', 'B25003_001', 'B23025_005', 'B23025_001', 'B17023_005', 'B17023_001', 'B06012_002', 'B06012_003', 'B06012_001', 'B11012_010', 'B11012_015', 'B11012_001', 'B25044_003', 'B25044_010', 'B25044_001', 'B25043_002', 'B25043_001', 'B25043_007', 'B25043_016', 'B25016_002', 'B25016_011', 'B25016_001', 'B25014_005', 'B25014_006', 'B25014_011', 'B25014_012', 'B25014_013', 'B25014_007', 'B25014_001')</code></pre>
-<p>Next we identify the relevant variables out of the full default list, and set the names and codes of the variables to pull using the ACMT function.</p>
+<pre class="r"><code>acs.2019&lt;-tidycensus::load_variables(2019, 'acs5', cache=TRUE)
+adi_variables&lt;-c('B15003_002', #no school completed
+                 'B15003_003', #nursery school completed
+                 'B15003_004', #kindergarten
+                 'B15003_005', #1st grade
+                 'B15003_006', #2nd grade
+                 'B15003_007', #3rd grade
+                 'B15003_008', #4th grade
+                 'B15003_009', #5th grade
+                 'B15003_010', #6th grade
+                 'B15003_011', #7th grade
+                 'B15003_012', #8th grade
+                 'B15003_013', #9th grade
+                 'B15003_017', #HS Graduate
+                 'B15003_018', #GED or other degree
+                 'B15003_019', #some college, less than 1 year
+                 'B15003_020', # some college 1 year or more, no degree
+                 'B15003_021', #associates degree
+                 'B15003_022', #bachelors degree
+                 'B15003_023', #masters degree
+                 'B15003_024', #professional degree
+                 'B15003_025', #doctoral degree
+                 'B15003_001', #Total population 25 and over
+                 'C24030_018', #males in professional scientific and technical services
+                 'C24030_019', #males in management
+                 'C24030_045', #females in professional, scientific and technical services
+                 'C24030_046', #females in management
+                 'C24030_002', #males, 16 and older, employed
+                 'C24030_029', #females, 16 and older, employed
+                 'B19013_001', #median household income
+                 'B19001_002', #less than 10k
+                 'B19001_011', # $50-$59.9k
+                 'B19001_012', # $60-$74.9k
+                 'B19001_013', # $75k-$99.9k
+                 'B19001_014', # $100k-$124.9k
+                 'B19001_015', # $125k-$149.9k
+                 'B19001_016', # $150k - $199.9k
+                 'B19001_017', # $200k or more
+                 'B25077_001', #median home value
+                 'B25064_001', #median gross rent
+                 'B25088_002', #monthly owner costs, housing units with a mortgage
+                 'B25003_002', #owner-occupied units
+                 'B25003_001', #total occupied housing uits
+                 'B23025_005', #unemployed 
+                 'B23025_001', #Total 16 years and older
+                 'B17023_002', #Total households in poverty
+                 'B17023_001', #Total households, povery determined
+                 'B06012_002', #below 100% povery level
+                 'B06012_003', #100 to 149% of poverty level
+                 'B06012_001', #households, poverty level determined
+                 'B11003_016', #female householder, no spouse or partner, with own children under 18
+                 'B11003_010', #male householder, no spouse or partner, with own children under 18
+                 'B11003_001', #total families
+                 'B25044_003', #total owner-occupied, no vehicle
+                 'B25044_010', #renter-occupied, no vehicle
+                 'B25044_001', #total, vehicle determined
+                 'B25043_001', #total, telephone determined
+                 'B25043_007', #owner-occupied, no telephone
+                 'B25043_016', #renter occupied, no telephone
+                 'B25016_007', #owner occupied, lacking complete plumbing 
+                 'B25016_016', #renter occupied, lacking complete plumbing
+                 'B25016_001', #households, plumbing determined
+                 'B25014_005', #owner occupied 1.01 to 1.5 per room
+                 'B25014_006', #owner occupied 1.51 to 2 per room
+                 'B25014_007', #owner occupied 2.01 or more per room
+                 'B25014_011', #renter occupied 1.01 to 1.5 per room
+                 'B25014_012', #renter occupied 1.51 to 2 per room
+                 'B25014_013', #renter occupied 2.01 or more per room
+                 'B25014_001') #total occupied units</code></pre>
+<p>Next we ust the list of variables to add columns for each variable to the dataset (counts and proportions)</p>
 <pre class="r"><code>#Identify the variables of interest from the default list of ACS variables
+
 acsvars&lt;-read_csv('ACMT/ACSColumns.csv')
 acsvars&lt;-subset(acsvars, acs_col %in% adi_variables)
 
@@ -458,152 +523,199 @@ if (length(acsvars$var_name[acsvars$universe_col != &quot;&quot;]) == 0) {   # p
 #Set the list of variable codes, the list of variable names, the radius, and the year for the data you want pulled
 codes_of_acs_variables_to_get&lt;-acsvars$acs_col
 names_of_variable_to_get&lt;-c(acs_count_names, acs_proportion_names)
-radius_vector &lt;- c(1000)#set the radius for the area of interest
-year &lt;- 2019 #set the year for the data of interest</code></pre>
-<p>Now we can use the ‘get_variable_measures_from_acmt’ function (see code to create this function above) to pull the variables.</p>
-<pre class="r"><code>##Pull relevant ACS variables
-address_to_radius_to_variable_to_measures_list &lt;-get_variable_measures_from_acmt(address_to_lat_long_list= address_to_lat_long_list, radius_vector=radius_vector, year=year,                                                                             names_of_variable_to_get=names_of_variable_to_get,                                                                                 codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
-address_ndi_measures&lt;-address_to_radius_to_variable_to_measures_list</code></pre>
-<p>Next, we tranform the list of measures back to a dataset</p>
-<pre class="r"><code>#reshape list of measures to dataset
-##Convert to dataframe
+radius &lt;- c(1000)#set the radius for the area of interest
+year &lt;- 2019 #set the year for the data of interest
 
-convert_to_dataframe &lt;- function (address_ndi_measures) {
-  address_vector &lt;- c()
-  radius_vector &lt;- c()
-  variable_vector &lt;- c()
-  value_vector &lt;- c()
+#add columns to dataset to add variables to
+var.cols&lt;-data.frame(matrix(nrow=nrow(schools), ncol=length(names_of_variable_to_get))) #create dataset of columns
+colnames(var.cols)&lt;-names_of_variable_to_get #name the columns
+schools_adi&lt;-cbind(var.cols, schools) #bind the columns to the dataset</code></pre>
+<p>Once the columns have been added, we can run a loop to use the ACMT to pull each variable</p>
+<pre class="r"><code>#run loop to pull variables
+for(address in 1:nrow(schools_adi)) {
+   tryCatch({if(!is.na(schools_adi[,1][address])) next #skip the row if the data is already there
+  if(!is.na(schools_adi[,1][address])) next #skip the row if the data is already there
+  print(address) #print the number to keep track of progress
+  latitude&lt;-schools_adi$lat[address] #set lat
+  longitude&lt;-schools_adi$long[address] #set long
   
-  for(address in names(address_ndi_measures)){
-    for(radius_character in names(address_ndi_measures[[address]])){
-      for(variable in names(address_ndi_measures[[address]][[radius_character]])){
-        address_vector &lt;- c(address_vector, address)
-        radius_vector &lt;- c(radius_vector, as.numeric(radius_character))
-        variable_vector &lt;- c(variable_vector, variable)
-        value_vector &lt;- c(value_vector, address_ndi_measures[[address]][[radius_character]][[variable]])
-      }
-    }
+  environmental_measures&lt;-get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get = codes_of_acs_variables_to_get) #pull measures for given lat &amp; long
+ 
+      for(name_of_variable in names_of_variable_to_get){ #for each measures, get the value and put it into the column of the same name
+     value_of_variable &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+     schools_adi[[name_of_variable]][address]&lt;-value_of_variable
   }
-  
-  dataframe_address &lt;- data.frame(address_vector, radius_vector, variable_vector, value_vector, stringsAsFactors=FALSE)
-  names(dataframe_address) &lt;- c(&quot;address&quot;, &quot;radius&quot;, &quot;variable&quot;, &quot;value&quot;)
-  return(dataframe_address)
-}
 
-dataframe_address &lt;- convert_to_dataframe(address_ndi_measures = address_to_radius_to_variable_to_measures_list)
-
-dataframe_address$radius&lt;-NULL
-address_wide_dataframe&lt;-reshape(dataframe_address, v.names=&quot;value&quot;,timevar = &quot;variable&quot;, idvar = &quot;address&quot;, direction=&quot;wide&quot;)</code></pre>
+ for (name_of_variable in names_of_variable_to_get) {
+        schools_adi[[name_of_variable]][address] &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+ }},error=function(e){cat(&quot;ERROR :&quot;, conditionMessage(e), &quot;\n&quot;)}) #this will print any error messages
+}</code></pre>
 <p>Now we can calucate the ADI measures from the ACS variables that were pulled.</p>
-<pre class="r"><code>adi_measure_dataset &lt;- address_wide_dataframe %&gt;%
-  mutate(less_than_9yrs_education= ((value.no_education_count +
-                                       value.pre_school_count + value.kindergarten_count +
-                                       value.first_grade_count + value.second_grade_count + 
-                                       value.third_grade_count + value.fourth_grade_count + 
-                                       value.fifth_grade_count + value.sixth_grade_count + 
-                                       value.seventh_grade_count + value.eighth_grade_count + 
-                                       value.ninth_grade_count) / value.pop_25_and_over_count),
-         hs_education_or_more = (value.high_school_grad_count + 
-                                    value.ged_or_alt_diploma_count + value.some_college_less_than_1_year_count +
-                                    value.some_college_1_year_or_more_count + value.associates_degree_count +
-                                    value.bachelors_degree_count + value.masters_degree_count + 
-                                    value.professional_degree_count + value.doctoral_degree_count)/
-            value.pop_25_and_over_count,
-         white_collar_occ=(value.males_in_professional_occup_count +
-                             value.males_in_management_count + 
-                             value.females_in_professional_occup_count + 
-                             value.females_in_management_count) / value.males_16_older_workforce_count, 
-         income_disparity = (100*(value.hhincome_less_than_10k_count/
-                                    (value.hhincome_50k_to_59k_count + value.hhincome_60k_to_74k_count + 
-                                       value.hhincome_75k_to_99k_count + value.hhincome_100k_to_124k_count + 
-                                       value.hhincome_125k_to_149k_count + value.hhincome_150k_to_199k_count + 
-                                       value.hhincome_200k_or_more_count))), 
-                                  below_150_poverty = (value.pop_below_100_poverty_threshold_count + 
-                                                         value.pop_100_to_149_poverty_threshold_count)/ value.total_pop_poverty_count, 
-                                  single_parent_with_kids = (value.female_head_kids_count + 
-                                                               value.male_householder_kids_count)/value.total_households_count, 
-                                  hh_novehicle = (value.owner_no_vehicle_count + 
-                                                    value.renter_no_vehicle_count)/ value.occupied_housing_vehicle_determined_count, 
-                                  hh_no_phone = (value.no_phone_owner_count + value.no_phone_renter_count) / 
-                                    value.total_occupied_housing_units_tele_count, 
-                                  hh_no_plumb = (value.no_comp_plumb_owner_count+value.no_comp_plumb_renter_count)/
-                                    value.total_occupied_housing_units_plumb_count, 
-                                  hh_crowded=(value.owner_1.01_to_1.5_per_room_count + 
-                                                value.owner_1.51_to_2.0_per_room_count + 
-                                                value.owner_2.01_or_more_per_room_count + 
-                                                value.renter_1.01_to_1.5_per_room_count + 
-                                                value.renter_1.51_to_2.0_per_room_count + 
-                                                value.renter_2.01_or_more_per_room_count)/ 
-                                    value.total_occupied_housing_units_room_count)</code></pre>
-<p>Next we can run a principal component analysis to find the weights to calculate the measure.</p>
+<pre class="r"><code>adi_measure_dataset &lt;- schools_adi %&gt;%
+  mutate(less_than_9yrs_education= ((no_education_count +
+                                       pre_school_count + kindergarten_count +
+                                       first_grade_count + second_grade_count + 
+                                       third_grade_count + fourth_grade_count + 
+                                       fifth_grade_count + sixth_grade_count + 
+                                       seventh_grade_count + eighth_grade_count + 
+                                       ninth_grade_count) / pop_25_and_over_count),
+         hs_education_or_more = (high_school_grad_count + 
+                                    ged_or_alt_diploma_count + some_college_less_than_1_year_count +
+                                    some_college_1_year_or_more_count + associates_degree_count +
+                                    bachelors_degree_count + masters_degree_count + 
+                                    professional_degree_count + doctoral_degree_count)/
+            pop_25_and_over_count,
+         white_collar_occ=(males_in_professional_occup_count +
+                             males_in_management_count + 
+                             females_in_professional_occup_count + 
+                             females_in_management_count) / males_16_older_workforce_count, 
+         income_disparity = (100*(hhincome_less_than_10k_count/
+                                    (hhincome_50k_to_59k_count + hhincome_60k_to_74k_count + 
+                                       hhincome_75k_to_99k_count + hhincome_100k_to_124k_count + 
+                                       hhincome_125k_to_149k_count + hhincome_150k_to_199k_count + 
+                                       hhincome_200k_or_more_count))), 
+                                  below_150_poverty = (pop_below_100_poverty_threshold_count + 
+                                                         pop_100_to_149_poverty_threshold_count)/ total_pop_poverty_count, 
+                                  single_parent_with_kids = (female_head_kids_count + 
+                                                               male_head_kids_count)/total_families_count, 
+                                  hh_novehicle = (owner_no_vehicle_count + 
+                                                    renter_no_vehicle_count)/ occupied_housing_vehicle_determined_count, 
+                                  hh_no_phone = (no_phone_owner_count + no_phone_renter_count) / 
+                                    total_occupied_housing_units_tele_count, 
+                                  hh_no_plumb = (no_comp_plumb_owner_count+no_comp_plumb_renter_count)/
+                                    total_occupied_housing_units_plumb_count, 
+                                  hh_crowded=(owner_1.01_to_1.5_per_room_count + 
+                                                owner_1.51_to_2.0_per_room_count + 
+                                                owner_2.01_or_more_per_room_count + 
+                                                renter_1.01_to_1.5_per_room_count + 
+                                                renter_1.51_to_2.0_per_room_count + 
+                                                renter_2.01_or_more_per_room_count)/ 
+                                    total_occupied_housing_units_room_count)</code></pre>
+<p>Next we subset the dataset to just the school namd and address and the variables that will be included in the principal component analysis.</p>
+<pre class="r"><code>schools_adi$fam_below_poverty_proportion</code></pre>
+<pre><code>##  [1] 0.11743768 0.02415449 0.07095482 0.06998068 0.03776713 0.08367946
+##  [7] 0.04955272 0.13335622 0.02442616 0.06027300 0.07276888 0.12989587
+## [13] 0.04703083 0.07963853 0.00000000 0.02413345 0.02833876 0.15814287
+## [19] 0.08252235 0.02678554 0.02341664 0.06253947 0.02738762 0.02441850
+## [25] 0.06098892 0.11092015 0.03014743 0.10494608 0.03021027</code></pre>
 <pre class="r"><code>adi_measures&lt;-adi_measure_dataset %&gt;%
-  subset(select=c(address, less_than_9yrs_education, hs_education_or_more, value.pop_25_and_over_count, 
-                  white_collar_occ, income_disparity, below_150_poverty, single_parent_with_kids, 
-                  hh_novehicle, hh_no_phone, hh_no_plumb, hh_crowded, value.med_hincome_count, value.median_rent_count, value.median_mortgage_count, value.med_home_val_count,                   value.unemployed_proportion, value.owner_occupied_units_proportion))
+  dplyr::select(seattle.schools, address, less_than_9yrs_education, hs_education_or_more, white_collar_occ, med_hincome_count, income_disparity, med_home_val_count, median_rent_count, median_mortgage_count, owner_occupied_units_proportion, unemployed_proportion, fam_below_poverty_proportion, below_150_poverty, single_parent_with_kids, hh_novehicle, hh_no_phone, hh_no_plumb, hh_crowded)
 
-adi_pca&lt;-princomp(adi_measures[2:18], cor=TRUE)
+head(adi_measures)</code></pre>
+<pre><code>##                          seattle.schools
+## 1           Alan T. Sugiyama High School
+## 2                    Ballard High School
+## 3 Chief Sealth International High School
+## 4                  Cleveland High School
+## 5                   Franklin High School
+## 6                   Garfield High School
+##                                    address less_than_9yrs_education
+## 1   8601 Rainier Ave. S, Seattle, WA 98118              0.118666274
+## 2      1418 NW 65th St., Seattle, WA 98117              0.006873042
+## 3   2600 SW Thistle St., Seattle, WA 98126              0.054669713
+## 4      5511 15th Ave. S, Seattle, WA 98108              0.127070954
+## 5 3013 S Mt Baker Blvd., Seattle, WA 98144              0.004019281
+## 6         400 23rd Ave., Seattle, WA 98122              0.037015242
+##   hs_education_or_more white_collar_occ med_hincome_count income_disparity
+## 1            0.8469905        0.1254256          70470.39        14.829432
+## 2            0.9815984        0.4315409         114119.82         2.652467
+## 3            0.8985922        0.1969071          82014.46         5.569553
+## 4            0.8323459        0.2087176          83957.09         5.154960
+## 5            0.9777540        0.1481489          77494.15         3.702490
+## 6            0.9411624        0.4177231         105820.89         9.588673
+##   med_home_val_count median_rent_count median_mortgage_count
+## 1           418610.7          1373.703              2125.790
+## 2           694207.1          1822.459              2744.724
+## 3           439726.2          1467.869              2164.156
+## 4           475737.5          1596.075              2102.733
+## 5           351838.6          1147.995              1851.580
+## 6           673774.0          1703.574              2693.619
+##   owner_occupied_units_proportion unemployed_proportion
+## 1                       0.5565090            0.04122008
+## 2                       0.4616595            0.03648610
+## 3                       0.5498524            0.03112392
+## 4                       0.6581606            0.03751051
+## 5                       0.9307744            0.02265127
+## 6                       0.4278077            0.03474142
+##   fam_below_poverty_proportion below_150_poverty single_parent_with_kids
+## 1                   0.11743768         1.0579897               0.1355521
+## 2                   0.02415449         0.3316639               0.0682368
+## 3                   0.07095482         0.7008092               0.1320667
+## 4                   0.06998068         0.5692136               0.1132606
+## 5                   0.03776713         0.3574029               0.0600289
+## 6                   0.08367946         1.1308565               0.1254846
+##   hh_novehicle hh_no_phone hh_no_plumb hh_crowded
+## 1   0.13488614 0.019340998 0.005705783 0.10136853
+## 2   0.08988524 0.022533471 0.003624895 0.04421752
+## 3   0.08892802 0.009818168 0.004759712 0.02578555
+## 4   0.08787650 0.017696377 0.001285120 0.05057544
+## 5   0.01769702 0.010906289 0.003403343 0.02201620
+## 6   0.17946655 0.020910723 0.004181691 0.03152043</code></pre>
+<p>Now we run the PCA, excluding the school name address variables (1st and 2nd columns in the dataset)</p>
+<pre class="r"><code>adi_pca&lt;-stats::princomp(na.omit(adi_measures[3:19]), cor=TRUE)
 summary(adi_pca)</code></pre>
 <pre><code>## Importance of components:
-##                           Comp.1    Comp.2     Comp.3     Comp.4     Comp.5
-## Standard deviation     2.7587962 2.0569866 1.18207990 1.07508276 0.98287804
-## Proportion of Variance 0.4477033 0.2488938 0.08219488 0.06798841 0.05682643
-## Cumulative Proportion  0.4477033 0.6965971 0.77879196 0.84678037 0.90360680
+##                           Comp.1    Comp.2    Comp.3     Comp.4     Comp.5
+## Standard deviation     2.9610583 1.9198780 1.0629339 0.93076386 0.85504476
+## Proportion of Variance 0.5157568 0.2168195 0.0664605 0.05096008 0.04300597
+## Cumulative Proportion  0.5157568 0.7325763 0.7990368 0.84999692 0.89300290
 ##                            Comp.6     Comp.7     Comp.8     Comp.9     Comp.10
-## Standard deviation     0.81197985 0.55481396 0.49638804 0.45303434 0.301772822
-## Proportion of Variance 0.03878302 0.01810697 0.01449418 0.01207295 0.005356873
-## Cumulative Proportion  0.94238981 0.96049679 0.97499097 0.98706392 0.992420789
-##                            Comp.11     Comp.12    Comp.13     Comp.14
-## Standard deviation     0.225561609 0.189887158 0.15232520 0.120669922
-## Proportion of Variance 0.002992826 0.002121008 0.00136488 0.000856543
-## Cumulative Proportion  0.995413615 0.997534623 0.99889950 0.999756046
+## Standard deviation     0.70053909 0.58751537 0.54560948 0.46021435 0.401332167
+## Proportion of Variance 0.02886794 0.02030437 0.01751116 0.01245866 0.009474559
+## Cumulative Proportion  0.92187084 0.94217521 0.95968637 0.97214503 0.981619590
+##                            Comp.11     Comp.12     Comp.13     Comp.14
+## Standard deviation     0.335610694 0.286524733 0.263170839 0.168697650
+## Proportion of Variance 0.006625561 0.004829201 0.004074052 0.001674053
+## Cumulative Proportion  0.988245151 0.993074353 0.997148405 0.998822458
 ##                             Comp.15      Comp.16      Comp.17
-## Standard deviation     0.0484192772 0.0423889367 2.442025e-03
-## Proportion of Variance 0.0001379074 0.0001056954 3.507933e-07
-## Cumulative Proportion  0.9998939538 0.9999996492 1.000000e+00</code></pre>
+## Standard deviation     0.1150079944 0.0754937482 3.304650e-02
+## Proportion of Variance 0.0007780493 0.0003352533 6.423947e-05
+## Cumulative Proportion  0.9996005072 0.9999357605 1.000000e+00</code></pre>
+<p>For factor 1, each variable has a given loading, which we can look at with the following code:</p>
 <pre class="r"><code>adi_pca$loadings[,1]</code></pre>
-<pre><code>##              less_than_9yrs_education                  hs_education_or_more 
-##                            0.30976330                           -0.31990245 
-##           value.pop_25_and_over_count                      white_collar_occ 
-##                           -0.20892915                           -0.33137692 
-##                      income_disparity                     below_150_poverty 
-##                            0.21572481                            0.07049906 
-##               single_parent_with_kids                          hh_novehicle 
-##                            0.31462710                           -0.10322106 
-##                           hh_no_phone                           hh_no_plumb 
-##                            0.11812442                            0.06870657 
-##                            hh_crowded               value.med_hincome_count 
-##                            0.22652401                           -0.31232942 
-##               value.median_rent_count           value.median_mortgage_count 
-##                           -0.26639097                           -0.31596430 
-##              value.med_home_val_count           value.unemployed_proportion 
-##                           -0.31643281                            0.14835464 
-## value.owner_occupied_units_proportion 
-##                            0.16316184</code></pre>
+<pre><code>##        less_than_9yrs_education            hs_education_or_more 
+##                     0.300374152                    -0.307398959 
+##                white_collar_occ               med_hincome_count 
+##                    -0.241355143                    -0.304972277 
+##                income_disparity              med_home_val_count 
+##                     0.284862265                    -0.252885909 
+##               median_rent_count           median_mortgage_count 
+##                    -0.244168143                    -0.270323049 
+## owner_occupied_units_proportion           unemployed_proportion 
+##                    -0.005446497                     0.256957058 
+##    fam_below_poverty_proportion               below_150_poverty 
+##                     0.295063978                     0.225719257 
+##         single_parent_with_kids                    hh_novehicle 
+##                     0.223835214                     0.063130302 
+##                     hh_no_phone                     hh_no_plumb 
+##                     0.193572344                     0.139576864 
+##                      hh_crowded 
+##                     0.266687659</code></pre>
 <p>Using the PCA factor loadings, we can calculate a weighted Area Deprivation measure by multiplying each value by the factor loading for each variable, adding the values to create a composite measures, and standardizing the composite measure.</p>
-<pre class="r"><code>##assign loading values for each variable
+<pre class="r"><code>adi_pca$loadings[17]
+##assign loading values for each variable
 less_than_9yrs_loading&lt;-adi_pca$loadings[1]
 hs_education_or_more_loading&lt;-adi_pca$loadings[2]
-value.pop_25_and_over_count_loading&lt;-adi_pca$loadings[3]
-white_collar_occ_loading&lt;-adi_pca$loadings[4]
+white_collar_occ_loading&lt;-adi_pca$loadings[3]
+med_hincome_count_loading&lt;-adi_pca$loadings[4]
 income_disparity_loading&lt;-adi_pca$loadings[5]
-below_150_poverty_loading&lt;-adi_pca$loadings[6]
-single_parent_with_kids_loading&lt;-adi_pca$loadings[7] 
-hh_novehicle_loading&lt;-adi_pca$loadings[8]
-hh_no_phone_loading&lt;-adi_pca$loadings[9]
-hh_no_plumb_loading&lt;-adi_pca$loadings[10]
-hh_crowded_loading&lt;-adi_pca$loadings[11]
-value.med_hincome_count_loading&lt;-adi_pca$loadings[12]
-value.median_rent_count_loading&lt;-adi_pca$loadings[13]
-value.median_mortgage_count_loading&lt;-adi_pca$loadings[14]
-value.med_home_val_count_loading&lt;-adi_pca$loadings[15]
-value.unemployed_proportion_loading&lt;-adi_pca$loadings[16]
-value.owner_occupied_units_proportion_loading&lt;-adi_pca$loadings[17]
+med_home_val_count_loading&lt;-adi_pca$loadings[6]
+median_rent_count_loading&lt;-adi_pca$loadings[7]
+median_mortgage_count_loading&lt;-adi_pca$loadings[8]
+owner_occupied_units_proportion_loading&lt;-adi_pca$loadings[9]
+unemployed_proportion_loading&lt;-adi_pca$loadings[10]
+fam_below_poverty_proportion_loading&lt;-adi_pca$loadings[11]
+below_150_poverty_loading&lt;-adi_pca$loadings[12]
+single_parent_with_kids_loading&lt;-adi_pca$loadings[13] 
+hh_novehicle_loading&lt;-adi_pca$loadings[14]
+hh_no_phone_loading&lt;-adi_pca$loadings[15]
+hh_no_plumb_loading&lt;-adi_pca$loadings[16]
+hh_crowded_loading&lt;-adi_pca$loadings[17]
 
 #Calculated &amp; standardize weighted NDI value using pca loadings
 adi_measures &lt;-adi_measures%&gt;%
   mutate(adi_value=(less_than_9yrs_loading*less_than_9yrs_education)+
            (hs_education_or_more_loading*hs_education_or_more)+
-           (value.pop_25_and_over_count_loading*value.pop_25_and_over_count)+
            (white_collar_occ_loading*white_collar_occ)+
            (income_disparity_loading*income_disparity)+
            (below_150_poverty_loading*below_150_poverty)+
@@ -612,47 +724,36 @@ adi_measures &lt;-adi_measures%&gt;%
            (hh_no_phone_loading*hh_no_phone)+
            (hh_no_plumb_loading*hh_no_plumb)+
            (hh_crowded_loading*hh_crowded)+
-           (value.med_hincome_count_loading*value.med_hincome_count)+
-           (value.med_home_val_count_loading*value.med_home_val_count)+
-           (value.unemployed_proportion_loading*value.unemployed_proportion)+
-           (value.owner_occupied_units_proportion_loading*value.owner_occupied_units_proportion)
+           (med_hincome_count_loading*med_hincome_count)+
+           (med_home_val_count_loading*med_home_val_count)+
+           (unemployed_proportion_loading*unemployed_proportion)+
+           (owner_occupied_units_proportion_loading*owner_occupied_units_proportion)
                     *-1) %&gt;%
   mutate(adi_standardized=(adi_value-mean(adi_value))/sd(adi_value))</code></pre>
 <p>The standardized Area Deprivation Index can be used to compare neighborhoods around each Seattle high school.</p>
 <pre class="r"><code>summary(adi_measures$adi_standardized)</code></pre>
-<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-## -1.4015 -0.9080 -0.1725  0.0000  0.7605  1.6440</code></pre>
 <pre class="r"><code>adi_mean_table&lt;-adi_measures %&gt;%
-  group_by(address) %&gt;%
-  summarise_at(vars(adi_standardized), list(adi_mean=mean))
+  group_by(seattle.schools) %&gt;%
+  summarise_at(vars(adi_standardized), list(adi_mean=mean))%&gt;%
+  arrange(adi_mean)
 
 adi_mean_table</code></pre>
-<pre><code>## # A tibble: 17 x 2
-##    address                                adi_mean
-##    &lt;chr&gt;                                     &lt;dbl&gt;
-##  1 Alan T. Sugiyama High School              1.22 
-##  2 Ballard High School                      -0.928
-##  3 Chief Sealth International High School    0.998
-##  4 Cleveland High School                     0.761
-##  5 Franklin High School                      1.64 
-##  6 Garfield High School                     -0.735
-##  7 Ingraham High School                      0.580
-##  8 Interagency Academy                       0.351
-##  9 Lincoln High School                      -1.40 
-## 10 Nathan Hale High School                  -0.173
-## 11 Nova                                     -0.924
-## 12 Ranier Beach High School                  1.38 
-## 13 Roosevelt High School                    -1.40 
-## 14 Seattle World School                     -0.458
-## 15 Skills Center                             0.554
-## 16 The Center School                        -0.566
-## 17 West Seattle High School                 -0.908</code></pre>
+</div>
 </div>
 <div id="congdons-social-fragmentation-index-congdon-2013" class="section level2">
 <h2>2. Congdon’s Social Fragmentation Index (Congdon, 2013)</h2>
 <p>Social fragmentation describes an ecological measure of community integration and has been studied primarily in association with mental health and suicidality. Social fragmentation is operationalized using measures of single adults living along, the proportion of residents who moved into an area recently (i.e., in the last 5 years), and proportion of renters and vacancies in the area. These measures can all be pulled from American Community Survey data variables that are built into the ACMT. Below we walk through the code to pull the relevant variables and construct the social fragmentation index.</p>
 <p>We first designate the list of relevant variables that we will be pulling, pull those variables from the default list of American Community Survey variables and create proportion and count names.</p>
-<pre class="r"><code>sfi_variables&lt;-c('B25003_001', 'B25003_002', 'B25002_003', 'B25002_001','B11012_001', 'B11012_008', 'B11012_014', 'B25129_003', 'B25129_039', 'B25129_001')
+<pre class="r"><code>sfi_variables&lt;-c('B25003_001', #total occupied units
+                 'B25003_002', #owner-occupied units
+                 'B25002_003', #Total vacant units
+                 'B25002_001', #total units, vacancy determined
+                 'B11011_001', #total households
+                 'B11010_010', #female householder, living alone
+                 'B11010_003', #male householder, living alone
+                 'B25129_003', #owner, moved in &lt;5 years ago
+                 'B25129_039', #renter moved in &lt;5 years ago
+                 'B25129_001') #total households
  
 #Identify the variables of interest from the default list of ACS variables
 acsvars&lt;-read_csv('ACMT/ACSColumns.csv')
@@ -664,99 +765,161 @@ if (length(acsvars$var_name[acsvars$universe_col != &quot;&quot;]) == 0) {   # p
   acs_proportion_names &lt;- character(0)
 } else {
   acs_proportion_names &lt;- paste(acsvars$var_name[!is.na(acsvars$universe_col)], &quot;proportion&quot;, sep=&quot;_&quot;)   # only non-universal variables have proportions
-}</code></pre>
-<p>Next, we can set the list of variable codes and names, and set the radius and year of the data you are interested in. Once these values are set, we can run the ACMT to pull the measures for each geocoded address.</p>
-<pre class="r"><code>#Set the list of variable codes, the list of variable names, the radius, and the year for the data you want pulled
-codes_of_acs_variables_to_get&lt;-acsvars$acs_col
-names_of_variable_to_get&lt;-c(acs_count_names, acs_proportion_names)
-radius_vector &lt;- c(1000)#set the radius for the area of interest
-year &lt;- 2019 #set the year for the data of interest
-
-##Pull relevant ACS variables
-address_to_radius_to_variable_to_measures_list &lt;-get_variable_measures_from_acmt(address_to_lat_long_list= address_to_lat_long_list, radius_vector=radius_vector, year=year,                                                                             names_of_variable_to_get=names_of_variable_to_get,                                                                                 codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
-address_adi_measures&lt;-address_to_radius_to_variable_to_measures_list</code></pre>
-<p>Once the measures are pulled for each location, we can transform the list into a wide dataframe for easier analysis.</p>
-<pre class="r"><code>#reshape list of measures to dataset
-##Convert to dataframe
-
-convert_to_dataframe &lt;- function (address_adi_measures) {
-  address_vector &lt;- c()
-  radius_vector &lt;- c()
-  variable_vector &lt;- c()
-  value_vector &lt;- c()
-  
-  for(address in names(address_adi_measures)){
-    for(radius_character in names(address_adi_measures[[address]])){
-      for(variable in names(address_adi_measures[[address]][[radius_character]])){
-        address_vector &lt;- c(address_vector, address)
-        radius_vector &lt;- c(radius_vector, as.numeric(radius_character))
-        variable_vector &lt;- c(variable_vector, variable)
-        value_vector &lt;- c(value_vector, address_adi_measures[[address]][[radius_character]][[variable]])
-      }
-    }
-  }
-  
-  dataframe_address &lt;- data.frame(address_vector, radius_vector, variable_vector, value_vector, stringsAsFactors=FALSE)
-  names(dataframe_address) &lt;- c(&quot;address&quot;, &quot;radius&quot;, &quot;variable&quot;, &quot;value&quot;)
-  return(dataframe_address)
 }
 
-dataframe_address &lt;- convert_to_dataframe(address_adi_measures = address_to_radius_to_variable_to_measures_list)
+#Set the list of variable codes, the list of variable names, the radius, and the year for the data you want pulled
+codes_of_acs_variables_to_get&lt;-acsvars$acs_col
+names_of_variable_to_get&lt;-c(acs_count_names, acs_proportion_names)
+radius&lt;- c(1000)#set the radius for the area of interest
+year &lt;- 2019 #set the year for the data of interest
 
-dataframe_address$radius&lt;-NULL
-address_wide_dataframe&lt;-reshape(dataframe_address, v.names=&quot;value&quot;,timevar = &quot;variable&quot;, idvar = &quot;address&quot;, direction=&quot;wide&quot;)</code></pre>
-<p>Once the dataset is transformed, we can calculate the measures using the ACS variables that were pulled.</p>
-<pre class="r"><code>sfi_measures&lt;-address_wide_dataframe %&gt;%
-  mutate(housing_not_owner_occupied = (value.occupied_units_count - value.owner_occupied_units_count)/value.occupied_units_count, 
-         living_alone = (value.living_alone_female_proportion + value.living_alone_male_proportion)/value.total_housing_units_occ_count, 
-         recent_move = (value.renter_occupied_recent_move_count+value.owner_occupied_recent_move_count)/value.total_occupied_housing_year_count) %&gt;%
+var.cols&lt;-data.frame(matrix(nrow=nrow(schools), ncol=length(names_of_variable_to_get))) #create dataset of columns
+colnames(var.cols)&lt;-names_of_variable_to_get #name the columns
+schools_sfi&lt;-cbind(var.cols, schools) #bind the columns to the dataset</code></pre>
+<p>Next, we can set the list of variable codes and names, and set the radius and year of the data you are interested in. Once these values are set, we can run the ACMT to pull the measures for each geocoded address.</p>
+<pre class="r"><code>#run loop to pull variables
+for(address in 1:nrow(schools_sfi)) {
+   tryCatch({if(!is.na(schools_sfi[,1][address])) next #skip the row if the data is already there
+  if(!is.na(schools_sfi[,1][address])) next #skip the row if the data is already there
+  print(address) #print the number to keep track of progress
+  latitude&lt;-schools_sfi$lat[address] #set lat
+  longitude&lt;-schools_sfi$long[address] #set long
+  
+  environmental_measures&lt;-get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get = codes_of_acs_variables_to_get) #pull measures for given lat &amp; long
+ 
+      for(name_of_variable in names_of_variable_to_get){ #for each measures, get the value and put it into the column of the same name
+     value_of_variable &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+     schools_sfi[[name_of_variable]][address]&lt;-value_of_variable
+  }
+
+ for (name_of_variable in names_of_variable_to_get) {
+        schools_sfi[[name_of_variable]][address] &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+ }},error=function(e){cat(&quot;ERROR :&quot;, conditionMessage(e), &quot;\n&quot;)}) #this will print any error messages
+}</code></pre>
+<p>Once the data is pulled for each variables, we can calculate the SFI value</p>
+<pre class="r"><code>sfi_measures&lt;-schools_sfi %&gt;%
+  mutate(housing_not_owner_occupied = (occupied_units_count - owner_occupied_units_count)/occupied_units_count, 
+         living_alone = (female_householder_alone_count + male_householder_alone_count)/total_households_count, 
+         recent_move = (renter_occupied_recent_move_count+owner_occupied_recent_move_count)/total_occupied_housing_year_count) %&gt;%
   mutate(housing_not_owner_occupied_stand = (housing_not_owner_occupied-mean(housing_not_owner_occupied))/sd(housing_not_owner_occupied), 
-         vacant_housing_stand = (value.vacant_units_proportion-mean(value.vacant_units_proportion))/sd(value.vacant_units_proportion), 
+         vacant_housing_stand = (vacant_units_proportion-mean(vacant_units_proportion))/sd(vacant_units_proportion), 
          living_alone_stand = (living_alone-mean(living_alone))/sd(living_alone), 
          recent_move_stand = (recent_move-mean(recent_move))/sd(recent_move)) %&gt;%
            mutate(sfi_value = housing_not_owner_occupied_stand + vacant_housing_stand + living_alone_stand + recent_move_stand)
                                
 summary(sfi_measures$sfi_value)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-## -3.1495 -1.1655  0.1305  0.0000  1.3953  3.1756</code></pre>
+## -4.3691 -1.9199 -0.3698  0.0000  1.6183  7.1316</code></pre>
 <p>Now that the standardized social fragmentation index has been calculated for each location in the address list, values can be used for additional analyses.</p>
 <pre class="r"><code>summary(sfi_measures$sfi_value)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-## -3.1495 -1.1655  0.1305  0.0000  1.3953  3.1756</code></pre>
+## -4.3691 -1.9199 -0.3698  0.0000  1.6183  7.1316</code></pre>
 <pre class="r"><code>sfi_mean_table&lt;-sfi_measures %&gt;%
   group_by(address) %&gt;%
   summarise_at(vars(sfi_value), list(sfi_mean=mean))
 
 sfi_mean_table</code></pre>
-<pre><code>## # A tibble: 17 x 2
-##    address                                sfi_mean
-##    &lt;chr&gt;                                     &lt;dbl&gt;
-##  1 Alan T. Sugiyama High School             -0.129
-##  2 Ballard High School                      -1.17 
-##  3 Chief Sealth International High School   -1.22 
-##  4 Cleveland High School                    -2.18 
-##  5 Franklin High School                      1.68 
-##  6 Garfield High School                      0.537
-##  7 Ingraham High School                     -0.954
-##  8 Interagency Academy                      -0.991
-##  9 Lincoln High School                       1.40 
-## 10 Nathan Hale High School                  -2.88 
-## 11 Nova                                      0.186
-## 12 Ranier Beach High School                  0.355
-## 13 Roosevelt High School                     0.130
-## 14 Seattle World School                      2.40 
-## 15 Skills Center                             2.82 
-## 16 The Center School                         3.18 
-## 17 West Seattle High School                 -3.15</code></pre>
+<pre><code>## # A tibble: 29 x 2
+##    address                                  sfi_mean
+##    &lt;chr&gt;                                       &lt;dbl&gt;
+##  1 10750 30th Ave. NE, Seattle, WA 98125     -3.14  
+##  2 11051 34th Ave NE, Seattle, WA 98125      -3.30  
+##  3 1330 N 90th St, Seattle, WA 98103         -0.143 
+##  4 1410 NE 66th St., Seattle, WA 98115        1.31  
+##  5 1418 NW 65th St., Seattle, WA 98117       -0.370 
+##  6 1600 S Columbian Way, Seattle, WA, 98108  -1.75  
+##  7 1610 N 41st St, Seattle, WA 98103          3.40  
+##  8 1700 E Union St., Seattle, WA 98122        5.49  
+##  9 1819 N 135th St., Seattle, WA 98133        0.0673
+## 10 1915 1st Ave W, Seattle, WA 98119          3.21  
+## # … with 19 more rows</code></pre>
 </div>
 <div id="cdc-social-vulnerability-index" class="section level2">
 <h2>3. CDC Social Vulnerability Index</h2>
 <p>The Social Vulnerability Index (CITE) is used by the CDC to rank census tracts according to their ability to prevent suffering in loss during disasters. This can be used in emergency preparedness efforts to identify potentially vulnerable areas, and can assist in estimating levels of supplies and support a community may need in their recovery efforts. Measures included in this index span across social and economic factors, including poverty, education, employment, income, ages, disabilities, household type, minority status, language, and housing and transportation. Variables are used to contruct percentile rankings across 4 domains: (1) Socioeconomic, (2) Household Composition, (3) Minority Status/Language, and (4) Housing Type/Transportation.</p>
 <p>Other Social Vulnerability measures have also been developed and used in research on both disaster and emergency preparedness and in health prevention and promotion. Variables used in the CDC’s Social Vulnerability Index are included in the default list of ACS variables, and thus can be easily pulled to construct the index for your research.</p>
 <p>We’ll start by designating the variables that we will need for the index.</p>
-<pre class="r"><code>svi_variables&lt;-c('B01001_001', 'B25001_001', 'B11001_001', 'B17002_002', 'B17002_001', 'B23025_001', 'B23025_002', 'B19013_001', 'B06009_002', 'B06009_001', 'B01001_014', 'B01001_015', 'B01001_016', 'B01001_038', 'B01001_039', 'B01001_040', 'B01001_003', 'B01001_004', 'B01001_005', 'B01001_006', 'B01001_027', 'B01001_028', 'B01001_029', 'B01001_030', 'B18101_004', 'B18101_007', 'B18101_010', 'B18101_013', 'B18101_016', 'B18101_019', 'B18101_023', 'B18101_026', 'B18101_029', 'B18101_032', 'B18101_035', 'B18101_038', 'B18101_001', 'B11012_010', 'B11012_015', 'B11012_001', 'B01001H_001', 'B16005_007', 'B16005_008', 'B16005_012', 'B16005_013', 'B16005_017','B16005_018', 'B16005_022', 'B16005_023', 'B16005_029', 'B16005_030', 'B16005_034', 'B16005_035', 'B16005_039', 'B16005_040', 'B16005_044', 'B16005_045', 'B16005_001', 'B25024_007', 'B25024_008', 'B25024_009', 'B25024_010', 'B25024_001', 'B25014_005', 'B25014_006', 'B25014_007', 'B25014_011', 'B25014_012', 'B25014_013', 'B25014_001', 'B25044_003', 'B25044_009','B25044_010', 'B25044_001', 'B26001_001', 'B17001_002', 'B17001_001', 'B23025_005', 'B23025_001')
-
-#Identify the variables of interest from the default list of ACS variables
+<pre class="r"><code>svi_variables&lt;-c('B01001_001', #Total Population
+                 'B25001_001', #Total housing units
+                 'B11003_001', #Total families
+                 'B17001_002', #households below poverty
+                 'B17001_001', #Total households, poverty determined
+                 'B23025_001', #Residents 16 and older
+                 'B23025_005', #Unemployed
+                 'B19301_001', #per capital income
+                 'B06009_002', #no high school diploma
+                 'B06009_001', #Resident 25 and older
+                 'B01001_020', #(Male!!65 and 66 years)
+                 'B01001_021', #(Male!!67 to 69 years)
+                  'B01001_022', #(Male!!70 to 74 years)
+                  'B01001_023', #(Male!!75 to 79 years)
+                  'B01001_024', #(Male!!80 to 84 years)
+                  'B01001_025', #(Male!!85 years and over)
+                  'B01001_044', #(Female!!65 and 66 years)
+                  'B01001_045', #(Female!!67 to 69 years)
+                  'B01001_046', #(Female!!70 to 74 years)
+                  'B01001_047', #(Female!!75 to 79 years)
+                  'B01001_048', #(Female!!80 to 84 years)
+                  'B01001_049', #(Female!!85 years and over)
+                 'B01001_003', #males under 5
+                 'B01001_004', #males 5 to 9
+                 'B01001_005', #males 10 to 14
+                 'B01001_006', #Males 15 to 17
+                 'B01001_027', #females under 5
+                 'B01001_028', #females 5 to 9
+                 'B01001_029', #females 10 to 14
+                 'B01001_030', #females 15 to 17
+                 'B18101_004', #males under 5 with a disability
+                 'B18101_007', #males 5 to 17 with a disability
+                 'B18101_010', #males 18 to 34, with a disability
+                 'B18101_013', #males, 35 to 64, with a disability
+                 'B18101_016', #males, 65 to 74, with a disability
+                 'B18101_019', #males 75 years and over, with a disability
+                 'B18101_023', #female under 5, with a disability
+                 'B18101_026', #female 5 to 17, with a disability
+                 'B18101_029', #female 18 to 34, with a disability
+                 'B18101_032', #female 35 to 64, with a disability
+                 'B18101_035', #female 65 to 74, with a disability
+                 'B18101_038', #females 75 and older, with a disability
+                 'B18101_001', #total pop, disability determined
+                 'B11003_010', # male householder, no wife, own children under 18
+                 'B11003_016', #female householder, no husband, children under 18
+                 'B01001H_001', #non-Hispanic White
+                 'B16005_007', #(native born, spanish speaker, speak english 'not well')
+                  'B16005_008',  #(native born, Spanish speaker, speaks english, 'not at all'
+                  'B16005_012',  #(native born, speak other indo-european language, speaks English 'not well')
+                  'B16005_013', #(native born, Speaks other indo-european language, speaks English 'not at all')
+                  'B16005_017', #native born, Asian &amp; PI languages, speaks english 'not well'
+                  'B16005_018', #native born, Asian &amp; PI languages, speaks English 'not at all'
+                  'B16005_022', #native born, speaks other languages, speaks English 'not well'
+                  'B16005_023',  #native born, speaks other languages, speaks Enlgish 'not at all'
+                  'B16005_029', #foreign born, speaks Spanish, speaks English, 'not well'
+                  'B16005_030', #foreign born, speaks Spanish, speaks English, 'not at all'
+                  'B16005_034', #foreign born, speaks other indo-European language, speaks English 'not well'
+                  'B16005_035',  #foreign born, speaks other Indo-European language, speaks English 'not at all'
+                  'B16005_039', #foreign born, speaks Asian &amp; PI languages, speaks English 'not well'
+                  'B16005_040', #foreign born, speaks Asian &amp; PI languages, speaks English 'not at all'
+                  'B16005_044', #foreign born, speaks other languages, speaks English 'not well'
+                  'B16005_045', #foreign born, speaks other languages, speaks English, 'not at all'
+                 'B16005_001', #total population, 5 years and older
+                 'B25024_007', #10 to 19 units
+                 'B25024_008', #20 to 49 units
+                 'B25024_009', #50 units or more
+                 'B25024_010', #mobile homes
+                 'B25024_001', #total housing units
+                 'B25014_005', #owner occupied, 1.01 to 1.5 units
+                 'B25014_006', #owner occupied, 1.51 to 2 units
+                 'B25014_007', #owner occupied, 2.01 units or more
+                 'B25014_011', #renter occpuied, 1.01 to 1.5 units
+                 'B25014_012', #renter occupied, 1.51 to 2 units
+                 'B25014_013', #renter occpuied, 2.01 or more units
+                 'B25014_001', #total units
+                 'B25044_003', #owner occupied, no vehicle
+                 'B25044_010', #renter occupied, no vehicle
+                 'B25044_001', #total occupied units, vehicles determined
+                 'B26001_001') #total in group quarters</code></pre>
+<p>Next add a column for each variable to be pulled to the dataset.</p>
+<pre class="r"><code>#Identify the variables of interest from the default list of ACS variables
 acsvars&lt;-read_csv('ACMT/ACSColumns.csv')
 acsvars&lt;-subset(acsvars, acs_col %in% svi_variables)
 
@@ -767,80 +930,75 @@ if (length(acsvars$var_name[acsvars$universe_col != &quot;&quot;]) == 0) {   # p
 } else {
   acs_proportion_names &lt;- paste(acsvars$var_name[!is.na(acsvars$universe_col)], &quot;proportion&quot;, sep=&quot;_&quot;)   # only non-universal variables have proportions
 }</code></pre>
-<p>Once the variables are designated, we can pull the relevant ACS values for each location.</p>
+<p>Once the variables are designated, we can create a column for each variable to be pulled and set the radius and year of the data that will be pulled.</p>
 <pre class="r"><code>#Set the list of variable codes, the list of variable names, the radius, and the year for the data you want pulled
 codes_of_acs_variables_to_get&lt;-acsvars$acs_col
 names_of_variable_to_get&lt;-c(acs_count_names, acs_proportion_names)
-radius_vector &lt;- c(1000)#set the radius for the area of interest
+radius &lt;- c(1000)#set the radius for the area of interest
 year &lt;- 2019 #set the year for the data of interest
 
-##Pull relevant ACS variables
-address_to_radius_to_variable_to_measures_list &lt;-get_variable_measures_from_acmt(address_to_lat_long_list= address_to_lat_long_list, radius_vector=radius_vector, year=year,                                                                             names_of_variable_to_get=names_of_variable_to_get,                                                                                 codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
-address_svi_measures&lt;-address_to_radius_to_variable_to_measures_list</code></pre>
-<p>Next we can transform the list of values into a wide dataset.</p>
-<pre class="r"><code>#reshape list of measures to dataset
-##Convert to dataframe
-
-convert_to_dataframe &lt;- function (address_svi_measures) {
-  address_vector &lt;- c()
-  radius_vector &lt;- c()
-  variable_vector &lt;- c()
-  value_vector &lt;- c()
+#create a dataset of columns for each variable to be pulled
+var.cols&lt;-data.frame(matrix(nrow=nrow(schools), ncol=length(names_of_variable_to_get))) #create dataset of columns
+colnames(var.cols)&lt;-names_of_variable_to_get #name the columns
+schools_svi&lt;-cbind(var.cols, schools) #bind the columns to the dataset</code></pre>
+<p>Now we can run a loop to pull the variables for each location</p>
+<pre class="r"><code>#run loop to pull variables
+for(address in 1:nrow(schools_svi)) {
+   tryCatch({if(!is.na(schools_svi[,1][address])) next #skip the row if the data is already there
+  if(!is.na(schools_svi[,1][address])) next #skip the row if the data is already there
+  print(address) #print the number to keep track of progress
+  latitude&lt;-schools_svi$lat[address] #set lat
+  longitude&lt;-schools_svi$long[address] #set long
   
-  for(address in names(address_svi_measures)){
-    for(radius_character in names(address_svi_measures[[address]])){
-      for(variable in names(address_svi_measures[[address]][[radius_character]])){
-        address_vector &lt;- c(address_vector, address)
-        radius_vector &lt;- c(radius_vector, as.numeric(radius_character))
-        variable_vector &lt;- c(variable_vector, variable)
-        value_vector &lt;- c(value_vector, address_svi_measures[[address]][[radius_character]][[variable]])
-      }
-    }
+  environmental_measures&lt;-get_acmt_standard_array(long=longitude, lat=latitude, radius_meters = radius, year=year, codes_of_acs_variables_to_get = codes_of_acs_variables_to_get) #pull measures for given lat &amp; long
+ 
+      for(name_of_variable in names_of_variable_to_get){ #for each measures, get the value and put it into the column of the same name
+     value_of_variable &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+     schools_svi[[name_of_variable]][address]&lt;-value_of_variable
   }
-  
-  dataframe_address &lt;- data.frame(address_vector, radius_vector, variable_vector, value_vector, stringsAsFactors=FALSE)
-  names(dataframe_address) &lt;- c(&quot;address&quot;, &quot;radius&quot;, &quot;variable&quot;, &quot;value&quot;)
-  return(dataframe_address)
-}
 
-dataframe_address &lt;- convert_to_dataframe(address_svi_measures = address_to_radius_to_variable_to_measures_list)
-
-dataframe_address$radius&lt;-NULL
-address_wide_dataframe&lt;-reshape(dataframe_address, v.names=&quot;value&quot;,timevar = &quot;variable&quot;, idvar = &quot;address&quot;, direction=&quot;wide&quot;)</code></pre>
+ for (name_of_variable in names_of_variable_to_get) {
+        schools_svi[[name_of_variable]][address] &lt;- environmental_measures[environmental_measures$names == name_of_variable, ]$values  
+ }},error=function(e){cat(&quot;ERROR :&quot;, conditionMessage(e), &quot;\n&quot;)}) #this will print any error messages
+}</code></pre>
 <p>Next we can combine values and variables as needed to create the final list of measures which aligns with the Social Vulnerability Index. These measures include margins of error for each variable, for which a standard of 90% is used (based on the Census Bureau MOE standards).</p>
 <pre class="r"><code>#function to calculate 90% MOE
 alpha=.10
-deg.free=(length(address_wide_dataframe)-1)
+deg.free=(length(schools)-1)
 t.score&lt;-qt(p=alpha/2, df=deg.free, lower.tail = F)
 std_moe&lt;-function(x) t.score*(sd(x)/sqrt(length(x)))
 
 #calcualte estimates &amp; margins of errors for relevant variables
-address_wide_dataframe$value.unemployed_proportion
-svi_measures&lt;-address_wide_dataframe %&gt;%
+svi_measures&lt;-schools_svi %&gt;%
   #First create the estimates
-  mutate(e_totpop=value.total_pop_count, 
-         e_hu=value.housing_units_count, 
-         e_hh=value.total_households_count, 
-         e_pov=value.below_pov_count,
-         e_unemp=value.unemployed_count, 
-         e_pci=value.med_hincome_count, 
-         e_nohsdp=value.no_hsdiploma_count, 
-         e_age65=(value.males_65_to_74_count + value.males_75_to_84_count+ value.males_85_and_older_count+value.females_65_to_74_count + value.females_75_to_84_count+value.females_85_and_older_count ),
-         e_age17=(value.males_under_5_count+value.males_5_to_9_count+value.males_10_to_14_count+value.males_15_to_17_count+    value.females_under_5_count+value.females_5_to_9_count+value.females_10_to_14_count+value.females_15_to_17_count),
-         e_disabl=(value.males_under5_disability_count+value.males_5_17_disability_count+value.males_18_34_disability_count+value.males_35_64_disability_count+value.males_65_74_disability_count+value.males_75_plus_disability_count+value.females_under5_disability_count+value.females_5_17_disability_count+value.females_18_34_disability_count+value.females_35_64_disability_count+value.females_65_74_disability_count+value.females_75_plus_disability_count),
-         e_sngpnt=(value.male_householder_kids_count+value.female_head_kids_count),
-         e_minrty=(value.total_pop_count-value.non_hisp_white_count), 
-         e_limeng=(value.ntv_sp_lmt_eng_notwell_count+value.ntv_sp_lmt_eng_notatall_count+value.ntv_ie_lmt_eng_notwell_count+
-                              value.ntv_ie_lmt_eng_notatall_count+value.ntv_api_lmt_en_notwell_count+value.ntv_api_lmt_en_notatall_count+
-                              value.ntv_oth_lmt_en_notwell_count+value.ntv_oth_lmt_en_notatall_count+value.fb_sp_lmt_eng_notwell_count+
-                              value.fb_sp_lmt_eng_notatall_count+value.fb_ie_lmt_eng_notwell_count+value.fb_ie_lmt_eng_notatall_count+
-                              value.fb_api_lmt_en_notwell_count+value.fb_api_lmt_en_notatall_count+value.fb_oth_lmt_en_notwell_count+
-                              value.fb_oth_lmt_en_notatall_count), 
-         e_munit=(value.units_10_to_19_count+value.units_20_to_49_count+value.units_50_ormore_count)/value.total_housing_units_count_in_structure_count, 
-         e_mobile=value.mobile_homes_count,
-          e_crowd=(value.owner_1.01_to_1.5_per_room_count+value.owner_1.51_to_2.0_per_room_count+value.owner_2.01_or_more_per_room_count+value.renter_1.01_to_1.5_per_room_count+value.renter_1.51_to_2.0_per_room_count+value.renter_2.01_or_more_per_room_count)/value.total_occupied_housing_units_room_count, 
-         e_noveh=(value.owner_no_vehicle_count+value.renter_no_vehicle_count)/value.occupied_housing_vehicle_determined_count, 
-         e_groupq=value.group_quarters_count) %&gt;%
+  mutate(e_totpop=total_pop_count, 
+         e_hu=housing_units_count, 
+         e_hh=total_families_count, 
+         e_pov=below_pov_count,
+         e_unemp=unemployed_count, 
+         e_pci=per_capita_income_count, 
+         e_nohsdp=no_hsdiploma_count, 
+         e_age65=(males_65_to_66_count + males_67_to_69_count + 
+                    males_70_to_74_count+ males_75_to_79_count+ 
+                    males_80_to_84_count+ males_85_and_older_count+
+                    females_65_to_66_count + females_67_to_69_count+
+                    females_70_to_74_count + females_75_to_79_count+
+                    females_80_to_84_count + females_85_and_older_count),
+         e_age17=(males_under_5_count+males_5_to_9_count+males_10_to_14_count+males_15_to_17_count+    females_under_5_count+females_5_to_9_count+females_10_to_14_count+females_15_to_17_count),
+         e_disabl=(males_under5_disability_count+males_5_17_disability_count+males_18_34_disability_count+males_35_64_disability_count+males_65_74_disability_count+males_75_plus_disability_count+females_under5_disability_count+females_5_17_disability_count+females_18_34_disability_count+females_35_64_disability_count+females_65_74_disability_count+females_75_plus_disability_count),
+         e_sngpnt=(male_head_kids_count+female_head_kids_count),
+         e_minrty=(total_pop_count-non_hisp_white_count), 
+         e_limeng=(ntv_sp_lmt_eng_notwell_count+ntv_sp_lmt_eng_notatall_count+ntv_ie_lmt_eng_notwell_count+
+                              ntv_ie_lmt_eng_notatall_count+ntv_api_lmt_en_notwell_count+ntv_api_lmt_en_notatall_count+
+                              ntv_oth_lmt_en_notwell_count+ntv_oth_lmt_en_notatall_count+fb_sp_lmt_eng_notwell_count+
+                              fb_sp_lmt_eng_notatall_count+fb_ie_lmt_eng_notwell_count+fb_ie_lmt_eng_notatall_count+
+                              fb_api_lmt_en_notwell_count+fb_api_lmt_en_notatall_count+fb_oth_lmt_en_notwell_count+
+                              fb_oth_lmt_en_notatall_count), 
+         e_munit=(units_10_to_19_count+units_20_to_49_count+units_50_ormore_count)/total_housing_units_count_in_structure_count, 
+         e_mobile=mobile_homes_count,
+          e_crowd=(owner_1.01_to_1.5_per_room_count+owner_1.51_to_2.0_per_room_count+owner_2.01_or_more_per_room_count+renter_1.01_to_1.5_per_room_count+renter_1.51_to_2.0_per_room_count+renter_2.01_or_more_per_room_count)/total_occupied_housing_units_room_count, 
+         e_noveh=(owner_no_vehicle_count+renter_no_vehicle_count)/occupied_housing_vehicle_determined_count, 
+         e_groupq=group_quarters_count) %&gt;%
   #next calculate the margins of errors for each estimate
   mutate(m_totpop=std_moe(e_totpop),
          m_hu=std_moe(e_hu),
@@ -861,20 +1019,20 @@ svi_measures&lt;-address_wide_dataframe %&gt;%
          m_noveh=std_moe(e_noveh),
          m_groupq=std_moe(e_groupq)) %&gt;%
   #next calculate the percentages for each variable
-  mutate(ep_pov=value.below_pov_proportion, 
-         ep_unemp=value.unemployed_proportion*100, 
-         ep_pci=value.med_hincome_count*100, 
-         ep_nohsdp=value.no_hsdiploma_proportion*100,
+  mutate(ep_pov=below_pov_proportion, 
+         ep_unemp=unemployed_proportion*100, 
+         ep_pci=per_capita_income_count*100, 
+         ep_nohsdp=no_hsdiploma_proportion*100,
          ep_age65=(e_age65/e_totpop)*100, 
          ep_age17=(e_age17/e_totpop)*100,
-         ep_disabl=(e_disabl/value.civilian_pop_count)*100,
-         ep_sngpnt=(e_sngpnt/value.total_households_count)*100,
+         ep_disabl=(e_disabl/civilian_pop_count)*100,
+         ep_sngpnt=(e_sngpnt/total_families_count)*100,
          ep_minrty=(e_minrty/e_totpop)*100,
-         ep_limeng=(e_limeng/value.total_ages_5_up_count)*100, 
+         ep_limeng=(e_limeng/total_ages_5_up_count)*100, 
          ep_munit=(e_munit/e_hu)*100, 
-         ep_mobile=value.mobile_homes_proportion*100, 
-         ep_crowd=(e_crowd/value.total_occupied_housing_units_room_count)*100, 
-         ep_noveh=(e_noveh/value.occupied_housing_vehicle_determined_count)*100,
+         ep_mobile=mobile_homes_proportion*100, 
+         ep_crowd=(e_crowd/total_occupied_housing_units_room_count)*100, 
+         ep_noveh=(e_noveh/occupied_housing_vehicle_determined_count)*100,
          ep_groupq=(e_groupq/e_totpop)*100) %&gt;%
   #Next calculate the margin of error for the percentages of each variable
   mutate(mp_pov=std_moe(ep_pov), 
@@ -950,32 +1108,26 @@ svi_measures&lt;-address_wide_dataframe %&gt;%
 <p>The total number of flags calculated for each location can be used to compare the raeas around each high school.</p>
 <pre class="r"><code>summary(svi_measures$f_total)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   0.000   0.000   2.000   1.765   3.000   6.000</code></pre>
+##   0.000   0.000   1.000   1.552   2.000   6.000</code></pre>
 <pre class="r"><code>svi_mean_table&lt;-svi_measures %&gt;%
   group_by(address)%&gt;%
   summarise_at(vars(f_total), list(svi_mean=mean))
 
 svi_mean_table</code></pre>
-<pre><code>## # A tibble: 17 x 2
-##    address                                svi_mean
-##    &lt;chr&gt;                                     &lt;dbl&gt;
-##  1 Alan T. Sugiyama High School                  3
-##  2 Ballard High School                           0
-##  3 Chief Sealth International High School        0
-##  4 Cleveland High School                         3
-##  5 Franklin High School                          4
-##  6 Garfield High School                          0
-##  7 Ingraham High School                          2
-##  8 Interagency Academy                           2
-##  9 Lincoln High School                           0
-## 10 Nathan Hale High School                       0
-## 11 Nova                                          1
-## 12 Ranier Beach High School                      6
-## 13 Roosevelt High School                         2
-## 14 Seattle World School                          1
-## 15 Skills Center                                 4
-## 16 The Center School                             0
-## 17 West Seattle High School                      2</code></pre>
+<pre><code>## # A tibble: 29 x 2
+##    address                                  svi_mean
+##    &lt;chr&gt;                                       &lt;dbl&gt;
+##  1 10750 30th Ave. NE, Seattle, WA 98125           0
+##  2 11051 34th Ave NE, Seattle, WA 98125            0
+##  3 1330 N 90th St, Seattle, WA 98103               0
+##  4 1410 NE 66th St., Seattle, WA 98115             1
+##  5 1418 NW 65th St., Seattle, WA 98117             0
+##  6 1600 S Columbian Way, Seattle, WA, 98108        6
+##  7 1610 N 41st St, Seattle, WA 98103               0
+##  8 1700 E Union St., Seattle, WA 98122             1
+##  9 1819 N 135th St., Seattle, WA 98133             4
+## 10 1915 1st Ave W, Seattle, WA 98119               1
+## # … with 19 more rows</code></pre>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
