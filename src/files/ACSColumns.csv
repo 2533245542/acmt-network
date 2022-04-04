@@ -20,30 +20,48 @@ B01001_004,males_5_to_9,B01001_002,Male residents 5 to 9 (count),Male residents 
 B01001_005,males_10_to_14,B01001_002,Male residents 10 to 14 (count),Male residents 10 to 14 (proportion of all male residents),TRUE
 B01001_006,males_15_to_17,B01001_002,Male residents 15 to 17 (count),Male residents 15 to 17 (proportion of all male residents),TRUE
 B01001_007,males_18_to_19,B01001_002,Male residents 18 to 19 (count),Male residents 18 to 19 (proportion of all male residents),TRUE
-B01001_008,males_20_to_24,B01001_002,Male residents 20 to 24 (count),Male residents 20 to 24 (proportion of all male residents),TRUE
-B01001_009,males_25_to_29,B01001_002,Male residents 25 to 29 (count),Male residents 25 to 29 (proportion of all male residents),TRUE
-B01001_010,males_30_to_34,B01001_002,Male residents 30 to 34 (count),Male residents 30 to 34 (proportion of all male residents),TRUE
-B01001_011,males_35_to_44,B01001_002,Male residents 35 to 44 (count),Male residents 35 to 44 (proportion of all male residents),TRUE
-B01001_012,males_45_to_54,B01001_002,Male residents 45 to 54 (count),Male residents 45 to 54 (proportion of all male residents),TRUE
-B01001_013,males_55_to_64,B01001_002,Male residents 55 to 64 (count),Male residents 55 to 64 (proportion of all male residents),TRUE
-B01001_014,males_65_to_74,B01001_002,Male residents 65 to 74 (count),Male residents 65 to 74 (proportion of all male residents),TRUE
-B01001_015,males_75_to_84,B01001_002,Male residents 75 to 84 (count),Male residents 75 to 84 (proportion of all male residents),TRUE
-B01001_016,males_85_and_older,B01001_002,Male residents 85 and older (count),Male residents 85 and older (proportion of all male residents),TRUE
+B01001_008,males_age20,B01001_002,Male residents age 20 (count),Male residents age 20 (proportion of all male residents),TRUE
+B01001_009,males_age21,B01001_002,Male residnets age 21 (count),Male residents age 21 (proportion of all male residents),TRUE
+B01001_010,males_22_to_24,B01001_002,Male residents 22 to 24 (count),Male residents 22 to 24 (proportion of all male residents),TRUE
+B01001_011,males_25_to_29,B01001_002,Male residents 25 to 29 (count),Male residents 25 to 29 (proportion of all male residents),TRUE
+B01001_012,males_30_to_34,B01001_002,Male residents 30 to 34 (count),Male residents 30 to 34 (proportion of all male residents),TRUE
+B01001_013,males_35_to_39,B01001_002,Male residents 35 to 39 (count),Male residents 35 to 39 (proportion of all male residents),TRUE
+B01001_014,males_40_to_44,B01001_002,Male residents 40 to 44 (count),Male residents 40 to 44 (proportion of all male residents),TRUE
+B01001_015,males_45_to_49,B01001_002,Male residents 45 to 49 (count),Male reidents 45 to 49 (proportion of all male residents),TRUE
+B01001_016,males_50_to_54,B01001_002,Male residents 50 to 54 (count),Male residents 50 to 54 (proportion of all male residents),TRUE
+B01001_017,males_55_to_59,B01001_002,Male residents 55 to 59 (count),Male residents 55 to 59 (proportion of all male residents),TRUE
+B01001_018,males_60_to_61,B01001_002,Male residents 60 to 61 (count),Male residents 60 to 61 (proportion of all male residents),TRUE
+B01001_019,males_62_to_64,B01001_002,Male residents 62 to 64 (count),Male residents 62 to 64 (proportion of all male residents),TRUE
+B01001_020,males_65_to_66,B01001_002,Male residents 65 to 66 (count),Male residents 65 to 66 (proportion of all male residents),TRUE
+B01001_021,males_67_to_69,B01001_002,Male residents 67 to 69count),Male residents 67 to 69 (proportion of all male residents),TRUE
+B01001_022,males_70_to_74,B01001_002,Male residents 70 to 74 (count),Male residents 70 to 74 (proportion of all male residents),TRUE
+B01001_023,males_75_to_79,B01001_002,Male residents 75 to 79 (count),Male residents 75 to 79 (proportion of all male residents),TRUE
+B01001_024,males_80_to_84,B01001_002,Male residents 80 to 84 (count),Male residents 80 to 84 (proportion of all male residents),TRUE
+B01001_025,males_85_and_older,B01001_002,Male residents 85 and older (count),Male residents 85 and older (proportion of all male residents),TRUE
 B01001_026,women,B01001_001,Female residents (count),Female residents (proportion of population),TRUE
 B01001_027,females_under_5,B01001_026,Female residents under 5 (count),Female residents under 5 (proportion of all female residents),TRUE
 B01001_028,females_5_to_9,B01001_026,Female residents 5 to 9 (count),Female residents 5 to 9 (proportion of all female residents),TRUE
 B01001_029,females_10_to_14,B01001_026,Female residents 10 to 14 (count),Female residents 10 to 14 (proportion of all female residents),TRUE
 B01001_030,females_15_to_17,B01001_026,Female residents 15 to 17 (count),Female residents 15 to 17 (proportion of all female residents),TRUE
 B01001_031,females_18_to_19,B01001_026,Female residents 18 to 19 (count),Female residents 18 to 19 (proportion of all female residents),TRUE
-B01001_032,females_20_to_24,B01001_026,Female residents 20 to 24 (count),Female residents 20 to 24 (proportion of all female residents),TRUE
-B01001_033,females_25_to_29,B01001_026,Female residents 25 to 29 (count),Female residents 25 to 29 (proportion of all female residents),TRUE
-B01001_034,females_30_to_34,B01001_026,Female residents 30 to 34 (count),Female residents 30 to 34 (proportion of all female residents),TRUE
-B01001_035,females_35_to_44,B01001_026,Female residents 35 to 44 (count),Female residents 35 to 44 (proportion of all female residents),TRUE
-B01001_036,females_45_to_54,B01001_026,Female residents 45 to 54 (count),Female residents 45 to 54 (proportion of all female residents),TRUE
-B01001_037,females_55_to_64,B01001_026,Female residents 55 to 64 (count),Female residents 55 to 64 (proportion of all female residents),TRUE
-B01001_038,females_65_to_74,B01001_026,Female residents 65 to 74 (count),Female residents 65 to 74 (proportion of all female residents),TRUE
-B01001_039,females_75_to_84,B01001_026,Female residents 75 to 84 (count),Female residents 75 to 84 (proportion of all female residents),TRUE
-B01001_040,females_85_and_older,B01001_026,Female residents 85 and older (count),Female residents 85 and older (proportion of all female residents),TRUE
+B01001_032,females_age20,B01001_002,Female residents age 20 (count),Female residents age 20 (proportion of all Female residents),TRUE
+B01001_033,females_age21,B01001_002,Female residnets age 21 (count),Female residents age 21 (proportion of all Female residents),TRUE
+B01001_034,females_22_to_24,B01001_002,Female residents 22 to 24 (count),Female residents 22 to 24 (proportion of all Female residents),TRUE
+B01001_035,females_25_to_29,B01001_002,Female residents 25 to 29 (count),Female residents 25 to 29 (proportion of all Female residents),TRUE
+B01001_036,females_30_to_34,B01001_002,Female residents 30 to 34 (count),Female residents 30 to 34 (proportion of all Female residents),TRUE
+B01001_037,females_35_to_39,B01001_002,Female residents 35 to 39 (count),Female residents 35 to 39 (proportion of all Female residents),TRUE
+B01001_038,females_40_to_44,B01001_002,Female residents 40 to 44 (count),Female residents 40 to 44 (proportion of all Female residents),TRUE
+B01001_039,females_45_to_49,B01001_002,Female residents 45 to 49 (count),Female reidents 45 to 49 (proportion of all Female residents),TRUE
+B01001_040,females_50_to_54,B01001_002,Female residents 50 to 54 (count),Female residents 50 to 54 (proportion of all Female residents),TRUE
+B01001_041,females_55_to_59,B01001_002,Female residents 55 to 59 (count),Female residents 55 to 59 (proportion of all Female residents),TRUE
+B01001_042,females_60_to_61,B01001_002,Female residents 60 to 61 (count),Female residents 60 to 61 (proportion of all Female residents),TRUE
+B01001_043,females_62_to_64,B01001_002,Female residents 62 to 64 (count),Female residents 62 to 64 (proportion of all Female residents),TRUE
+B01001_044,females_65_to_66,B01001_002,Female residents 65 to 66 (count),Female residents 65 to 66 (proportion of all Female residents),TRUE
+B01001_045,females_67_to_69,B01001_002,Female residents 67 to 69count),Female residents 67 to 69 (proportion of all Female residents),TRUE
+B01001_046,females_70_to_74,B01001_002,Female residents 70 to 74 (count),Female residents 70 to 74 (proportion of all Female residents),TRUE
+B01001_047,females_75_to_79,B01001_002,Female residents 75 to 79 (count),Female residents 75 to 79 (proportion of all Female residents),TRUE
+B01001_048,females_80_to_84,B01001_002,Female residents 80 to 84 (count),Female residents 80 to 84 (proportion of all Female residents),TRUE
+B01001_049,females_85_and_older,B01001_002,Female residents 85 and older (count),Female residents 85 and older (proportion of all Female residents),TRUE
 B01001H_001,non_hisp_white,B01001_001,Non-hispanic white residents (count),Percent of non-hispanic white residents (proportion of all residents),TRUE
 B02001_002,white_alone,B01001_001,White residents (count),White residents (proportion of all residents),TRUE
 B02001_003,black_alone,B01001_001,Black residents (count),Black residents (proportion of all residents),TRUE
@@ -100,10 +118,10 @@ B08302_013,commute_start_11_12,B08006_001,Start commute between 11:00 am and 12:
 B08302_014,commute_start_12_4pm,B08006_001,Start commute between 12:00 and 4:00 pm (count),Start commute between 12:00 and 4:00 pm (proportion of employed residents aged 15 and older),TRUE
 B08302_015,commute_start_4pm_on,B08006_001,Start commute between after 4:00 pm (count),Start commute between after 4:00 pm (proportion of employed residents aged 15 and older),TRUE
 B11012_001,total_households,,Total households (count),,TRUE
-B11012_008,living_alone_female,B11012_001,"Female householder, no spouse or partner (count)",Percent of female householders with no spouse or partner (proportin of all households),TRUE
-B11012_010,female_head_kids,B11012_001,"Female households, no spouse or partner, with own children under 18 (count)","Percent of female householders, no spouse or partner, with own children under 18 (percent of households)",TRUE
+B11012_009,living_alone_female,B11012_001,"Female householder, no spouse or partner (count)",Percent of female householders with no spouse or partner (proportin of all households),TRUE
+B11012_010,female_head_kids,B11012_001,"Female householders, no spouse or partner, with own children under 18 (count)","Percent of female householders, no spouse or partner, with own children under 18 (percent of households)",TRUE
 B11012_014,living_alone_male,B11012_001,Male householder living alone (count),Percent of males living alone (Proportion of all households),TRUE
-B11012_015,male_householder_kids,B11012_001,"Male householder, no spouse or partner, with kids under 18 years (count)","Percent of male householder, no spouse or partner, with kids under 18 years (proportion of all households)",TRUE
+B11012_015,male_head_kids,B11012_001,"Male householder, no spouse or partner, with kids under 18 years (count)","Percent of male householder, no spouse or partner, with kids under 18 years (proportion of all households)",TRUE
 B15002_002,male_pop_25_and_over,,Male Residents aged 25 and older (count),,TRUE
 B15002_011,male_high_school_grad,B15002_002,Male residents aged 25 and older who graduated from high school (count),Male residents aged 25 and older who graduated from high school (proportion of male residents aged 25 and older),TRUE
 B15002_015,male_bachelors_degree,B15002_002,Male residents aged 25 and older with a bachelor's degree (count),Male residents aged 25 and older with a bachelor's degree (proportion of male residents aged 25 and older),TRUE
@@ -197,7 +215,7 @@ B18101_038,females_75_plus_disability,B18101_037,Females 75 and older with a dis
 B19001_001,households_income_determined,,"Total housedholds, income determined",,TRUE
 B19001_002,hhincome_less_than_10k,B19001_001,"Households with income of less than 10,000 (count)",,TRUE
 B19001_003,household_income_10_14k,B19001_001,"Households earning $10,000 to 14,999 (count)","Percent of households earning $10,000 to $14,999 (proportion of all housedholds)",TRUE
-B19001_004,houseohld_income_15_19k,B19001_001,"Households earning $15,000 to 19,999 (count)","Percent of households earning $15,000 to $19,999 (proportion of all households)",TRUE
+B19001_004,household_income_15_19k,B19001_001,"Households earning $15,000 to 19,999 (count)","Percent of households earning $15,000 to $19,999 (proportion of all households)",TRUE
 B19001_005,household_income_20_24k,B19001_001,"Households earning $20,000 to 24,999 (count)","Percent of households earning $20,000 to $24,999 (proportion of all households)",TRUE
 B19001_006,household_income_25_29k,B19001_001,"Households earning $25,000 to $29,999 (count)","Percent of households earning $25,000 to $29,999 (proportion of all households)",TRUE
 B19001_011,hhincome_50k_to_59k,B19001_001,"Households with income of 50,000 to 59,999 (count)","Percent of households earning $50,000 to 59,999 (proportion of all households)",TRUE
@@ -229,8 +247,8 @@ B25014_011,renter_1.01_to_1.5_per_room,B25014_008,Renter-occuped households with
 B25014_012,renter_1.51_to_2.0_per_room,B25014_008,Renter-occupied households with 1.51 to 2.0 people per room (count),Percent of renter-occupied households with 1.51 to 2.0 people per room (proportion of all renter-occupied housing),TRUE
 B25014_013,renter_2.01_or_more_per_room,B25014_008,Renter-occupied ouseholds with 2.01 or more people per room (count),Renter-occupied households with 2.01 or more people per room (proportion of all renter-occupied housing),TRUE
 B25016_001,total_occupied_housing_units_plumb,,"Occupied housing units, plumbing determined (count)",,TRUE
-B25016_002,no_comp_plumb_owner,B25016_001,Owner-occupied households without adequate plumbing (count),Percent of owner-occupied households without complete plumbing  (proportion of all households),TRUE
-B25016_011,no_comp_plumb_renter,B25016_001,Renter-occupied households without complete plumbing (count),Percent of renter-occupied households without complete plumbing (proportion of all households),TRUE
+B25016_007,no_comp_plumb_owner,B25016_001,Owner-occupied households without complete plumbing (count),Percent of owner-occupied households without complete plumbing  (proportion of all households),TRUE
+B25016_016,no_comp_plumb_renter,B25016_001,Renter-occupied households without complete plumbing (count),Percent of renter-occupied households without complete plumbing (proportion of all households),TRUE
 B25024_001,total_housing_units_count_in_structure,,"Housing units, units in strutcure determined (count)",,TRUE
 B25024_007,units_10_to_19,B25024_001,Total housing structures with 10 to 19 units (count),Percent of total housing structures with 10 to 19 units (proportion of all housing strutcures),TRUE
 B25024_008,units_20_to_49,B25024_001,Total housing structures with 20 to 49 units (count),Percent of total housing structures with 20 to 49 units (proportion of all housing strutcures),TRUE
@@ -276,3 +294,16 @@ C24030_045,females_in_professional_occup,C24030_029,"Females 16 and older in a P
 C24030_046,females_in_management,C24030_029,"Females 16 and older in a management, business, science, or arts occupation (count)","Percent of females 16 and older in a management, business, science, or arts occupation (proportion of all residents 16 and older)",TRUE
 C24060_001,employed_pop_16_above,,Civilian employed population 16 and older (count),,TRUE
 C24060_002,mgmt_busi_sci_arts_occup,C24060_001,"Residents 16 and older in a management, business, science, or arts occupation (count)","Percent of residents 16 and older in a management, business, science, or arts occupation (proportion of all residents 16 and older)",TRUE
+B11003_016,female_head_kids,B11003_001,"Female householders, no spouse or partner, with own children under 18 (count)","Percent of female householders, no spouse or partner, with own children under 18 (percent of households)",TRUE
+B11003_015,female_head_alone,B11003_001,"Female houseoholder, no spouse or partner","Percent of female househoders, no spouse or partner (proportion of all families)",TRUE
+B11003_009,male_head_alone,B11003_001,"Male householder, no spouse or partner","Percent of male househoders, no spouse or partner (proportion of all families)",TRUE
+B11003_010,male_head_kids,B11003_001,"Male householder, no spouse or partner,  with own kids (count)",Percent of males living alone with own kids under 18 (Proportion of all households),TRUE
+B11003_001,total_families,,Total families (count),,TRUE
+B19301_001,per_capita_income,,Mean per capita income,,FALSE
+B11004_010,male_head_relatedkids,B11004_001,Male householder living alone with related kids under 18 (count),Percent of male householders with related kids under 18 (proportion of all families),TRUE
+B11004_016,female_head_relatedkids,B11004_001,Female householder living alone with related kids under 18 (count),Percent of female householders with related kids under 18 (proportion of all families),TRUE
+B11004_001,total_families,,Total families (count),,TRUE
+B11010_001,total_nonfamily_households,,Total nonfamily households (count),,TRUE
+B11010_003,male_householder_alone,B11010_001,"Male householder, living alone",,TRUE
+B11010_010,female_householder_alone,B11010_001,"Female householder, living alone (count)",,TRUE
+B11011_001,total_households,,Total households (count),,TRUE
