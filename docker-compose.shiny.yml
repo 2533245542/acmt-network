@@ -21,4 +21,58 @@ services:
             default:
                 aliases:
                     - app1
+    app2:
+        build:
+            context: ./src/app
+            args:
+                BYPASS_SSL: "${BYPASS_SSL}"
+        working_dir: /home/rstudio/workspace/
+        environment:
+            PASSWORD: "${RSTUDIO_PASSWORD}"
+            DISABLE_AUTH: "${DISABLE_AUTHENTICATION}"
+        ports:
+            - "8081:3838"
+        depends_on:
+            - api
+        networks:
+            default:
+                aliases:
+                    - app2
+
+    app3:
+        build:
+            context: ./src/app
+            args:
+                BYPASS_SSL: "${BYPASS_SSL}"
+        working_dir: /home/rstudio/workspace/
+        environment:
+            PASSWORD: "${RSTUDIO_PASSWORD}"
+            DISABLE_AUTH: "${DISABLE_AUTHENTICATION}"
+        ports:
+            - "8082:3838"
+        depends_on:
+            - api
+        networks:
+            default:
+                aliases:
+                    - app3
+
+    app4:
+        build:
+            context: ./src/app
+            args:
+                BYPASS_SSL: "${BYPASS_SSL}"
+        working_dir: /home/rstudio/workspace/
+        environment:
+            PASSWORD: "${RSTUDIO_PASSWORD}"
+            DISABLE_AUTH: "${DISABLE_AUTHENTICATION}"
+        ports:
+            - "8083:3838"
+        depends_on:
+            - api
+        networks:
+            default:
+                aliases:
+                    - app4
+
 
