@@ -317,3 +317,11 @@ process_file_airbnb <- function () {
 
   write_csv(processed_airbnb, "external_data/processed_airbnb.csv")
 }
+
+# section: ParkServe data https://www.tpl.org/parkserve/downloads
+download_file_park <- function () {  # download the external dataset and give it a name (will use it in creating external_data_name_to_info_list)
+  download.file(url = "https://parkserve.tpl.org/downloads/ParkServe_shp_DataShare_08062021.zip", destfile = "external_data/ParkServe_shp_DataShare_08062021.zip")
+}
+process_file_park <- function () {  # unzip the downloaded file and save the target data layer as csv file)
+  unzip("external_data/ParkServe_shp_DataShare_08062021.zip", exdir="external_data/ParkServe_shp")
+}

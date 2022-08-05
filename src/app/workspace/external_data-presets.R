@@ -98,3 +98,10 @@ external_data_presets_airbnb <- list(vector_of_expected_downloaded_file_name=c("
                                             process_file=process_file_airbnb
 )
 
+external_data_presets_park <- list(vector_of_expected_downloaded_file_name=c("ParkServe_shp_DataShare_08062021.zip"),
+                                   expected_processed_file_name='ParkServe_shp',
+                                   download_file=download_file_park,
+                                   process_file=process_file_park
+)
+
+
