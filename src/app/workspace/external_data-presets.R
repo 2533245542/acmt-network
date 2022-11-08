@@ -12,8 +12,8 @@ external_data_presets_mrfei <- list(vector_of_expected_downloaded_file_name=c("d
                                     variable_name_to_interpolate_by_sum_boolean_mapping=mrfei_variable_name_to_interpolate_by_sum_boolean_mapping
 )
 
-walkability_variable_name_to_interpolate_by_sum_boolean_mapping <- c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
-names(walkability_variable_name_to_interpolate_by_sum_boolean_mapping) <- c("COUNTHU10", "TOTPOP10", "HH", "WORKERS", "AC_TOT", "AC_WATER", "AC_LAND", "AC_UNPR", "D2A_EPHHM", "D2B_E8MIXA", "D3b", "D4a", "D2A_Ranked", "D2B_Ranked", "D4A_Ranked", "D3B_Ranked", "NatWalkInd", "Shape_Length", "Shape_Area")
+walkability_variable_name_to_interpolate_by_sum_boolean_mapping <- c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,  FALSE)
+names(walkability_variable_name_to_interpolate_by_sum_boolean_mapping) <- c("COUNTHU10", "TOTPOP10", "HH", "WORKERS", "AC_TOT", "AC_WATER", "AC_LAND", "AC_UNPR", "NatWalkInd")
 external_data_presets_walkability <- list(vector_of_expected_downloaded_file_name=c("downloaded_walkability.zip"),  # the files should be downloaded for mrfei
                                           expected_processed_file_name='processed_walkability.csv',
                                           download_file=download_file_walkability,  # function to download file
@@ -97,4 +97,41 @@ external_data_presets_airbnb <- list(vector_of_expected_downloaded_file_name=c("
                                             download_file=download_file_airbnb,
                                             process_file=process_file_airbnb
 )
+
+crimerisk_variable_name_to_interpolate_by_sum_boolean_mapping = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,FALSE,FALSE,FALSE,FALSE,FALSE)
+names(crimerisk_variable_name_to_interpolate_by_sum_boolean_mapping) = c("total_pop_2022", "CRMCYTOTC","CRMCYPERC","CRMCYMURD","CRMCYRAPE","CRMCYROBB", "CRMCYASST", "CRMCYPROC", "CRMCYBURG",  "CRMCYLARC", "CRMCYMVEH") 
+external_data_presets_crimerisk <- list(vector_of_expected_downloaded_file_name=c("raw_crimerisk.csv"), ## data not downloaded, so it will be in the Inspace folder
+                                        download_file=download_file_crimerisk,
+                                        process_file=process_crimerisk,
+                                        geoid_type="Block Group",
+                                        variable_name_to_interpolate_by_sum_boolean_mapping=crimerisk_variable_name_to_interpolate_by_sum_boolean_mapping 
+)
+
+sidewalk_variable_name_to_interpolate_by_sum_boolean_mapping = c(TRUE, TRUE, TRUE)
+names(sidewalk_variable_name_to_interpolate_by_sum_boolean_mapping) = c('total_num', 'total_crosswalk', 'total_sidewalk')
+external_data_presets_sidewalk <- list(vector_of_expected_downloaded_file_name=c("downloaded_sidewalk.csv"),
+                                        download_file=NULL,
+                                        process_file=process_sidewalk,
+                                        geoid_type="Census Tract",
+                                        variable_name_to_interpolate_by_sum_boolean_mapping=sidewalk_variable_name_to_interpolate_by_sum_boolean_mapping 
+)
+
+
+places_variable_name_to_interpolate_by_sum_boolean_mapping = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
+names(places_variable_name_to_interpolate_by_sum_boolean_mapping) = c("total_pop_2010", "ACCESS2_CrudePrev", "ARTHRITIS_CrudePrev",
+                                                               "BINGE_CrudePrev", "BPHIGH_CrudePrev", "BPMED_CrudePrev", "CANCER_CrudePrev",   
+                                                               "CASTHMA_CrudePrev","CERVICAL_CrudePrev", "CHD_CrudePrev", "CHECKUP_CrudePrev",   
+                                                               "CHOLSCREEN_CrudePrev","COLON_SCREEN_CrudePrev", "COPD_CrudePrev", "COREM_CrudePrev",       
+                                                               "COREW_CrudePrev", "CSMOKING_CrudePrev", "DENTAL_CrudePrev", "DEPRESSION_CrudePrev",  
+                                                               "DIABETES_CrudePrev", "GHLTH_CrudePrev", "HIGHCHOL_CrudePrev", "KIDNEY_CrudePrev",      
+                                                               "LPA_CrudePrev", "MAMMOUSE_CrudePrev", "MHLTH_CrudePrev", "OBESITY_CrudePrev",     
+                                                               "PHLTH_CrudePrev", "SLEEP_CrudePrev", "STROKE_CrudePrev", "TEETHLOST_CrudePrev")
+external_data_presets_places<- list(vector_of_expected_downloaded_file_name=c("downloaded_places2014.csv", "downloaded_places2015.csv", "downloaded_places2016.csv", "downloaded_places2017.csv", "downloaded_places2018.csv"),
+                                    expected_processed_file_name='processed_places.csv',
+                                    download_file=download_file_places,
+              process_file=process_places,
+              geoid_type="Census Tract",
+              variable_name_to_interpolate_by_sum_boolean_mapping=places_variable_name_to_interpolate_by_sum_boolean_mapping 
+  )
+
 

@@ -158,8 +158,8 @@ get_geometries_of_a_county <- function(state, county, year=2017, geoid_type="Cen
 get_acs_results_for_available_variables <- function (acs_var_names, state, county, year) {
   ### Remove the acs_var_names that are not available for the year and only return the available ones ###
   ### Return NA if error is not due to missing acs_var_names ###
-  if (year < 2010 | year > 2019) {
-    stop("Year must be in between 2010 and 2019, inclusive")
+  if (year < 2010 | year > 2021) {
+    stop("Year must be in between 2010 and 2021, inclusive")
   }
   input_acs_var_names <- acs_var_names
   acs_results <- NA
@@ -208,42 +208,45 @@ get_acs_results_for_available_variables <- function (acs_var_names, state, count
 
   return(acs_results)
 }
+#### old interpolation code ####
+#acs_variable_name_to_interpolate_by_sum_boolean_mapping <- c( TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE,
+#TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
 
-acs_variable_name_to_interpolate_by_sum_boolean_mapping <- c( TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE,
-TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
-
-names(acs_variable_name_to_interpolate_by_sum_boolean_mapping) <- c("B23001_009", "B23001_016", "B23001_023", "B23001_030", "B23001_037", "B23001_044", "B23001_051", "B23001_058", "B23001_065", "B23001_072", "B23001_077", "B23001_082", "B23001_087", "B23001_002", 
-"B01001_001", "B01001_002", "B01001_003", "B01001_004", "B01001_005", "B01001_006", "B01001_007", "B01001_008", "B01001_009", "B01001_010", "B01001_011", "B01001_012", "B01001_013", "B01001_014", 
-"B01001_015", "B01001_016", "B01001_017", "B01001_018", "B01001_019", "B01001_020", "B01001_021", "B01001_022", "B01001_023", "B01001_024", "B01001_025", "B01001_026", "B01001_027", "B01001_028", 
-"B01001_029", "B01001_030", "B01001_031", "B01001_032", "B01001_033", "B01001_034", "B01001_035", "B01001_036", "B01001_037", "B01001_038", "B01001_039", "B01001_040", "B01001_041", "B01001_042", 
-"B01001_043", "B01001_044", "B01001_045", "B01001_046", "B01001_047", "B01001_048", "B01001_049", "B01001H_001", "B02001_002", "B02001_003", "B02001_004", "B02001_005", "B02001_006", "B02001_007", 
-"B02001_008", "B03002_001", "B03002_004", "B05001_002", "B05001_003", "B05001_004", "B05001_005", "B05001_006", "B05012_002", "B05012_003", "B06008_001", "B06008_002", "B06008_003", "B06008_004", 
-"B06008_005", "B06008_006", "B06008_007", "B06008_013", "B06009_001", "B06009_002", "B06012_001", "B06012_002", "B06012_003", "B07201_002", "B07201_004", "B07201_014", "B08006_001", "B08006_003", 
-"B08006_004", "B08006_008", "B08006_014", "B08006_015", "B08006_016", "B08006_017", "B08302_002", "B08302_003", "B08302_004", "B08302_005", "B08302_006", "B08302_007", "B08302_008", "B08302_009", 
-"B08302_010", "B08302_011", "B08302_012", "B08302_013", "B08302_014", "B08302_015", "B11012_001", "B11012_009", "B11012_010", "B11012_014", "B11012_015", "B15002_002", "B15002_011", "B15002_015", 
-"B15002_019", "B15002_028", "B15002_032", "B15003_001", "B15003_002", "B15003_003", "B15003_004", "B15003_005", "B15003_006", "B15003_007", "B15003_008", "B15003_009", "B15003_010", "B15003_011", 
-"B15003_012", "B15003_013", "B15003_014", "B15003_015", "B15003_016", "B15003_017", "B15003_018", "B15003_019", "B15003_020", "B15003_021", "B15003_022", "B15003_023", "B15003_024", "B15003_025", 
-"B16005_001", "B16005_004", "B16005_007", "B16005_008", "B16005_009", "B16005_012", "B16005_013", "B16005_014", "B16005_017", "B16005_018", "B16005_019", "B16005_022", "B16005_023", "B16005_024", 
-"B16005_026", "B16005_029", "B16005_030", "B16005_031", "B16005_034", "B16005_035", "B16005_036", "B16005_039", "B16005_040", "B16005_041", "B16005_044", "B16005_045", "B17001_001", "B17001_002", 
-"B17012_001", "B17012_002", "B17023_001", "B17023_002", "B18101_001", "B18101_002", "B18101_003", "B18101_004", "B18101_006", "B18101_007", "B18101_009", "B18101_010", "B18101_012", "B18101_013", 
-"B18101_015", "B18101_016", "B18101_018", "B18101_019", "B18101_021", "B18101_022", "B18101_023", "B18101_025", "B18101_026", "B18101_028", "B18101_029", "B18101_031", "B18101_032", "B18101_034", 
-"B18101_035", "B18101_037", "B18101_038", "B19001_001", "B19001_002", "B19001_003", "B19001_004", "B19001_005", "B19001_006", "B19001_011", "B19001_012", "B19001_013", "B19001_014", "B19001_015", 
-"B19001_016", "B19001_017", "B19013_001", "B19054_001", "B19054_002", "B19058_001", "B19058_002", "B23025_001", "B23025_005", "B25001_001", "B25002_001", "B25002_003", "B25003_001", "B25003_002", 
-"B25014_001", "B25014_002", "B25014_005", "B25014_006", "B25014_007", "B25014_008", "B25014_011", "B25014_012", "B25014_013", "B25016_001", "B25016_007", "B25016_016", "B25024_001", "B25024_007", 
-"B25024_008", "B25024_009", "B25024_010", "B25038_002", "B25038_007", "B25038_008", "B25038_009", "B25038_014", "B25038_015", "B25043_001", "B25043_002", "B25043_007", "B25043_011", "B25043_016", 
-"B25044_001", "B25044_002", "B25044_003", "B25044_009", "B25044_010", "B25064_001", "B25070_001", "B25070_010", "B25077_001", "B25088_002", "B25091_001", "B25091_002", "B25091_011", "B25091_013", 
-"B25091_022", "B25129_001", "B25129_002", "B25129_003", "B25129_038", "B25129_039", "B26001_001", "C24030_002", "C24030_018", "C24030_019", "C24030_029", "C24030_045", "C24030_046", "C24060_001", 
-"C24060_002", "B11003_016", "B11003_015", "B11003_009", "B11003_010", "B11003_001", "B19301_001", "B11004_010", "B11004_016", "B11004_001", "B11010_001", "B11010_003", "B11010_010", "B11011_001",
-"B23001_003", "B23001_010", "B23001_017", "B23001_024", "B23001_031", "B23001_038", "B23001_045", "B23001_052", "B23001_059", "B23001_066", "B23001_073", "B23001_078", "B23001_083") 
+#names(acs_variable_name_to_interpolate_by_sum_boolean_mapping) <- c("B23001_009", "B23001_016", "B23001_023", "B23001_030", "B23001_037", "B23001_044", "B23001_051", "B23001_058", "B23001_065", "B23001_072", "B23001_077", "B23001_082", "B23001_087", "B23001_002", 
+#"B01001_001", "B01001_002", "B01001_003", "B01001_004", "B01001_005", "B01001_006", "B01001_007", "B01001_008", "B01001_009", "B01001_010", "B01001_011", "B01001_012", "B01001_013", "B01001_014", 
+#"B01001_015", "B01001_016", "B01001_017", "B01001_018", "B01001_019", "B01001_020", "B01001_021", "B01001_022", "B01001_023", "B01001_024", "B01001_025", "B01001_026", "B01001_027", "B01001_028", 
+#"B01001_029", "B01001_030", "B01001_031", "B01001_032", "B01001_033", "B01001_034", "B01001_035", "B01001_036", "B01001_037", "B01001_038", "B01001_039", "B01001_040", "B01001_041", "B01001_042", 
+#"B01001_043", "B01001_044", "B01001_045", "B01001_046", "B01001_047", "B01001_048", "B01001_049", "B01001H_001", "B02001_002", "B02001_003", "B02001_004", "B02001_005", "B02001_006", "B02001_007", 
+#"B02001_008", "B03002_001", "B03002_004", "B05001_002", "B05001_003", "B05001_004", "B05001_005", "B05001_006", "B05012_002", "B05012_003", "B06008_001", "B06008_002", "B06008_003", "B06008_004", 
+#"B06008_005", "B06008_006", "B06008_007", "B06008_013", "B06009_001", "B06009_002", "B06012_001", "B06012_002", "B06012_003", "B07201_002", "B07201_004", "B07201_014", "B08006_001", "B08006_003", 
+#"B08006_004", "B08006_008", "B08006_014", "B08006_015", "B08006_016", "B08006_017", "B08302_002", "B08302_003", "B08302_004", "B08302_005", "B08302_006", "B08302_007", "B08302_008", "B08302_009", 
+#"B08302_010", "B08302_011", "B08302_012", "B08302_013", "B08302_014", "B08302_015", "B11012_001", "B11012_009", "B11012_010", "B11012_014", "B11012_015", "B15002_002", "B15002_011", "B15002_015", 
+#"B15002_019", "B15002_028", "B15002_032", "B15003_001", "B15003_002", "B15003_003", "B15003_004", "B15003_005", "B15003_006", "B15003_007", "B15003_008", "B15003_009", "B15003_010", "B15003_011", 
+#"B15003_012", "B15003_013", "B15003_014", "B15003_015", "B15003_016", "B15003_017", "B15003_018", "B15003_019", "B15003_020", "B15003_021", "B15003_022", "B15003_023", "B15003_024", "B15003_025", 
+#"B16005_001", "B16005_004", "B16005_007", "B16005_008", "B16005_009", "B16005_012", "B16005_013", "B16005_014", "B16005_017", "B16005_018", "B16005_019", "B16005_022", "B16005_023", "B16005_024", 
+#"B16005_026", "B16005_029", "B16005_030", "B16005_031", "B16005_034", "B16005_035", "B16005_036", "B16005_039", "B16005_040", "B16005_041", "B16005_044", "B16005_045", "B17001_001", "B17001_002", 
+#"B17012_001", "B17012_002", "B17023_001", "B17023_002", "B18101_001", "B18101_002", "B18101_003", "B18101_004", "B18101_006", "B18101_007", "B18101_009", "B18101_010", "B18101_012", "B18101_013", 
+#"B18101_015", "B18101_016", "B18101_018", "B18101_019", "B18101_021", "B18101_022", "B18101_023", "B18101_025", "B18101_026", "B18101_028", "B18101_029", "B18101_031", "B18101_032", "B18101_034", 
+#"B18101_035", "B18101_037", "B18101_038", "B19001_001", "B19001_002", "B19001_003", "B19001_004", "B19001_005", "B19001_006", "B19001_011", "B19001_012", "B19001_013", "B19001_014", "B19001_015", 
+#"B19001_016", "B19001_017", "B19013_001", "B19054_001", "B19054_002", "B19058_001", "B19058_002", "B23025_001", "B23025_005", "B25001_001", "B25002_001", "B25002_003", "B25003_001", "B25003_002", 
+#"B25014_001", "B25014_002", "B25014_005", "B25014_006", "B25014_007", "B25014_008", "B25014_011", "B25014_012", "B25014_013", "B25016_001", "B25016_007", "B25016_016", "B25024_001", "B25024_007", 
+#"B25024_008", "B25024_009", "B25024_010", "B25038_002", "B25038_007", "B25038_008", "B25038_009", "B25038_014", "B25038_015", "B25043_001", "B25043_002", "B25043_007", "B25043_011", "B25043_016", 
+#"B25044_001", "B25044_002", "B25044_003", "B25044_009", "B25044_010", "B25064_001", "B25070_001", "B25070_010", "B25077_001", "B25088_002", "B25091_001", "B25091_002", "B25091_011", "B25091_013", 
+#"B25091_022", "B25129_001", "B25129_002", "B25129_003", "B25129_038", "B25129_039", "B26001_001", "C24030_002", "C24030_018", "C24030_019", "C24030_029", "C24030_045", "C24030_046", "C24060_001", 
+#"C24060_002", "B11003_016", "B11003_015", "B11003_009", "B11003_010", "B11003_001", "B19301_001", "B11004_010", "B11004_016", "B11004_001", "B11010_001", "B11010_003", "B11010_010", "B11011_001", 
+#'B15002_001', 'B15002_003', 'B15002_004', 
+#'B15002_005', 'B15002_006', 'B15002_007', 'B15002_008', 'B15002_009', 'B15002_010', 'B15002_011', 'B15002_012', 'B15002_013', 'B15002_014', 'B15002_016', 'B15002_017', 'B15002_018', 'B15002_019', 
+#'B15002_020', 'B15002_021', 'B15002_022', 'B15002_023', 'B15002_024', 'B15002_025', 'B15002_026', 'B15002_027', 'B15002_028', 'B15002_029', 'B15002_030', 'B15002_031', 'B15002_032', 'B15002_033', 'B15002_034', 'B15002_35') 
 
 
+#### ####
 get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, geoid_type = "Census Tract", fill_missing_GEOID_with_zero=FALSE, use_lower_resolution_geo_data=FALSE, variable_name_to_interpolate_by_sum_boolean_mapping=NULL, return_point_estimate=FALSE, custom_buffer=NULL) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
 
   if (is.null(variable_name_to_interpolate_by_sum_boolean_mapping)) {
@@ -361,19 +364,42 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
   return(data.frame(name=names_of_interested_variables, estimate=unlist(values_of_interested_variables)))
 }
 
-get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA) {
+get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA, set_var_list=FALSE) {
   # To do: cache this
-  print("Read ACS columns")
-  acs_columns <- read.csv("ACMT/ACSColumns.csv")
-
+### import acs list according to year of interest
+  print(year)
+  if(set_var_list==TRUE){
+    print("Reading set ACS column list")
+      acs_columns<-read.csv('ACMT/ACSColumns.csv')
+  }
+  if(set_var_list==FALSE){  print('Reading year-specific ACS column list')
+  if(year==2010){
+    acs_columns<-read.csv('ACMT/2010ACSColumns.csv')
+  }
+  if(year==2011){
+    acs_columns<-read.csv('ACMT/ACSColumns2011.csv')
+  }
+  if(year>2011 & year<2019){
+    acs_columns<-read.csv('ACMT/ACSColumns2012_thru_18.csv')
+  }
+  if(year==2019){
+  acs_columns <- read.csv("ACMT/ACSColumns2019.csv")
+  }
+  if(year==2020){
+  acs_columns<-read.csv('ACMT/ACSColumns2020.csv')
+  }
+if(!is.null(codes_of_acs_variables_to_get)){
   if (!is.na(codes_of_acs_variables_to_get[1])) {  # filter acs_columns by the provided variables
     acs_columns <- acs_columns[acs_columns$acs_col %in% codes_of_acs_variables_to_get, ]
   }
-
+}
+  }
   acs_varnames <- acs_columns$acs_col   # in fact ACS variable codes
-  print(acs_varnames)
-  names(acs_varnames) <- acs_columns$var_name
-
+  
+  ##set interpolation
+  acs_variable_name_to_interpolate_by_sum_boolean_mapping<-acs_columns$acs_variable_name_to_interpolate_by_sum_boolean_mapping
+  names(acs_variable_name_to_interpolate_by_sum_boolean_mapping)<-acs_columns$acs_col
+ 
   acs_count_names <- paste(acs_columns$var_name, "count", sep="_")  # all variables have counts
   if (length(acs_columns$var_name[acs_columns$universe_col != ""]) == 0) {   # prevent having something that is exactly "_proportion"
     acs_proportion_names <- character(0)
@@ -393,18 +419,26 @@ get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA
               acs_count_pretty_name_map=data.frame(acs_count_names, acs_count_pretty_names)))
 }
 
-get_acmt_standard_array <- function(lat, long, radius_meters, year=2017, codes_of_acs_variables_to_get=NA, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE, use_lower_resolution_geo_data=TRUE, return_point_estimate=FALSE, custom_buffer=NULL) {
+
+get_acmt_standard_array <- function(lat, long, radius_meters, year=2017, codes_of_acs_variables_to_get=NA, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE, use_lower_resolution_geo_data=TRUE, return_point_estimate=FALSE, custom_buffer=NULL, set_var_list=FALSE
+                                    ) {
   # check input validity
-  if (year < 2010 | year > 2019) {stop("Year must be in between 2010 and 2019 (inclusive)")}
+  if (year < 2010 | year > 2021) {stop("Year must be in between 2010 and 2021 (inclusive)")}
   if (is.na(long) | is.na(lat)) {stop("Null lat or long passed to get_acmt_standard_array")}
 
   # interpolate ACS dataset measures
-  acs_info <- get_acs_standard_columns(year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get)
+  if(!is.null(codes_of_acs_variables_to_get)){ ###updated to only run if acs_columns is not NULL
+  acs_info <- get_acs_standard_columns(year=year, codes_of_acs_variables_to_get=codes_of_acs_variables_to_get, set_var_list=set_var_list)
   acs_columns <- acs_info$acs_columns
   acs_proportion_names <- acs_info$acs_proportion_names
   acs_count_names <- acs_info$acs_count_names
   acs_unique_var_cols <- acs_info$acs_unique_var_cols
-  acs_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=acs_unique_var_cols, year=year, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, use_lower_resolution_geo_data=use_lower_resolution_geo_data, variable_name_to_interpolate_by_sum_boolean_mapping=acs_variable_name_to_interpolate_by_sum_boolean_mapping, return_point_estimate=return_point_estimate, custom_buffer=custom_buffer)
+  
+  ##Set interpolation designations (from acs_columns dataframe) ##
+  acs_variable_name_to_interpolate_by_sum_boolean_mapping<-acs_columns$acs_variable_name_to_interpolate_by_sum_boolean_mapping
+  names(acs_variable_name_to_interpolate_by_sum_boolean_mapping)<-as.character(acs_columns$acs_col)
+
+    acs_count_results <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=acs_unique_var_cols, year=year, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, use_lower_resolution_geo_data=use_lower_resolution_geo_data, variable_name_to_interpolate_by_sum_boolean_mapping=acs_variable_name_to_interpolate_by_sum_boolean_mapping, return_point_estimate=return_point_estimate, custom_buffer=custom_buffer)
 
   # compute proportional measures for ACS dataset
   acs_unique_var_cols_contains_missing_variables <- (length(acs_count_results$name) < length(acs_unique_var_cols))
@@ -414,6 +448,8 @@ get_acmt_standard_array <- function(lat, long, radius_meters, year=2017, codes_o
     acs_proportion_names <- acs_info$acs_proportion_names
     acs_count_names <- acs_info$acs_count_names
     acs_unique_var_cols <- acs_info$acs_unique_var_cols
+    print(acs_varnames)
+    names(acs_varnames) <- acs_columns$var_name
   }
   proportion_vals <- vector(length=length(acs_proportion_names))
   for (i in seq_along(proportion_vals)) {
@@ -425,7 +461,14 @@ get_acmt_standard_array <- function(lat, long, radius_meters, year=2017, codes_o
     count_vals[i] <- acs_count_results$estimate[acs_count_results$name == as.character(acs_columns$acs_col[i])]
   }
   context_measurement_dataframe <- data.frame(names=c(acs_proportion_names, acs_count_names), values=c(proportion_vals, count_vals)) # combine count and proportional ACS measures
-
+  }
+  
+  #make a blank dataframe if no acs variables were pulled
+  if(is.null(codes_of_acs_variables_to_get)){
+    context_measurement_dataframe<-data.frame(matrix(nrow=0, ncol=2)) 
+    colnames(context_measurement_dataframe)<-c('names', 'values')
+  }
+  
   # interpolate external dataset measures
   if(!is.null(external_data_name_to_info_list)) {
     external_data_list <- load_external_data(external_data_name_to_info_list)
@@ -438,6 +481,7 @@ get_acmt_standard_array <- function(lat, long, radius_meters, year=2017, codes_o
     }
     external_data_measurement_dataframe <- do.call(rbind, variable_to_value_dataframe_list)
 
+    
     context_measurement_dataframe <- rbind(context_measurement_dataframe, external_data_measurement_dataframe)
   }
 

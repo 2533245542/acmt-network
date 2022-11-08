@@ -34,9 +34,8 @@ load_external_data <- function (external_data_name_to_info_list=NULL) {
       }
     }
 
-    list_of_loaded_data_dataframe[[external_data_name]] <- read_csv(paste0("external_data/", expected_processed_file_name))
+    list_of_loaded_data_dataframe[[external_data_name]] <- read_csv(paste0("external_data/", expected_processed_file_name), col_types=cols('GEOID'=col_character()))
   }
   return(list_of_loaded_data_dataframe)
 }
-
 
