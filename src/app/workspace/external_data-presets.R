@@ -128,7 +128,7 @@ names(places_variable_name_to_interpolate_by_sum_boolean_mapping) = c("total_pop
                                                                "PHLTH_CrudePrev", "SLEEP_CrudePrev", "STROKE_CrudePrev", "TEETHLOST_CrudePrev")
 external_data_presets_places<- list(vector_of_expected_downloaded_file_name=c("downloaded_places2014.csv", "downloaded_places2015.csv", "downloaded_places2016.csv", "downloaded_places2017.csv", "downloaded_places2018.csv"),
                                     expected_processed_file_name='processed_places.csv',
-                                    download_file=download_file_places,
+                                    download_file=NULL,
               process_file=process_places,
               geoid_type="Census Tract",
               variable_name_to_interpolate_by_sum_boolean_mapping=places_variable_name_to_interpolate_by_sum_boolean_mapping 
