@@ -347,6 +347,9 @@ process_file_park <- function () {  # unzip the downloaded file and save the tar
   unzip("external_data/ParkServe_shp.zip", exdir="external_data/ParkServe_shp")
 }
 
+#test 11-14:
+shp_directory<-'external_data/ParkServe_shp/ParkServe_Parks.shp'
+
 shp_preprocess <- function (shp_directory){
   #"external_data/ParkServe_shp/ParkServe_Shapefiles_05042022/ParkServe_Parks.shp"
   park_shp <- st_read(shp_directory)
