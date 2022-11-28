@@ -36,15 +36,15 @@ test_that("get_acmt_standard_array with external data mrfei", {
   )
 
   measures_for_2013_with_external_data_with_fill_missing <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE, use_lower_resolution_geo_data = FALSE)
-  expect_equal(dim(measures_for_2013_with_external_data_with_fill_missing), c(204, 2))
-  expect_equal(measures_for_2013_with_external_data_with_fill_missing[204, 1], "mRFEI")
-  expect_equal(measures_for_2013_with_external_data_with_fill_missing[204, 2], 159.3582212)
+  expect_equal(dim(measures_for_2013_with_external_data_with_fill_missing), c(680, 2))
+  expect_equal(measures_for_2013_with_external_data_with_fill_missing[680, 1], "mRFEI")
+  expect_equal(measures_for_2013_with_external_data_with_fill_missing[680, 2], 159.3582212)
 
   measures_for_2013_with_external_data_without_fill_missing <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = FALSE, use_lower_resolution_geo_data = FALSE)
 
-  expect_equal(dim(measures_for_2013_with_external_data_without_fill_missing), c(204, 2))
-  expect_equal(measures_for_2013_with_external_data_without_fill_missing[204, 1], "mRFEI")
-  expect_true(is.na(measures_for_2013_with_external_data_without_fill_missing[204, 2]))
+  expect_equal(dim(measures_for_2013_with_external_data_without_fill_missing), c(680, 2))
+  expect_equal(measures_for_2013_with_external_data_without_fill_missing[680, 1], "mRFEI")
+  expect_true(is.na(measures_for_2013_with_external_data_without_fill_missing[680, 2]))
 })
 
 test_that("load external data walkability", {
@@ -89,7 +89,7 @@ test_that("get_acmt_standard_array with both mrfei and walkability", {
   )
   experiment_measures <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE, use_lower_resolution_geo_data = FALSE)
 
-  expect_equal(dim(experiment_measures), c(213,2))
+  expect_equal(dim(experiment_measures), c(689,2))
   expect_equal(filter(experiment_measures, names == "COUNTHU10")$values, 26433.86395)
   expect_equal(filter(experiment_measures, names == "WORKERS")$values, 24041.93771)
   expect_equal(filter(experiment_measures, names == "AC_LAND")$values, 2836.450637)
@@ -115,12 +115,12 @@ test_that("get_acmt_standard_array with walkability", {
   )
   experiment_measures <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE, use_lower_resolution_geo_data = FALSE)
 
-  expect_equal(dim(experiment_measures), c(212,2))
-  expect_equal(experiment_measures[[204, 1]], "COUNTHU10")
-  expect_equal(experiment_measures[[204, 2]], 26433.86395)
-  expect_equal(experiment_measures[[208, 2]], 3327.721899)
-  expect_equal(experiment_measures[[209, 2]], 491.1822339)
-  expect_equal(experiment_measures[[211, 1]], "AC_UNPR")
+  expect_equal(dim(experiment_measures), c(689,2))
+  expect_equal(experiment_measures[[681, 1]], "COUNTHU10")
+  expect_equal(experiment_measures[[681, 2]], 26433.86395)
+  expect_equal(experiment_measures[[685, 2]], 3327.721899)
+  expect_equal(experiment_measures[[686, 2]], 491.1822339)
+  expect_equal(experiment_measures[[688, 1]], "AC_UNPR")
 })
 
 test_that("get_acmt_standard_array with walkability", {
@@ -135,7 +135,7 @@ test_that("get_acmt_standard_array with walkability", {
   )
   experiment_measures <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, use_lower_resolution_geo_data = FALSE)
 
-  expect_equal(dim(experiment_measures), c(212,2))
+  expect_equal(dim(experiment_measures), c(688,2))
   expect_equal(filter(experiment_measures, names == "COUNTHU10")$values, 26433.86395)
   expect_equal(filter(experiment_measures, names == "TOTPOP10")$values, 54286.84519)
   expect_equal(filter(experiment_measures, names == "HH")$values, 24726.63867)
@@ -160,10 +160,10 @@ test_that("get_acmt_standard_array with walkability and lower resolution", {
 
   experiment_measures_low_resolution <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE, use_lower_resolution_geo_data=TRUE)
 
-  expect_equal(dim(experiment_measures_low_resolution), c(212,2))
-  expect_equal(experiment_measures_low_resolution[[204, 1]], "COUNTHU10")
+  expect_equal(dim(experiment_measures_low_resolution), c(688,2))
+  expect_equal(experiment_measures_low_resolution[[680, 1]], "COUNTHU10")
   expect_equal(filter(experiment_measures_low_resolution, names=='COUNTHU10')$values, 26447.74531)
   expect_equal(filter(experiment_measures_low_resolution, names=='AC_TOT')$values, 3329.913945)
   expect_equal(substr(as.character(filter(experiment_measures_low_resolution, names=='AC_WATER')$values), 0, 8), "491.3046")
-  expect_equal(experiment_measures_low_resolution[[211, 1]], "AC_UNPR")
+  expect_equal(experiment_measures_low_resolution[[687, 1]], "AC_UNPR")
 })
