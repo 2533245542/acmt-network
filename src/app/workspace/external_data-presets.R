@@ -2,7 +2,7 @@ source("external_data-file_downloader_and_processor.R")
 
 #' interpolatable data
 
-mrfei_variable_name_to_interpolate_by_sum_boolean_mapping <- c(TRUE)
+mrfei_variable_name_to_interpolate_by_sum_boolean_mapping <- c(FALSE)
 names(mrfei_variable_name_to_interpolate_by_sum_boolean_mapping) <- c("mRFEI")
 external_data_presets_mrfei <- list(vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls"),  # the files should be downloaded for mrfei
                                     expected_processed_file_name='processed_mrfei.csv',
