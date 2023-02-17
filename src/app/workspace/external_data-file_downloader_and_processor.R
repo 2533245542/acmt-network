@@ -23,7 +23,7 @@
 # You can just drag the processed file from elsewhere into the external_data folder, and set download_file and process_file to be empty functions. ACMT runs properly in this way as well because ACMT can run as long as the processed file is availble.
 
 
-# section: mRFEI data https://www.cdc.gov/obesity/downloads/census-tract-level-state-maps-mrfei_TAG508.pdf
+# section: mRFEI data https://www.cdc.gov/obesity/resources/reports.html
 download_file_mrefi <- function () {  # download the external dataset and give it a name (will use it in creating external_data_name_to_info_list)
   download.file(url = "https://www.cdc.gov/obesity/downloads/2_16_mrfei_data_table.xls", destfile = "external_data/downloaded_mrfei.xls")
 }
@@ -228,7 +228,7 @@ process_file_crime_seattle <- function () {
   write_csv(processed_crime_seattle, "external_data/processed_crime_seattle.csv")
 }
 
-# section: crime boston https://data.boston.gov/dataset/crime-incident-reports-august-2015-to-date-source-new-system
+# section: crime boston
 download_file_crime_boston <- function () {
 }
 process_file_crime_boston <- function () {
@@ -250,7 +250,7 @@ process_file_crime_boston <- function () {
   write_csv(processed_crime_boston, "external_data/processed_crime_boston.csv")
 }
 
-# section: crime chicago https://www.chicago.gov/city/en/dataset/crime.html
+# section: crime chicago
 download_file_crime_chicago <- function () {
 }
 process_file_crime_chicago <- function () {
@@ -275,7 +275,7 @@ process_file_crime_chicago <- function () {
   write_csv(processed_crime_chicago, "external_data/processed_crime_chicago.csv")
 }
 
-# section: crime los_angeles https://data.lacity.org/Public-Safety/Crime-Data-from-2010-to-2019/63jg-8b9z
+# section: crime los_angeles
 download_file_crime_los_angeles <- function () {
 }
 process_file_crime_los_angeles <- function () {
@@ -299,7 +299,8 @@ process_file_crime_los_angeles <- function () {
   write_csv(processed_crime_los_angeles, "external_data/processed_crime_los_angeles.csv")
 }
 
-# section: airbnb https://www.kaggle.com/kritikseth/us-airbnb-open-data
+
+# section: airbnb
 download_file_airbnb <- function () {
 }
 process_file_airbnb <- function () {
@@ -318,8 +319,11 @@ process_file_airbnb <- function () {
 }
 
 # section: CrimeRisk
+
 download_file_crimerisk<-function(){
 } ### File cannot be downloaded -- Inspace partners will be provided with the raw data.
+
+#run file processing function
 process_crimerisk<-function() {
   crime_risk_raw<-read.csv('~/workspace/Inspace/raw_crimerisk.CSV')
   processed_dataframe<-crime_risk_raw %>%
@@ -338,12 +342,10 @@ process_crimerisk<-function() {
 download_file_park <- function () {  # download the external dataset and give it a name (will use it in creating external_data_name_to_info_list)
   download.file(url = "https://parkserve.tpl.org/downloads/ParkServe_Shapefiles_05042022.zip?_ga=2.103216521.887440371.1664905337-1364699585.1664905337", destfile = "external_data/ParkServe_shp.zip")
 }
+
 process_file_park <- function () {  # unzip the downloaded file and save the target data layer as csv file)
   unzip("external_data/ParkServe_shp.zip", exdir="external_data/ParkServe_shp")
 }
-
-#test 11-14:
-shp_directory<-'external_data/ParkServe_shp/ParkServe_Parks.shp'
 
 shp_preprocess <- function (shp_directory){
   #"external_data/ParkServe_shp/ParkServe_Shapefiles_05042022/ParkServe_Parks.shp"
@@ -357,11 +359,12 @@ shp_preprocess <- function (shp_directory){
 
 ## section: Sidewalk View
 download_file<-function(){}
+
 process_sidewalk<-function() {
   raw_sidewalk<-read.csv('Inspace/downloaded_sidewalk.csv')
   processed_dataframe<-raw_sidewalk %>%
     dplyr::select(censustract, total_num, total_crosswalk, total_sidewalk) %>%
-
+    melt(id='censustract')%>%
     rename(GEOID=censustract, estimate=value) %>%
     mutate(GEOID=as.character(GEOID)) %>%
     mutate(GEOID=ifelse(nchar(GEOID)<11, paste0('0', GEOID), GEOID)) #convert to GEOID to character for joining data, need to add an extra 0 in front for some values
@@ -371,6 +374,7 @@ process_sidewalk<-function() {
 }
 
 ## section: NLCD
+
 post_process_nlcd<-function(variable_list, prop.nlcd){
   prop.nlcd<-data.frame(prop.nlcd)
 if(nrow(prop.nlcd)==0){
@@ -382,6 +386,7 @@ return(environmental_measures)
 }
   
 ## section: PLACES
+
 download_file_places<-function() {
   #set the url for the dataset for the year of interest
   places2018url='https://chronicdata.cdc.gov/api/views/yjkw-uj5s/rows.csv?accessType=DOWNLOAD' #2021 release: 2018, 2019 data
@@ -391,11 +396,13 @@ download_file_places<-function() {
   download.file(url=places2018url, destfile="external_data/downloaded_places2018.csv")
 }
 
-process_places<-function(){
+process_file_places<-function(year=year){
   #for(i in 1:length(years)){
+  if(!is.na(year)){
   if(year==2017){raw_places<-read.csv('external_data/downloaded_places2017.csv')}
   if(year==2018){raw_places<-read.csv('external_data/downloaded_places2018.csv')}
   if(year>2017){
+  raw_places<-read.csv('external_data/downloaded_places2018.csv')
     processed_dataframe<-raw_places %>%
       filter(StateAbbr %in% states$state_abbr) %>%
       rename(total_pop_2010=TotalPopulation) %>% #updated label to reflect that this is the total population based on 2010 census
@@ -409,12 +416,13 @@ process_places<-function(){
              year=years[i])%>% #convert to GEOID to character for joining data, need to add an extra 0 in front for some values
       filter(!grepl('95CI', variable)) #remove the 95% CI for the estimates
   }
-  if(year==2017){
-    processed_dataframe<-raw_places %>%
+ if(year==2017){
+  raw_places<-read.csv('external_data/downloaded_places2017.csv')
+   processed_dataframe<-raw_places %>%
       filter(StateAbbr %in% states$state_abbr) %>%
       rename(total_pop_2010=TotalPopulation) %>% #updated label to reflect that this is the total population based on 2010 census
-      mutate(DEPRESSION_CrudePrev=NA, ## add blank rows for variables that are only available in 2021 release (Depression & General Health measures)
-             GHLTH_CrudePrev=NA) %>%
+      mutate(DEPRESSION_CrudePrev=0, ## add blank rows for variables that are only available in 2021 release (Depression & General Health measures)
+             GHLTH_CrudePrev=0) %>%
       dplyr::select('TractFIPS', "total_pop_2010", "ACCESS2_CrudePrev", "ARTHRITIS_CrudePrev", "BINGE_CrudePrev", "BPHIGH_CrudePrev", "BPMED_CrudePrev", "CANCER_CrudePrev",   
                     "CASTHMA_CrudePrev","CERVICAL_CrudePrev", "CHD_CrudePrev", "CHECKUP_CrudePrev",   "CHOLSCREEN_CrudePrev","COLON_SCREEN_CrudePrev", "COPD_CrudePrev", "COREM_CrudePrev",       
                     "COREW_CrudePrev", "CSMOKING_CrudePrev", "DENTAL_CrudePrev", "DEPRESSION_CrudePrev","DIABETES_CrudePrev", "GHLTH_CrudePrev", "HIGHCHOL_CrudePrev", "KIDNEY_CrudePrev",      
@@ -423,11 +431,12 @@ process_places<-function(){
       rename(GEOID=TractFIPS, estimate=value) %>%
       mutate(GEOID=ifelse(as.numeric(as.character(GEOID))<10000000000, as.character(paste0('0', as.character(GEOID), "")), as.character(GEOID)), 
              year=year)%>% #convert to GEOID to character for joining data, need to add an extra 0 in front for some values
+      ## add blank variables for Depression and GLHTH
       filter(!grepl('95CI', variable)) #remove the 95% CI for the estimates
-    
   }   
   
-  
   write_csv(processed_dataframe, '~/workspace/external_data/processed_places.csv')
+  }
+  
 }
 
