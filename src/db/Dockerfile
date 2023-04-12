@@ -20,6 +20,6 @@ COPY ./load_data.sh /docker-entrypoint-initdb.d/
 COPY ./postgis.sh /docker-entrypoint-initdb.d/
 
 ## install fish, vim and nano
-RUN apt-get install fish
-RUN apt-get install nano
-RUN apt-get install vim
+RUN yes | apt-get install fish
+RUN yes | apt-get install nano
+RUN yes | apt-get install vim
