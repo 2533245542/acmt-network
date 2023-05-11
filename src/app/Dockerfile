@@ -18,6 +18,8 @@ RUN echo BYPASS_SSL=$BYPASS_SSL > ~/../home/rstudio/.Renviron  #pass the flag fo
 RUN chown -R rstudio ~/../home/rstudio/.Renviron  # let rstudio have permission to write .Renviron
 RUN yes | apt-get install curl
 RUN yes | apt-get install fish
+RUN yes | apt-get install nano
+RUN yes | apt-get install vim
 
 # Set up the shiny app for acmt
 #RUN R -e "install.packages(c('shiny', 'shinythemes', 'tidygeocoder'))"

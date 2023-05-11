@@ -1,3 +1,5 @@
+setwd('~/workspace')
+
 BYPASS_SSL <- as.logical(Sys.getenv("BYPASS_SSL"))  # in most cases this should be false, or when Docker not enabled -- NA
 if (!is.na(BYPASS_SSL) && BYPASS_SSL) {
   library(httr)
