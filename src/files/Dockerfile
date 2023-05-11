@@ -1,12 +1,13 @@
 
 FROM nginx
-RUN apt-get update
-RUN apt-get install wget unzip -y
 
-## install fish, vim and nano
-RUN yes | apt-get install fish
-RUN yes | apt-get install nano
-RUN yes | apt-get install vim
+# set up apt-get repository
+RUN sh -c 'echo > /etc/apt/sources.list.d/pgdg.list'
+RUN sh -c 'echo "deb http://deb.debian.org/debian bullseye main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye main contrib non-free\ndeb http://deb.debian.org/debian-security/ bullseye-security main contrib non-free\ndeb-src http://deb.debian.org/debian-security/ bullseye-security main contrib non-free\ndeb http://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb http://deb.debian.org/debian bullseye-backports main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye-backports main contrib non-free" > /etc/apt/sources.list'
+
+
+RUN apt-get update
+RUN apt-get install -y --allow-unauthenticated fish vim nano locales wget unzip
 
 COPY index.html /usr/share/nginx/html/
 EXPOSE 80
