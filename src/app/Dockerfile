@@ -22,12 +22,12 @@ RUN chown -R rstudio ~/../home/rstudio/.Renviron  # let rstudio have permission 
 
 
 # Set up the shiny app for acmt
-RUN R -e "install.packages(c('shiny', 'shinythemes', 'tidygeocoder'))"
-RUN yes | apt-get install gdebi-core
-RUN wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.16.958-amd64.deb
-RUN yes | gdebi shiny-server-1.5.16.958-amd64.deb
-RUN git clone https://github.com/2533245542/acmt-shiny.git /srv/shiny-server/acmt_shiny
-RUN sed -i '2s/.*/run_as rstudio;/' /etc/shiny-server/shiny-server.conf
-RUN sed -i '17s#.*#path <- "http://172.17.0.1:5000/latlong?"#' /home/rstudio/workspace/GeocoderACMT.R
-RUN sed -i '49s#.*#acs_columns_url <- "http://172.17.0.1:7000/ACSColumns.csv"#' /home/rstudio/workspace/GeocoderACMT.R
-CMD shiny-server
+# RUN R -e "install.packages(c('shiny', 'shinythemes', 'tidygeocoder'))"
+# RUN yes | apt-get install gdebi-core
+# RUN wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.16.958-amd64.deb
+# RUN yes | gdebi shiny-server-1.5.16.958-amd64.deb
+# RUN git clone https://github.com/2533245542/acmt-shiny.git /srv/shiny-server/acmt_shiny
+# RUN sed -i '2s/.*/run_as rstudio;/' /etc/shiny-server/shiny-server.conf
+# RUN sed -i '17s#.*#path <- "http://172.17.0.1:5000/latlong?"#' /home/rstudio/workspace/GeocoderACMT.R
+# RUN sed -i '49s#.*#acs_columns_url <- "http://172.17.0.1:7000/ACSColumns.csv"#' /home/rstudio/workspace/GeocoderACMT.R
+# CMD shiny-server
