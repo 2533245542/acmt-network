@@ -98,24 +98,6 @@ external_data_presets_airbnb <- list(vector_of_expected_downloaded_file_name=c("
                                             process_file=process_file_airbnb
 )
 
-crimerisk_variable_name_to_interpolate_by_sum_boolean_mapping = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,FALSE,FALSE,FALSE,FALSE,FALSE)
-names(crimerisk_variable_name_to_interpolate_by_sum_boolean_mapping) = c("total_pop_2022", "CRMCYTOTC","CRMCYPERC","CRMCYMURD","CRMCYRAPE","CRMCYROBB", "CRMCYASST", "CRMCYPROC", "CRMCYBURG",  "CRMCYLARC", "CRMCYMVEH") 
-external_data_presets_crimerisk <- list(vector_of_expected_downloaded_file_name=c("raw_crimerisk.csv"), ## data not downloaded, so it will be in the Inspace folder
-                                        download_file=download_file_crimerisk,
-                                        process_file=process_crimerisk,
-                                        geoid_type="Block Group",
-                                        variable_name_to_interpolate_by_sum_boolean_mapping=crimerisk_variable_name_to_interpolate_by_sum_boolean_mapping 
-)
-
-sidewalk_variable_name_to_interpolate_by_sum_boolean_mapping = c(TRUE, TRUE, TRUE)
-names(sidewalk_variable_name_to_interpolate_by_sum_boolean_mapping) = c('total_num', 'total_crosswalk', 'total_sidewalk')
-external_data_presets_sidewalk <- list(vector_of_expected_downloaded_file_name=c("downloaded_sidewalk.csv"),
-                                        download_file=NULL,
-                                        process_file=process_sidewalk,
-                                        geoid_type="Census Tract",
-                                        variable_name_to_interpolate_by_sum_boolean_mapping=sidewalk_variable_name_to_interpolate_by_sum_boolean_mapping 
-)
-
 
 places_variable_name_to_interpolate_by_sum_boolean_mapping_2018 = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
 names(places_variable_name_to_interpolate_by_sum_boolean_mapping_2018) = c("total_pop_2010", "ACCESS2_CrudePrev", "ARTHRITIS_CrudePrev",
@@ -141,8 +123,8 @@ names(places_variable_name_to_interpolate_by_sum_boolean_mapping) = c("total_pop
 
 external_data_presets_places<- list(vector_of_expected_downloaded_file_name=c("downloaded_places2017.csv", "downloaded_places2018.csv"),
                                     expected_processed_file_name=c('processed_places.csv'),
-                                    download_file=NULL,
-              process_file=NULL,
+                                    download_file=download_file_places,
+              process_file=process_file_places,
               geoid_type="Census Tract",
               variable_name_to_interpolate_by_sum_boolean_mapping=places_variable_name_to_interpolate_by_sum_boolean_mapping
 )
