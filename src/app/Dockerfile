@@ -12,7 +12,9 @@ RUN chown -R rstudio /home/rstudio/workspace
 
 # Install packages for running acmt
 RUN apt-get update
-RUN apt-get install -y --allow-unauthenicated fish vim nano curl libudunits2-dev libgdal-dev
+#RUN apt-get install -y --allow-unauthenticated fish vim nano curl libudunits2-dev libgdal-dev
+RUN yes | apt-get install libudunits2-dev
+RUN yes | apt-get install libgdal-dev
 
 RUN R -e "install.packages(c('geosphere', 'lwgeom', 'raster', 'sf', 'tidycensus', 'tigris', 'units', 'USAboundaries', 'reshape2', 'rgeos', 'osrm', 'leaflet'))"
 RUN echo "setwd(\"/home/rstudio/workspace/\")" > ~/../home/rstudio/.Rprofile  #set up working diretory
