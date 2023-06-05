@@ -1,4 +1,5 @@
-FROM rocker/verse:3.6.1
+FROM rocker/verse:3.6.3
+#FROM rocker/verse:3.6.1
 #FROM rocker/verse:4.0.3
 #FROM rocker/geospatial:4.0.3
 
