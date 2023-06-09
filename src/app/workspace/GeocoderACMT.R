@@ -374,7 +374,7 @@ get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA
   }
   if(set_var_list==FALSE){  print('Reading year-specific ACS column list')
   if(year==2010){
-    acs_columns<-read.csv('ACMT/2010ACSColumns.csv')
+    acs_columns<-read.csv('ACMT/ACSColumns2010.csv')
   }
   if(year==2011){
     acs_columns<-read.csv('ACMT/ACSColumns2011.csv')
