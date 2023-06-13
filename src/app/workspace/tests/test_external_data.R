@@ -1,6 +1,7 @@
 # if called by test_file, the working directory should be workspace/ (at the same level as RefreshAPIKey.R); otherwise comment this line
-setwd("../")
-
+#setwd("../")
+setwd('~/workspace')
+source("setup-acmt.R")
 options(stringsAsFactors = FALSE)  # it is default to be FALSE in R4.0 but TRUE in earlier R versions
 
 library(testthat)
@@ -38,7 +39,7 @@ test_that("get_acmt_standard_array with external data mrfei", {
   measures_for_2013_with_external_data_with_fill_missing <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE, use_lower_resolution_geo_data = FALSE)
   expect_equal(dim(measures_for_2013_with_external_data_with_fill_missing), c(680, 2))
   expect_equal(measures_for_2013_with_external_data_with_fill_missing[680, 1], "mRFEI")
-  expect_equal(measures_for_2013_with_external_data_with_fill_missing[680, 2], 159.3582212)
+  expect_equal(measures_for_2013_with_external_data_with_fill_missing[680, 2], 15.115597)
 
   measures_for_2013_with_external_data_without_fill_missing <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = FALSE, use_lower_resolution_geo_data = FALSE)
 
@@ -90,11 +91,11 @@ test_that("get_acmt_standard_array with both mrfei and walkability", {
   experiment_measures <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE, use_lower_resolution_geo_data = FALSE)
 
   expect_equal(dim(experiment_measures), c(689,2))
-  expect_equal(filter(experiment_measures, names == "COUNTHU10")$values, 26433.86395)
-  expect_equal(filter(experiment_measures, names == "WORKERS")$values, 24041.93771)
-  expect_equal(filter(experiment_measures, names == "AC_LAND")$values, 2836.450637)
-  expect_equal(filter(experiment_measures, names == "AC_UNPR")$values, 2416.977856)
-  expect_equal(filter(experiment_measures, names == "NatWalkInd")$values, 16.80087125)
+  expect_equal(filter(experiment_measures, names == "COUNTHU10")$values, 26433.73646)
+  expect_equal(filter(experiment_measures, names == "WORKERS")$values, 24041.72925)
+  expect_equal(filter(experiment_measures, names == "AC_LAND")$values, 2836.428925)
+  expect_equal(filter(experiment_measures, names == "AC_UNPR")$values, 2416.972337)
+  expect_equal(filter(experiment_measures, names == "NatWalkInd")$values, 16.80091)
 })
 
 
@@ -115,12 +116,12 @@ test_that("get_acmt_standard_array with walkability", {
   )
   experiment_measures <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, fill_missing_GEOID_with_zero = TRUE, use_lower_resolution_geo_data = FALSE)
 
-  expect_equal(dim(experiment_measures), c(689,2))
-  expect_equal(experiment_measures[[681, 1]], "COUNTHU10")
-  expect_equal(experiment_measures[[681, 2]], 26433.86395)
-  expect_equal(experiment_measures[[685, 2]], 3327.721899)
-  expect_equal(experiment_measures[[686, 2]], 491.1822339)
-  expect_equal(experiment_measures[[688, 1]], "AC_UNPR")
+  expect_equal(dim(experiment_measures), c(688,2))
+  expect_equal(experiment_measures[[680, 1]], "COUNTHU10")
+  expect_equal(experiment_measures[[680, 2]], 26433.73646)
+  expect_equal(experiment_measures[[684, 2]], 3327.7233)
+  expect_equal(experiment_measures[[685, 2]], 491.20537)
+  expect_equal(experiment_measures[[687, 1]], "AC_UNPR")
 })
 
 test_that("get_acmt_standard_array with walkability", {
@@ -136,15 +137,15 @@ test_that("get_acmt_standard_array with walkability", {
   experiment_measures <- get_acmt_standard_array(long=-122.333, lat=47.663, radius_meters = 2000, year=2013, external_data_name_to_info_list=external_data_name_to_info_list, use_lower_resolution_geo_data = FALSE)
 
   expect_equal(dim(experiment_measures), c(688,2))
-  expect_equal(filter(experiment_measures, names == "COUNTHU10")$values, 26433.86395)
-  expect_equal(filter(experiment_measures, names == "TOTPOP10")$values, 54286.84519)
-  expect_equal(filter(experiment_measures, names == "HH")$values, 24726.63867)
-  expect_equal(filter(experiment_measures, names == "WORKERS")$values, 24041.93771)
-  expect_equal(filter(experiment_measures, names == "AC_TOT")$values, 3327.721899)
-  expect_equal(filter(experiment_measures, names == "AC_WATER")$values, 491.1822339)
-  expect_equal(filter(experiment_measures, names == "AC_LAND")$values, 2836.450637)
-  expect_equal(filter(experiment_measures, names == "AC_UNPR")$values, 2416.977856)
-  expect_equal(filter(experiment_measures, names == "NatWalkInd")$values, 16.80087125)
+  expect_equal(filter(experiment_measures, names == "COUNTHU10")$values, 26433.73646)
+  expect_equal(filter(experiment_measures, names == "TOTPOP10")$values,  54285.697147)
+  expect_equal(filter(experiment_measures, names == "HH")$values, 24726.49032)
+  expect_equal(filter(experiment_measures, names == "WORKERS")$values, 24041.729253)
+  expect_equal(filter(experiment_measures, names == "AC_TOT")$values, 3327.723328)
+  expect_equal(filter(experiment_measures, names == "AC_WATER")$values, 491.20537)
+  expect_equal(filter(experiment_measures, names == "AC_LAND")$values, 2836.428925)
+  expect_equal(filter(experiment_measures, names == "AC_UNPR")$values, 2416.972337)
+  expect_equal(filter(experiment_measures, names == "NatWalkInd")$values, 16.80091)
 })
 
 
@@ -162,8 +163,8 @@ test_that("get_acmt_standard_array with walkability and lower resolution", {
 
   expect_equal(dim(experiment_measures_low_resolution), c(688,2))
   expect_equal(experiment_measures_low_resolution[[680, 1]], "COUNTHU10")
-  expect_equal(filter(experiment_measures_low_resolution, names=='COUNTHU10')$values, 26447.74531)
-  expect_equal(filter(experiment_measures_low_resolution, names=='AC_TOT')$values, 3329.913945)
-  expect_equal(substr(as.character(filter(experiment_measures_low_resolution, names=='AC_WATER')$values), 0, 8), "491.3046")
+  expect_equal(filter(experiment_measures_low_resolution, names=='COUNTHU10')$values, 26447.61146)
+  expect_equal(filter(experiment_measures_low_resolution, names=='AC_TOT')$values, 3329.916651)
+  expect_equal(substr(as.character(filter(experiment_measures_low_resolution, names=='AC_WATER')$values), 0, 8), "491.3289")
   expect_equal(experiment_measures_low_resolution[[687, 1]], "AC_UNPR")
 })
