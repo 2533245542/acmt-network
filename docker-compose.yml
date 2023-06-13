@@ -39,6 +39,7 @@ services:
             context: ./src/files
 
     app:
+        platform: linux/amd64
         build:
             context: ./src/app
             args:
