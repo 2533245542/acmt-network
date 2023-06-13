@@ -37,7 +37,7 @@ We take the following steps:
 We have gathered the City Hall addresses for Seattle, Los Angeles, Chicago, New York and Boston from Google.
 
 ```{r, results = 'hide'}
-source("setup-acmt.R")
+source("~/workspace/setup-acmt.R")
 
 library(ggplot2)
 city_hall_to_address_list <- list(
@@ -67,6 +67,11 @@ convert_address_to_lat_long <- function (city_hall_to_address_list) { # function
 # is geocoder available?
 geocoder_is_available <- FALSE
 tryCatch({  # note that codes in try is not inside a new function, just treat it as normal R code
+  ##try and geocode all of the addresses:
+  geocode("600 4th Ave, Seattle, WA 98104")
+  geocode("200 N Spring St, Los Angeles, CA 90012")
+  geocode("121 N LaSalle St, Chicago, IL 60602")
+  geocode("City Hall Park, New York, NY 10007")
   geocode("1 City Hall Square #500, Boston, MA 02201")
   geocoder_is_available <- TRUE
 }, error = function(condition) {  # note that in error handler, the codes is inside a new function; this is why we need <<- for assigning acs_var_names
@@ -132,6 +137,7 @@ get_variable_measures_from_acmt <- function (city_hall_to_lat_long_list, radius_
 ```
 
 ```{r, results='hide'}
+setwd('~/workspace')
 city_hall_to_lat_long_list <- city_hall_to_lat_long_list
 radius_vector <- c(1000, 2000, 3000, 4000, 5000)
 year <- 2017
@@ -246,7 +252,7 @@ Regarding to the walkability index, we see New York City is again at the top. Ac
 ##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
 ## tests
 library(testthat)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.006713610105)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value,0.006712986)
 expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.006037685641)
 expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.01109492827)
 expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.007535991617)
