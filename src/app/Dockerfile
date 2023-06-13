@@ -1,21 +1,31 @@
-FROM rocker/verse:3.6.3
+FROM rocker/verse:4.0.1
+
 #FROM rocker/verse:3.6.1
 #FROM rocker/verse:4.0.3
 #FROM rocker/geospatial:4.0.3
 
 #update sources.list for bullseye 
-RUN sh -c 'echo "deb http://deb.debian.org/debian bullseye main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye main contrib non-free\ndeb http://deb.debian.org/debian-security/ bullseye-security main contrib non-free\ndeb-src http://deb.debian.org/debian-security/ bullseye-security main contrib non-free\ndeb http://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb http://deb.debian.org/debian bullseye-backports main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye-backports main contrib non-free" > /etc/apt/sources.list'
+#RUN sh -c 'echo "deb http://deb.debian.org/debian bullseye main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye main contrib non-free\ndeb http://deb.debian.org/debian-security/ bullseye-security main contrib non-free\ndeb-src http://deb.debian.org/debian-security/ bullseye-security main contrib non-free\ndeb http://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb http://deb.debian.org/debian bullseye-backports main contrib non-free\ndeb-src http://deb.debian.org/debian bullseye-backports main contrib non-free" > /etc/apt/sources.list'
+
+
+#update sources.list for Ubuntu
+RUN sh -c 'echo "deb http://archive.ubuntu.com/ubuntu/ focal main restricted\ndeb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted\ndeb http://archive.ubuntu.com/ubuntu/ focal universe\ndeb http://archive.ubuntu.com/ubuntu/ focal-updates universe\ndeb http://archive.ubuntu.com/ubuntu/ focal multiverse\ndeb http://archive.ubuntu.com/ubuntu/ focal-updates multiverse\ndeb http://archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse\ndeb http://security.ubuntu.com/ubuntu/ focal-security universe\ndeb http://security.ubuntu.com/ubuntu/ focal-security multiverse" > /etc/apt/sources.list'
+
 
 # Copy local files into app container
 RUN mkdir home/rstudio/workspace
 COPY workspace/ /home/rstudio/workspace
 RUN chown -R rstudio /home/rstudio/workspace
 
+
 # Install packages for running acmt
 RUN apt-get update
-#RUN apt-get install -y --allow-unauthenticated fish vim nano curl libudunits2-dev libgdal-dev
 RUN yes | apt-get install libudunits2-dev
 RUN yes | apt-get install libgdal-dev
+RUN yes | apt-get install curl
+
+#fish vim nano
+#RUN apt-get install -y --allow-unauthenticated fish vim nano curl libudunits2-dev libgdal-dev
 
 RUN R -e "install.packages(c('geosphere', 'lwgeom', 'raster', 'sf', 'tidycensus', 'tigris', 'units', 'USAboundaries', 'reshape2', 'rgeos', 'osrm', 'leaflet'))"
 RUN echo "setwd(\"/home/rstudio/workspace/\")" > ~/../home/rstudio/.Rprofile  #set up working diretory
