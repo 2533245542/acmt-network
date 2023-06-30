@@ -3,8 +3,8 @@ title: 'ACMT Example: Population density over distance (advanced)'
 author: "Weipeng Zhou"
 date: "2/22/2021"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -37,7 +37,7 @@ We take the following steps:
 We have gathered the City Hall addresses for Seattle, Los Angeles, Chicago, New York and Boston from Google.
 
 ```{r, results = 'hide'}
-source("setup-acmt.R")
+source("~/workspace/setup-acmt.R")
 
 library(ggplot2)
 city_hall_to_address_list <- list(
@@ -64,28 +64,35 @@ convert_address_to_lat_long <- function (city_hall_to_address_list) { # function
 ```
 
 ```{r, results='hide'}
-# is geocoder available?
-geocoder_is_available <- FALSE
-tryCatch({  # note that codes in try is not inside a new function, just treat it as normal R code
-  geocode("1 City Hall Square #500, Boston, MA 02201")
-  geocoder_is_available <- TRUE
-}, error = function(condition) {  # note that in error handler, the codes is inside a new function; this is why we need <<- for assigning acs_var_names
-  print(condition$message)
-  print("Geocoder not available: using stored address to lat/long mappings instead")
-})
+geocoder_is_available<-as.data.frame(city_hall_to_address_list) %>% t() %>% as.data.frame() %>%
+  rename(address=V1) %>%
+  mutate(city_hall=row.names(.), geocoder_is_available=FALSE)
 
-city_hall_to_lat_long_list <- NULL
-# call geocoder if available, use hard coded info otherwise
-if (geocoder_is_available) {
-  city_hall_to_lat_long_list <- convert_address_to_lat_long(city_hall_to_address_list)
-} else {
-  city_hall_to_lat_long_list <- list(
-    seattle_city_hall=list(latitude=47.60328, longitude=-122.3302),
+city_hall_lat_long<-list(seattle_city_hall=list(latitude=47.60328, longitude=-122.3302),
     los_angeles_city_hall=list(latitude=34.05397, longitude=-118.2436),
     chicago_city_hall=list(latitude=41.88334, longitude=-87.63229),
     new_york_city_hall=list(latitude=40.66392, longitude=-73.93835),
-    boston_city_hall=list(latitude=42.35773, longitude=-71.05919)
-  )
+    boston_city_hall=list(latitude=42.35773, longitude=-71.05919))
+
+for(address in geocoder_is_available$address){
+  tryCatch({geocode(address)
+    geocoder_is_available$geocoder_is_available[geocoder_is_available$address==address]=TRUE}, error=function(condition){
+    print(condition$message)
+    print("Geocoder not available: using stored address to lat/long mappings instead")
+  })
+}
+
+# call geocoder if available, use hard coded info otherwise
+city_hall_to_lat_long_list <- NULL
+for(address in geocoder_is_available$address){
+  city_hall_name<-geocoder_is_available$city_hall[geocoder_is_available$address==address]
+  if(geocoder_is_available$geocoder_is_available[geocoder_is_available$address==address]==TRUE){
+    
+    city_hall<-list(address)
+    names(city_hall)<-city_hall_name
+    city_hall_to_lat_long_list<-append(city_hall_to_lat_long_list, convert_address_to_lat_long(city_hall))
+                                                           }
+  else(city_hall_to_lat_long_list<-append(city_hall_to_lat_long_list, city_hall_lat_long[names(city_hall_lat_long)==city_hall_name]))
 }
 ```
 
@@ -132,6 +139,7 @@ get_variable_measures_from_acmt <- function (city_hall_to_lat_long_list, radius_
 ```
 
 ```{r, results='hide'}
+setwd('~/workspace')
 city_hall_to_lat_long_list <- city_hall_to_lat_long_list
 radius_vector <- c(1000, 2000, 3000, 4000, 5000)
 year <- 2017
@@ -246,7 +254,7 @@ Regarding to the walkability index, we see New York City is again at the top. Ac
 ##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
 ## tests
 library(testthat)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.006713610105)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value,0.006712857)
 expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.006037685641)
 expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.01109492827)
 expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.007535991617)

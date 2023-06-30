@@ -114,6 +114,7 @@ Requirements:
 When the 4 steps are done, we can run ACMT with external data.
 
 ```{r, results = 'hide'}
+setwd('~/workspace')
 source("setup-acmt.R")
 external_data_name_to_info_list <- list(
         mrfei=list(vector_of_expected_downloaded_file_name=c("downloaded_mrfei.xls"),
@@ -134,9 +135,9 @@ print(filter(context_measurements, context_measurements$names == "mRFEI"))
 library(testthat)
 ##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
 ## tests
-expect_equal(dim(context_measurements), c(204, 2))
-expect_equal(context_measurements[204, 1], "mRFEI")
-expect_equal(substr(as.character(context_measurements[204, 2]), start=1, stop=8), "1.303625")  # to sync the remote and local version
+expect_equal(dim(context_measurements), c(680, 2))
+expect_equal(context_measurements[680, 1], "mRFEI")
+expect_equal(substr(as.character(context_measurements[680, 2]), start=1, stop=8), "1.303625")  # to sync the remote and local version
 ```
 
 ## FAQ
