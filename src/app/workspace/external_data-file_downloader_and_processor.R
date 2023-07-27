@@ -330,16 +330,24 @@ process_file_park <- function () {  # unzip the downloaded file and save the tar
   unzip("external_data/ParkServe_shp.zip", exdir="external_data/ParkServe_shp")
 }
 #test 11-14:
-shp_directory<-'external_data/ParkServe_shp/ParkServe_Parks.shp'
+shp_directory<-'external_data/ParkServe_shp/ParkServe_Shapefiles_05042022/ParkServe_Parks.shp'
 
 shp_preprocess <- function (shp_directory){
   #"external_data/ParkServe_shp/ParkServe_Shapefiles_05042022/ParkServe_Parks.shp"
-  park_shp <- st_read(shp_directory)
-  park_shp <- st_transform(park_shp, crs = 4326)
-  park_shp <- st_make_valid(park_shp)
-  return(park_shp)
-}
+  park_shp <- st_read(shp_directory) 
+  
+  #Identify states
+  states_sf <- st_transform(us_states( map_date = NULL, resolution = c("low", "high"), states = NULL), 4326)
+  points_sf = st_as_sf(dataset_geocoded%>%filter(!is.na(lat) & !is.na(long)), coords = c("long", "lat"), crs = 4326, agr = "constant")
+  states <- as.data.frame( st_join(points_sf, states_sf, join = st_intersects) ) %>% dplyr::select(name, -geometry)%>%unique()%>% drop_na()%>% as.list() 
+  
+  park_shp<-park_shp%>% filter(Park_State %in% states$name)
+  park_shp<-st_transform(park_shp, crs=4326)
+  
+  #park_shp<-st_make_valid(park_shp) ## gives error
+  park_shp<-st_make_valid(park_shp %>% filter(!is.na(st_is_valid(park_shp))))
 
+}
 
 ## section: NLCD
 post_process_nlcd<-function(variable_list, prop.nlcd){
