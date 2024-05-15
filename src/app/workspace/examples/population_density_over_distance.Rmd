@@ -3,8 +3,8 @@ title: 'ACMT Example: Population density over distance'
 author: "Weipeng Zhou"
 date: "2/22/2021"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -45,7 +45,10 @@ city_hall_to_address_list <- list(
   los_angeles_city_hall="200 N Spring St, Los Angeles, CA 90012",
   chicago_city_hall="121 N LaSalle St, Chicago, IL 60602",
   new_york_city_hall="City Hall Park, New York, NY 10007",
-  boston_city_hall="1 City Hall Square #500, Boston, MA 02201"
+  boston_city_hall="1 City Hall Square #500, Boston, MA 02201",
+  houston_city_hall="901 Bagby St, Houston, TX 77002",
+  nashville_city_hall="1 Public Square #303, Nashville, TN 37201"
+
 )
 ```
 
@@ -223,10 +226,21 @@ print(head(dataframe_for_plotting))
 ```
 
 ```{r}
+city_names <- c("seattle_city_hall"="Seattle",
+"los_angeles_city_hall"="Los Angeles",
+"chicago_city_hall"="Chicago",
+"new_york_city_hall"="New York City",
+"boston_city_hall"="Boston",
+"houston_city_hall"="Houston",
+"nashville_city_hall"="Nashville")
+
+# Create a new column with city names
+dataframe_for_plotting$city_hall <- city_names[dataframe_for_plotting$city_hall]
 ggplot(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], aes(x=radius)) +
         geom_line(aes(y=value, col=city_hall)) +
         labs(y="population density (people/m^2)",
-             x="radius (m)")
+             x="radius (m)") +
+  guides(color = guide_legend(title = NULL))
 ```
 
 ## Results
@@ -242,8 +256,8 @@ In another example, we refine our analysis on population density and demonstrate
 ##Lastly, we ensure that you are reproducing the results the same as what's on other platforms.
 ## tests
 library(testthat)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="seattle_city_hall", radius==2000)$value, 0.005230973)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="los_angeles_city_hall", radius==3000)$value, 0.005561481459)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="chicago_city_hall", radius==1000)$value, 0.009131229584)
-expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="boston_city_hall", radius==5000)$value, 0.005571771875)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="Seattle", radius==2000)$value, 0.005230973,   tolerance = 1e-5)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="Los Angeles", radius==3000)$value, 0.005561481459,   tolerance = 1e-5)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="Chicago", radius==1000)$value, 0.009131229584,   tolerance = 1e-5)
+expect_equal(filter(dataframe_for_plotting[dataframe_for_plotting$variable == "population_density", ], city_hall=="Boston", radius==5000)$value, 0.005571771875,   tolerance = 1e-5)
 ```
