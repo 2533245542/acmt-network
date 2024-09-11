@@ -109,7 +109,10 @@ get_travelable_buffer <- function (latitude=47.663, longitude=-122.333, travel_t
 }
 
 state_list <- list()
-get_geometries_of_a_county <- function(state, county, year=2017, geoid_type="Census Tract", use_lower_resolution_geo_data=FALSE) {
+get_geometries_of_a_county <- function(state, county, 
+                                       year=2017, geoid_type="Census Tract", 
+                                       #year=year, geoid_type=geoid_type, 
+                                       use_lower_resolution_geo_data=FALSE) {
   if (!geoid_type %in% c("Census Tract", "Block Group")) {
     stop("Unsupported GEOID type")
   }
@@ -125,6 +128,8 @@ get_geometries_of_a_county <- function(state, county, year=2017, geoid_type="Cen
     print(sprintf("Looking up tracts for state %s , county %s", state, county))
 
     tracts <- NULL
+    print(year)
+    print(geoid_type)
     if (geoid_type == "Census Tract") {
       tracts <- st_as_sf(tracts(state = state, county = county, year=year, cb=use_lower_resolution_geo_data))
     } else if (geoid_type == "Block Group") {
@@ -158,8 +163,8 @@ get_geometries_of_a_county <- function(state, county, year=2017, geoid_type="Cen
 get_acs_results_for_available_variables <- function (acs_var_names, state, county, year) {
   ### Remove the acs_var_names that are not available for the year and only return the available ones ###
   ### Return NA if error is not due to missing acs_var_names ###
-  if (year < 2010 | year > 2021) {
-    stop("Year must be in between 2010 and 2021, inclusive")
+  if (year < 2010 | year > 2022) {
+    stop("Year must be in between 2010 and 2022, inclusive")
   }
   input_acs_var_names <- acs_var_names
   acs_results <- NA
@@ -229,7 +234,6 @@ get_acs_results_for_available_variables <- function (acs_var_names, state, count
 #"B08006_004", "B08006_008", "B08006_014", "B08006_015", "B08006_016", "B08006_017", "B08302_002", "B08302_003", "B08302_004", "B08302_005", "B08302_006", "B08302_007", "B08302_008", "B08302_009", 
 #"B08302_010", "B08302_011", "B08302_012", "B08302_013", "B08302_014", "B08302_015", "B11012_001", "B11012_009", "B11012_010", "B11012_014", "B11012_015", "B15002_002", "B15002_011", "B15002_015", 
 #"B15002_019", "B15002_028", "B15002_032", "B15003_001", "B15003_002", "B15003_003", "B15003_004", "B15003_005", "B15003_006", "B15003_007", "B15003_008", "B15003_009", "B15003_010", "B15003_011", 
-#"B15003_012", "B15003_013", "B15003_014", "B15003_015", "B15003_016", "B15003_017", "B15003_018", "B15003_019", "B15003_020", "B15003_021", "B15003_022", "B15003_023", "B15003_024", "B15003_025", 
 #"B16005_001", "B16005_004", "B16005_007", "B16005_008", "B16005_009", "B16005_012", "B16005_013", "B16005_014", "B16005_017", "B16005_018", "B16005_019", "B16005_022", "B16005_023", "B16005_024", 
 #"B16005_026", "B16005_029", "B16005_030", "B16005_031", "B16005_034", "B16005_035", "B16005_036", "B16005_039", "B16005_040", "B16005_041", "B16005_044", "B16005_045", "B17001_001", "B17001_002", 
 #"B17012_001", "B17012_002", "B17023_001", "B17023_002", "B18101_001", "B18101_002", "B18101_003", "B18101_004", "B18101_006", "B18101_007", "B18101_009", "B18101_010", "B18101_012", "B18101_013", 
@@ -247,7 +251,10 @@ get_acs_results_for_available_variables <- function (acs_var_names, state, count
 
 
 #### ####
-get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, geoid_type = "Census Tract", fill_missing_GEOID_with_zero=FALSE, use_lower_resolution_geo_data=FALSE, variable_name_to_interpolate_by_sum_boolean_mapping=NULL, return_point_estimate=FALSE, custom_buffer=NULL) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
+get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_names=NULL, year=year, external_data=NULL, 
+                                            geoid_type = "Census Tract",  ## Why is this set to census tract??? 
+                                            #geoid_type=geoid_type, 
+                                            fill_missing_GEOID_with_zero=FALSE, use_lower_resolution_geo_data=FALSE, variable_name_to_interpolate_by_sum_boolean_mapping=NULL, return_point_estimate=FALSE, custom_buffer=NULL) {  # count_results might not have the variable measures for all GEOIDs in census tracts, in that case, use 0 for the measure; if this is not done, the returned result will be NA
 
   if (is.null(variable_name_to_interpolate_by_sum_boolean_mapping)) {
     stop("Function get_count_variable_for_lat_long is not provided with variable_name_to_interpolate_by_sum_boolean_mapping")
@@ -256,7 +263,9 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
   # check for if asked to handle external data
   using_external_data <- FALSE
   names_of_interested_variables <- acs_var_names   # variable names we want to output
-  if (is.null(acs_var_names) && is.null(year) && !is.null(external_data)) {  # when no acs_var_names, year, but have external_data
+  if (is.null(acs_var_names) &&
+      ##is.null(year) && 
+      !is.null(external_data)) {  # when no acs_var_names, year, but have external_data
     using_external_data <- TRUE
     names_of_interested_variables <- unique(external_data$variable)
   }
@@ -268,7 +277,7 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
     point_buffer <- custom_buffer
   }
   if(return_point_estimate&&!is.null(custom_buffer)) {
-    stop("Please either get measure for the custom buffer or get point estiamte for a lat/long")
+    stop("Please either get measure for the custom buffer or get point estimate for a lat/long")
   }
   index_of_intersecting_counties <- st_intersects(point_buffer, counties)
   if (return_point_estimate) {  # TODO return_point_estimate: might not need this. Speed up by just looking for one county
@@ -287,7 +296,9 @@ get_count_variable_for_lat_long <- function(long, lat, radius_meters, acs_var_na
   # get measures and geometries to prepare for interpolatation
   geoid_and_columns_of_variable_value_to_geometry_dataframe_list <- list()
   for (i in seq_along(intersecting_counties_fips)) {
-    geoid_to_geometry_dataframe <- get_geometries_of_a_county(state=intersecting_counties_fips_state_codes[i], county=intersecting_counties_fips_county_codes[i], geoid_type=geoid_type, use_lower_resolution_geo_data=use_lower_resolution_geo_data)
+    geoid_to_geometry_dataframe <- get_geometries_of_a_county(state=intersecting_counties_fips_state_codes[i], county=intersecting_counties_fips_county_codes[i], 
+                                                              year=year, ## Added year designation so that it doesn't use the default year
+                                                              geoid_type=geoid_type, use_lower_resolution_geo_data=use_lower_resolution_geo_data)
 
     geoid_to_variable_name_to_variable_value_dataframe <- NA
 
@@ -379,13 +390,13 @@ get_acs_standard_columns <- function(year=2017, codes_of_acs_variables_to_get=NA
   if(year==2011){
     acs_columns<-read.csv('ACMT/ACSColumns2011.csv')
   }
-  if(year>2011 & year<2019){
+    if(year>2011 & year<2019){
     acs_columns<-read.csv('ACMT/ACSColumns2012_thru_18.csv')
   }
   if(year==2019){
   acs_columns <- read.csv("ACMT/ACSColumns2019.csv")
   }
-  if(year==2020){
+  if(year>=2020){
   acs_columns<-read.csv('ACMT/ACSColumns2020.csv')
   }
 if(!is.null(codes_of_acs_variables_to_get)){
@@ -420,10 +431,10 @@ if(!is.null(codes_of_acs_variables_to_get)){
 }
 
 
-get_acmt_standard_array <- function(lat, long, radius_meters, year=2017, codes_of_acs_variables_to_get=NA, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE, use_lower_resolution_geo_data=TRUE, return_point_estimate=FALSE, custom_buffer=NULL, set_var_list=FALSE
+get_acmt_standard_array <- function(lat, long, radius_meters, year=year, codes_of_acs_variables_to_get=NA, external_data_name_to_info_list=NULL, fill_missing_GEOID_with_zero=FALSE, use_lower_resolution_geo_data=TRUE, return_point_estimate=FALSE, custom_buffer=NULL, set_var_list=FALSE
                                     ) {
   # check input validity
-  if (year < 2010 | year > 2021) {stop("Year must be in between 2010 and 2021 (inclusive)")}
+  if (year < 2010 | year > 2022) {stop("Year must be in between 2010 and 2022 (inclusive)")}
   if (is.na(long) | is.na(lat)) {stop("Null lat or long passed to get_acmt_standard_array")}
 
   # interpolate ACS dataset measures
@@ -475,7 +486,12 @@ get_acmt_standard_array <- function(lat, long, radius_meters, year=2017, codes_o
 
     variable_to_value_dataframe_list <- list()
     for (external_data_name in names(external_data_name_to_info_list)) {
-      external_data_weighted_over_point_buffer_dataframe <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=NULL, year=NULL, external_data=external_data_list[[external_data_name]], geoid_type = external_data_name_to_info_list[[external_data_name]]$geoid_type, fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, use_lower_resolution_geo_data=use_lower_resolution_geo_data, variable_name_to_interpolate_by_sum_boolean_mapping=external_data_name_to_info_list[[external_data_name]]$variable_name_to_interpolate_by_sum_boolean_mapping, return_point_estimate=return_point_estimate, custom_buffer=custom_buffer)
+      external_data_weighted_over_point_buffer_dataframe <- get_count_variable_for_lat_long(long=long, lat=lat, radius_meters=radius_meters, acs_var_names=NULL, #year=NULL,
+                                                                                            year=year,
+                                                                                            external_data=external_data_list[[external_data_name]], geoid_type = external_data_name_to_info_list[[external_data_name]]$geoid_type, 
+                                                                                            fill_missing_GEOID_with_zero=fill_missing_GEOID_with_zero, use_lower_resolution_geo_data=use_lower_resolution_geo_data, 
+                                                                                            variable_name_to_interpolate_by_sum_boolean_mapping=external_data_name_to_info_list[[external_data_name]]$variable_name_to_interpolate_by_sum_boolean_mapping, 
+                                                                                            return_point_estimate=return_point_estimate, custom_buffer=custom_buffer)
       variable_to_value_dataframe <- data.frame(names=external_data_weighted_over_point_buffer_dataframe$name, values=external_data_weighted_over_point_buffer_dataframe$estimate)
       variable_to_value_dataframe_list[[external_data_name]] <- variable_to_value_dataframe
     }
