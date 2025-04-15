@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.12
 
 # set up apt-get repository
 RUN sh -c 'echo > /etc/apt/sources.list.d/pgdg.list'
