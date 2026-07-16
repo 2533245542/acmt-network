@@ -62,6 +62,3 @@ See this Google Doc for installing and using ACMT.
 - In Rstudio, navigate to workspace/AMCT_Shiny and find the ACMT Shiny App.R file.
 - Open the file and click 'Run App' in the the top right.
 - A new window will open the ACMT Shiny app, which will walk you through geocoding and pulling Neighborhood Measures. 
-
-https://acmt.csde.washington.edu/  
-
