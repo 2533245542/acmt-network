@@ -4,7 +4,8 @@ The ACMT also has a built-in geocoder that can be used to locally geocode addres
 Below are instructions for setting up the ACMT on your computer. 
 
 **1 Install Docker**
-If you are not the admin on your computer, you must have IT install Docker and add you to the docker-user group
+
+*If you are not the admin on your computer, you must have IT install Docker and add you to the docker-user group*
 
 *Adding non-admin users to the Docker User group*
 
